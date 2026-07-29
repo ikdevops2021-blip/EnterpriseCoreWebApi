@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,6 +9,13 @@
 
   <ItemGroup>
     <PackageReference Include="MySqlConnector" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AntiGravity.Enterprise.Shared.Core\AntiGravity.Enterprise.Shared.Core.csproj" />
   </ItemGroup>
 
 </Project>

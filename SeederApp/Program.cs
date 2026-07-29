@@ -1,128 +1,240 @@
 using System;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 
-class AuthTester
+namespace SeederApp
 {
-    static async Task Main(string[] args)
+    class Program
     {
-        Console.WriteLine("==================================================");
-        Console.WriteLine("        CHECKING USER DATA & AUTHENTICATION      ");
-        Console.WriteLine("==================================================");
-
-        string connStr = "Server=127.0.0.1;Port=3306;Database=dnaqms;Uid=root;Pwd=mysql;";
-        using var conn = new MySqlConnection(connStr);
-        await conn.OpenAsync();
-
-        // 1. Check User table count
-        using var countCmd = conn.CreateCommand();
-        countCmd.CommandText = "SELECT COUNT(*) FROM `User` WHERE IsDeleted=0;";
-        long userCount = (long)(await countCmd.ExecuteScalarAsync() ?? 0);
-        Console.WriteLine($"Current Active User count in DB: {userCount}");
-
-        // 2. Check ApiKey table count
-        using var keyCountCmd = conn.CreateCommand();
-        keyCountCmd.CommandText = "SELECT COUNT(*) FROM ApiKey WHERE IsDeleted=0;";
-        long keyCount = (long)(await keyCountCmd.ExecuteScalarAsync() ?? 0);
-        Console.WriteLine($"Current Active ApiKey count in DB: {keyCount}");
-
-        string baseUrl = "http://localhost:5026";
-        var handler = new HttpClientHandler
+        static async Task<int> Main(string[] args)
         {
-            ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
-        };
-        using var client = new HttpClient(handler) { BaseAddress = new Uri(baseUrl) };
+            Console.WriteLine("==================================================================");
+            Console.WriteLine("  ENTERPRISE CORE WEB API - SEEDER & MIGRATION ENGINE CLI  ");
+            Console.WriteLine("==================================================================");
 
-        string testEmail = "testuser@example.com";
-        string testPassword = "TestPassword123!";
+            // 1. Build Configuration
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("../DNAQMSAPI/DNAQMSAPI.API/appsettings.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .AddCommandLine(args);
 
-        // 3. Register user if needed
-        Console.WriteLine($"\n1. Registering test user '{testEmail}'...");
-        var regPayload = new
-        {
-            firstName = "Test",
-            lastName = "User",
-            email = testEmail,
-            password = testPassword
-        };
-        var regContent = new StringContent(JsonSerializer.Serialize(regPayload), Encoding.UTF8, "application/json");
-        var regResp = await client.PostAsync("/api/v1/Auth/register", regContent);
-        string regJson = await regResp.Content.ReadAsStringAsync();
-        Console.WriteLine($"Register Status: {regResp.StatusCode}");
-        Console.WriteLine($"Register Response: {regJson}");
+            var config = builder.Build();
 
-        // 4. Test Login (JWT Generation)
-        Console.WriteLine($"\n2. Testing User Login (JWT)...");
-        var loginPayload = new
-        {
-            email = testEmail,
-            password = testPassword
-        };
-        var loginContent = new StringContent(JsonSerializer.Serialize(loginPayload), Encoding.UTF8, "application/json");
-        var loginResp = await client.PostAsync("/api/v1/Auth/login", loginContent);
-        string loginJson = await loginResp.Content.ReadAsStringAsync();
-        Console.WriteLine($"Login Status: {loginResp.StatusCode}");
-        Console.WriteLine($"Login Response: {loginJson}");
+            // 2. Determine Database Provider and Connection String
+            string provider = GetArgValue(args, "--provider") ?? config["DatabaseSettings:Databases:0:Type"] ?? "MySql";
+            string connStr = GetArgValue(args, "--connection") ?? config["DatabaseSettings:Databases:0:ConnectionString"] 
+                ?? "Server=127.0.0.1;Port=3306;Uid=root;Pwd=mysql;";
 
-        string token = "";
-        using (var doc = JsonDocument.Parse(loginJson))
-        {
-            if (doc.RootElement.TryGetProperty("data", out var dataElem) && dataElem.ValueKind == JsonValueKind.String)
+            bool isSqlServer = provider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase) || provider.Equals("MSSQL", StringComparison.OrdinalIgnoreCase);
+            bool includeDummy = args.Contains("--dummy") || args.Contains("-d");
+
+            Console.WriteLine($"\n[Target Provider]  : {(isSqlServer ? "MS SQL Server" : "MySQL")}");
+            Console.WriteLine($"[Connection String]: {MaskConnectionString(connStr)}");
+            Console.WriteLine($"[Include Dummy Data]: {includeDummy}\n");
+
+            try
             {
-                token = dataElem.GetString() ?? "";
+                // 3. Auto-Create Database if missing
+                string dbName = ExtractDatabaseName(connStr, isSqlServer);
+                if (!string.IsNullOrEmpty(dbName))
+                {
+                    Console.WriteLine($"1. Checking Database status for '{dbName}'...");
+                    await EnsureDatabaseCreatedAsync(connStr, dbName, isSqlServer);
+                }
+
+                // 4. Determine Script Root Folder
+                string baseDir = Directory.GetCurrentDirectory();
+                string scriptFolderPath = isSqlServer
+                    ? Path.Combine(baseDir, "../DNAQMSAPI/DatabaseScripts/MSSQLScript")
+                    : Path.Combine(baseDir, "../DNAQMSAPI/DatabaseScripts/MySqlScript");
+
+                if (!Directory.Exists(scriptFolderPath))
+                {
+                    // Fallback to relative execution path check
+                    scriptFolderPath = isSqlServer
+                        ? Path.Combine(baseDir, "DatabaseScripts/MSSQLScript")
+                        : Path.Combine(baseDir, "DatabaseScripts/MySqlScript");
+                }
+
+                if (!Directory.Exists(scriptFolderPath))
+                {
+                    Console.WriteLine($"❌ ERROR: Script directory not found at path: {Path.GetFullPath(scriptFolderPath)}");
+                    return 1;
+                }
+
+                Console.WriteLine($"\n2. Executing Migration Scripts from: {Path.GetFileName(scriptFolderPath)}");
+
+                // 5. Gather and Sort SQL Files
+                var scriptFiles = Directory.GetFiles(scriptFolderPath, "*.sql", SearchOption.AllDirectories)
+                    .Where(f => includeDummy || !f.Contains("DummyData", StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(f => Path.GetFileName(f))
+                    .ToList();
+
+                Console.WriteLine($"Found {scriptFiles.Count} SQL Migration file(s) to process.\n");
+
+                int successCount = 0;
+                foreach (var file in scriptFiles)
+                {
+                    string fileName = Path.GetFileName(file);
+                    Console.Write($" -> Executing [{fileName}]... ");
+
+                    try
+                    {
+                        string sqlContent = await File.ReadAllTextAsync(file);
+                        if (string.IsNullOrWhiteSpace(sqlContent))
+                        {
+                            Console.WriteLine("SKIP (Empty)");
+                            continue;
+                        }
+
+                        if (isSqlServer)
+                        {
+                            await ExecuteSqlServerScriptAsync(connStr, sqlContent);
+                        }
+                        else
+                        {
+                            await ExecuteMySqlScriptAsync(connStr, sqlContent);
+                        }
+
+                        Console.WriteLine("SUCCESS ✅");
+                        successCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"FAILED ❌\n    Details: {ex.Message}");
+                    }
+                }
+
+                Console.WriteLine("\n==================================================================");
+                Console.WriteLine($"  MIGRATION COMPLETE: {successCount}/{scriptFiles.Count} scripts executed successfully.");
+                Console.WriteLine("==================================================================");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n❌ FATAL MIGRATION ERROR: {ex.Message}");
+                return 1;
             }
         }
 
-        if (string.IsNullOrEmpty(token))
+        private static async Task EnsureDatabaseCreatedAsync(string connectionString, string dbName, bool isSqlServer)
         {
-            Console.WriteLine("ERROR: JWT Token not retrieved. Aborting JWT and ApiKey tests.");
-            return;
-        }
-
-        Console.WriteLine($"--> SUCCESS: JWT Token successfully retrieved! Length: {token.Length}");
-
-        // 5. Test Authenticated Request using JWT Bearer Token
-        Console.WriteLine($"\n3. Testing Protected Endpoint (/api/v1/Organizations) with JWT Bearer...");
-        using var jwtReq = new HttpRequestMessage(HttpMethod.Get, "/api/v1/Organizations");
-        jwtReq.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        var jwtResp = await client.SendAsync(jwtReq);
-        Console.WriteLine($"JWT Auth Status: {jwtResp.StatusCode}");
-        Console.WriteLine($"JWT Auth Response: {await jwtResp.Content.ReadAsStringAsync()}");
-
-        // 6. Test ApiKey Generation & Auth
-        Console.WriteLine($"\n4. Generating API Key using JWT Token...");
-        using var apiKeyGenReq = new HttpRequestMessage(HttpMethod.Post, "/api/v1/ApiKey?name=IntegrationTestKey");
-        apiKeyGenReq.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        var apiKeyGenResp = await client.SendAsync(apiKeyGenReq);
-        string apiKeyGenJson = await apiKeyGenResp.Content.ReadAsStringAsync();
-        Console.WriteLine($"ApiKey Gen Status: {apiKeyGenResp.StatusCode}");
-        Console.WriteLine($"ApiKey Gen Response: {apiKeyGenJson}");
-
-        string rawApiKey = "";
-        using (var doc = JsonDocument.Parse(apiKeyGenJson))
-        {
-            if (doc.RootElement.TryGetProperty("data", out var dataElem) && dataElem.TryGetProperty("rawKey", out var rawKeyElem))
+            if (isSqlServer)
             {
-                rawApiKey = rawKeyElem.GetString() ?? "";
+                var builder = new SqlConnectionStringBuilder(connectionString);
+                builder.InitialCatalog = "master";
+                using var masterConn = new SqlConnection(builder.ConnectionString);
+                await masterConn.OpenAsync();
+
+                using var checkCmd = masterConn.CreateCommand();
+                checkCmd.CommandText = $"SELECT database_id FROM sys.databases WHERE name = '{dbName}'";
+                var result = await checkCmd.ExecuteScalarAsync();
+
+                if (result == null)
+                {
+                    Console.WriteLine($" -> Database '{dbName}' does not exist. Creating database...");
+                    using var createCmd = masterConn.CreateCommand();
+                    createCmd.CommandText = $"CREATE DATABASE [{dbName}];";
+                    await createCmd.ExecuteNonQueryAsync();
+                    Console.WriteLine($" -> Database '{dbName}' created successfully ✅");
+                }
+                else
+                {
+                    Console.WriteLine($" -> Database '{dbName}' already exists ✅");
+                }
+            }
+            else
+            {
+                var builder = new MySqlConnectionStringBuilder(connectionString);
+                builder.Database = "";
+                using var rootConn = new MySqlConnection(builder.ConnectionString);
+                await rootConn.OpenAsync();
+
+                using var checkCmd = rootConn.CreateCommand();
+                checkCmd.CommandText = $"CREATE DATABASE IF NOT EXISTS `{dbName}`;";
+                await checkCmd.ExecuteNonQueryAsync();
+                Console.WriteLine($" -> Database '{dbName}' verified/created successfully ✅");
             }
         }
 
-        if (!string.IsNullOrEmpty(rawApiKey))
+        private static async Task ExecuteSqlServerScriptAsync(string connectionString, string scriptContent)
         {
-            Console.WriteLine($"--> SUCCESS: Generated API Key: {rawApiKey}");
-            Console.WriteLine($"\n5. Testing Protected Endpoint (/api/v1/Organizations) with x-api-key header...");
-            using var apiKeyReq = new HttpRequestMessage(HttpMethod.Get, "/api/v1/Organizations");
-            apiKeyReq.Headers.Add("x-api-key", rawApiKey);
-            var apiKeyResp = await client.SendAsync(apiKeyReq);
-            Console.WriteLine($"ApiKey Auth Status: {apiKeyResp.StatusCode}");
-            Console.WriteLine($"ApiKey Auth Response: {await apiKeyResp.Content.ReadAsStringAsync()}");
+            using var conn = new SqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            // Split by GO batches for T-SQL
+            var batches = Regex.Split(scriptContent, @"^\s*GO\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+            foreach (var batch in batches)
+            {
+                if (string.IsNullOrWhiteSpace(batch)) continue;
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = batch;
+                cmd.CommandTimeout = 300; // Allow 5 minutes for large seeds (e.g. World Location data)
+                await cmd.ExecuteNonQueryAsync();
+            }
         }
 
-        Console.WriteLine("\n==================================================");
-        Console.WriteLine("        ALL AUTHENTICATION TESTS COMPLETED        ");
-        Console.WriteLine("==================================================");
+        private static async Task ExecuteMySqlScriptAsync(string connectionString, string scriptContent)
+        {
+            var builder = new MySqlConnectionStringBuilder(connectionString)
+            {
+                AllowUserVariables = true
+            };
+
+            using var conn = new MySqlConnection(builder.ConnectionString);
+            await conn.OpenAsync();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = scriptContent;
+            cmd.CommandTimeout = 300;
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        private static string ExtractDatabaseName(string connectionString, bool isSqlServer)
+        {
+            try
+            {
+                if (isSqlServer)
+                {
+                    var builder = new SqlConnectionStringBuilder(connectionString);
+                    return builder.InitialCatalog;
+                }
+                else
+                {
+                    var builder = new MySqlConnectionStringBuilder(connectionString);
+                    return builder.Database;
+                }
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private static string GetArgValue(string[] args, string name)
+        {
+            for (int i = 0; i < args.Length - 1; i++)
+            {
+                if (args[i].Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return args[i + 1];
+                }
+            }
+            return null;
+        }
+
+        private static string MaskConnectionString(string connectionString)
+        {
+            return Regex.Replace(connectionString, @"(?i)(pwd|password)=[^;]+", "$1=******");
+        }
     }
 }
