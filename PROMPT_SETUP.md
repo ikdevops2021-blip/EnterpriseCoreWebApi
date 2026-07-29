@@ -139,4 +139,90 @@ Tokens transition through explicit lifecycle states:
 
 ---
 
+## 6. Online Appointment & Time-Slot Booking Engine
+
+### 6.1 Process-Specific Time-Slot Configuration
+* **Process & Location Slot Scheduling:** Define available booking windows per Location and Process (e.g., Passport Renewal available 09:00 AM - 04:00 PM in 15-minute slots).
+* **Slot Capacity & Overbooking Limits:** Configurable max token capacity per time slot (e.g., Max 5 appointment tokens per 15-minute window) to prevent counter congestion.
+* **Non-Working Days & Holiday Calendar:** Define tenant/location holidays, custom non-working hours, and blackout windows.
+
+### 6.2 Pre-Booking & QR Check-In
+* **Web & Mobile Customer Widget:** Public self-service booking portal for pre-booking time slots with instant SMS/WhatsApp confirmation and digital QR Pass.
+* **Auto Check-In & Priority Interleaving:** On arrival, customer scans QR pass at Kiosk or mobile geofence check-in, converting the appointment into an active queue token with elevated `Appointment` priority.
+* **No-Show & Slot Release Handling:** Automated cancellation and release of slots if customer fails to check in within `N` minutes of their appointment start time.
+
+---
+
+## 7. Global Localization & Multi-Lingual Engine (i18n & L10n)
+
+### 7.1 Multi-Lingual Interface & Audio Displays
+* **Multi-Language UI (RTL & LTR):** Full support for Right-To-Left (Arabic, Hebrew) and Left-To-Right (English, Spanish, French, Hindi) languages across Kiosks, Counter Stations, and Waiting TV Displays.
+* **Multilingual Audio Voice Announcements (TTS):** Automated Text-To-Speech audio announcements in local languages (e.g. Sequential audio call: *"Ticket A-102 to Counter 4"* in Arabic followed by English).
+* **Location-Based Timezone & Currency:** Multi-region date/time formatting according to branch timezone (`UTC+4`, `UTC+5:30`).
+
+---
+
+## 8. Hardware Integration & IoT Protocols
+
+### 8.1 Thermal Printers & Physical Call Controllers
+* **ESC/POS Thermal Printing:** Native driver-less printing over Network/USB for thermal ticket printers (Epson, Star Micronics).
+* **Hardware Keypad Support:** USB/IP physical keypad hardware support for tellers who prefer physical buttons over software UI.
+* **Digital Signage Media Overlay:** Split-screen display engine showing promotional videos/live streams alongside real-time token call grids.
+
+---
+
+## 9. Real-Time Customer Experience (CSAT/NPS) & Feedback
+
+### 9.1 Counter & Post-Service Feedback
+* **Counter Feedback Terminals:** Integration with 4-button physical hardware or touch tablets at teller counters for instant customer rating (1-5 Stars / Smileys).
+* **Post-Service WhatsApp CSAT Surveys:** Automated WhatsApp/SMS survey link sent upon token completion.
+* **Teller Service Score Correlation:** Staff performance reports correlating CSAT ratings directly with Teller TAT and token volume.
+
+---
+
+## 10. Multi-Location SLA Escalation & Command Center
+
+### 10.1 Automated SLA Escalation Manager
+* **Multi-Tier Threshold Alerts:** Trigger automatic SMS/Email/Slack alerts to Branch Managers when queue wait time exceeds target thresholds.
+* **Dynamic Counter Re-Allocation:** System suggests or automatically re-assigns idle tellers from low-volume processes to bottlenecked processes.
+* **HQ Command Center View:** Centralized global executive dashboard mapping real-time operational metrics across all international branches on a live map.
+
+---
+
+## 11. Enterprise Security, SSO & Compliance
+
+### 11.1 Enterprise Auth & PII Masking
+* **Single Sign-On (SSO):** SAML 2.0 / OpenID Connect / Azure AD / Okta integration for corporate staff authentication.
+* **Role-Based Access Control (RBAC):** Fine-grained permission system (HQ Admin, Branch Manager, Receptionist, Teller, Display Screen Only).
+* **GDPR/HIPAA PII Masking:** Masking customer PII names and phone numbers on public waiting room displays.
+
+---
+
+## 12. SaaS Commercial Billing & Subscription Metering
+
+### 12.1 Multi-Tenant Monetization
+* **Flexible Licensing Models:** Per-Counter, Per-Location, or Per-Token usage metering billing models.
+* **White-Labeling & Custom Domains:** Custom domain names (`queue.tenant.com`), logo uploads, and custom CSS color themes per tenant.
+
+---
+
+## 13. Comprehensive Enterprise Analytics & Reporting Suite
+
+### 13.1 Operational & Staff Performance Reports
+* **Teller Performance Summary:** Total tokens served, average service duration, idle time, hold counts, and transfer stats.
+* **Counter Utilization Report:** Active vs. idle hours per counter with peak window analysis.
+* **Staff Attendance & Audit Log:** Login/logout timestamps, break durations, and active serving time audit trails.
+
+### 13.2 Customer Journey & Flow Reports
+* **End-to-End Journey Audit:** Full multi-step process trace for a token with timestamps at every handoff.
+* **Service Category Popularity:** Token volume breakdown by process, service category, or department.
+* **Abandonment & No-Show Report:** Log of canceled, expired, or abandoned tokens across wait zones.
+
+### 13.3 SLA & Executive HQ Reports
+* **SLA Breach & TAT Variance Report:** Log of tokens exceeding target TAT categorized by root cause and branch.
+* **HQ Multi-Branch Benchmark:** Comparative benchmark report ranking branches by average wait time and customer volume.
+* **Automated PDF/Excel Distribution:** Scheduled email distribution engine sending daily/weekly PDF and XLSX reports to operations managers.
+
+---
+
 6. Once all setup tasks are executed and `FEATURES.md` is saved, please review the requirements and run a test query using the UI/UX script for Flutter, then present a sample adaptive display/dashboard component connecting a Flutter Riverpod provider to a .NET Core Web API endpoint (`/api/v1/dqms/dashboard`).
