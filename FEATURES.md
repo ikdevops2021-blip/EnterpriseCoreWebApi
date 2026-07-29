@@ -13,6 +13,11 @@
 * **Desktop App (Linux & Windows):** High-density, keyboard-driven UI for counters/tellers with low-latency responsiveness.
 * **API Engine:** Centralized REST & WebSocket/SignalR backend powered by .NET Core.
 
+### 1.3 Area & Zone Management
+* **Hierarchical Layout:** Supports Tenant -> Location -> Area/Zone -> Counter/Room.
+* **Proximity & Load-Balanced Routing:** Tokens are automatically directed to the nearest or least-congested Area offering the target Process.
+* **Area-Isolated Display Screens:** TV displays in waiting zones can be filtered by `AreaId` to show only relevant local counter calls.
+
 ---
 
 ## 2. Dynamic N-Level Process & Workflow Engine
