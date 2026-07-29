@@ -207,3 +207,47 @@ Tokens transition through explicit lifecycle states:
 * **Healthcare HIS / EMR Connectors:** Ready adapters for HL7 FHIR standards (Epic, Cerner, Meditech) to fetch patient appointments and link medical record IDs (MRN).
 * **Core Banking Systems (CBS):** Connectors for Temenos, Finacle, and Oracle Flexcube to route VIP bank customers based on account balance tiers.
 * **CRM & Helpdesk Integrations:** Native webhooks for Salesforce, HubSpot, Microsoft Dynamics 365, and Zendesk.
+
+---
+
+## 15. Offline Edge Resilience & Hybrid Sync Engine
+
+### 15.1 Edge Node Autonomy (Zero Internet Disruption)
+* **Local Branch Edge Server:** Support for running a lightweight local Edge Service at each physical location (branch/hospital/airport).
+* **Offline Operation Continuity:** If internet or cloud connectivity drops, local Kiosks, Counter Stations, and Waiting TV Displays continue operating 100% offline without service interruption.
+* **Automated Bidirectional Conflict-Free Sync:** When connection is restored, the Edge Node automatically syncs offline tokens, state transitions, and audit logs back to the central Cloud SaaS database with automated timestamp conflict resolution.
+
+---
+
+## 16. AI-Powered Smart Capacity & Dynamic Queue Balancing
+
+### 16.1 AI Predictive Analytics & Dynamic Re-Allocation
+* **AI Demand Surge Forecasting:** Machine learning model analyzing historical trends, day-of-week, weather, and time patterns to predict queue volume spikes 2 hours in advance.
+* **Automated Counter Balancing:** Dynamic recommendation engine that alerts branch managers or automatically re-allocates idle counters from low-traffic services to high-demand bottlenecked queues.
+* **Machine-Learned Estimated Wait Time (EWT):** Real-time EWT algorithm that continuously adjusts expected wait times based on teller processing speeds, complex process ratios, and current queue depth.
+
+---
+
+## 17. Zero-Download App-Less Virtual Queueing (Mobile PWA)
+
+### 17.1 Camera QR Instant Access
+* **No-App-Required Virtual Ticket:** Customer scans entrance QR code with standard smartphone camera, immediately opening a lightweight Web App (PWA) in browser without app store download.
+* **Live Virtual Queue Tracker:** Displays real-time position countdown (*"3 people ahead of you"*), estimated wait time, and counter assignment.
+* **Browser Push & Vibration Alerts:** Native web notifications and phone vibration alerts notifying customer when their turn approaches, allowing freedom to roam nearby shops/cafes.
+
+---
+
+## 18. Digital Signage Campaign & Emergency Broadcast Engine
+
+### 18.1 Promotional Media Scheduling & Emergency Overrides
+* **Scheduled Ad Campaigns:** Upload promotional video banners, image carousels, and news ticker announcements scheduled by time of day alongside token call grids.
+* **One-Click HQ Emergency Broadcast:** Centralized emergency override engine allowing HQ operators to immediately broadcast emergency evacuation, safety alerts, or audio announcements across all connected branch TV displays globally.
+
+---
+
+## 19. Multi-Region Compliance, Data Residency & Security
+
+### 19.1 Global Data Sovereignty & Encryption
+* **Multi-Region Data Residency:** Multi-tenant deployment options supporting in-country data storage (e.g. AWS/Azure UAE North, EU Frankfurt, US East, Saudi Arabia Riyadh) to satisfy local data sovereignty regulations (GDPR, NESA, PDPL, SAMA).
+* **Field-Level Encryption at Rest (AES-256):** Encrypted customer PII (Phone, Name, National ID) using tenant-isolated KMS encryption keys.
+* **GDPR Right-To-Be-Forgotten:** Automated customer PII anonymization and configurable data retention purge schedules.
