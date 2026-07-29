@@ -6,10 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// ============================================================================
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(BaseOptions(
-    // TODO: Update to production URL or read from environment config
     baseUrl: 'http://localhost:5026',
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 10),
+    validateStatus: (status) => status != null && status < 600, // Handle responses gracefully without raw crashes
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
