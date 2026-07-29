@@ -62,16 +62,19 @@ To ensure targeted, user-centric delivery, development is organized into 3 disti
 
 ## 3. Token Lifecycle & Status State Machine
 
-### 3.1 Status Transitions
-Tokens transition through explicit lifecycle states:
-* `0: Queued` — Entered queue / system waitlist.
-* `1: Waiting` — In designated waiting zone for a specific counter line.
-* `2: Calling` — Flashing on display audio/visual channels.
-* `3: Active` — Service actively being delivered at counter.
-* `4: Hold` — Paused (e.g., awaiting lab reports or missing documentation).
-* `5: Canceled` — Abandoned or voided ticket.
-* `6: Completed` — Successfully finished current step.
-* `7: Forwarded` — Handed off to the next step pipeline.
+### 3.1 Status Transitions & Master Configuration Tables Directive
+> [!IMPORTANT]
+> **Core Architecture Directive**: ALL token lifecycle states (`Queued`, `Waiting`, `Calling`, `Active`, `Hold`, `Canceled`, `Completed`, `Forwarded`), priority tiers (`Standard`, `Senior Citizen`, `Disabled`, `Emergency`, `VIP`), counter statuses (`Idle`, `Serving`, `Break`, `Offline`), and display template types (`Grid View`, `Split-Screen`, `High-Density List`, `Audio-Visual Banner`) **MUST ALWAYS** be driven dynamically by the `ConfigCategory` and `ConfigParameters` database tables (`CategoryID` range strategy 18..21). Hardcoded strings/enums in business logic are strictly prohibited.
+
+Tokens transition through explicit lifecycle states configured in `ConfigParameters` (`CategoryID = 18`):
+* `18001 (Code 0): Queued` — Entered queue / system waitlist.
+* `18002 (Code 1): Waiting` — In designated waiting zone for a specific counter line.
+* `18003 (Code 2): Calling` — Flashing on display audio/visual channels.
+* `18004 (Code 3): Active` — Service actively being delivered at counter.
+* `18005 (Code 4): Hold` — Paused (e.g., awaiting lab reports or missing documentation).
+* `18006 (Code 5): Canceled` — Abandoned or voided ticket.
+* `18007 (Code 6): Completed` — Successfully finished current step.
+* `18008 (Code 7): Forwarded` — Handed off to the next step pipeline.
 
 ### 3.2 VIP & Priority Management
 * **Priority Classification:** Priority tiers for Standard, Senior Citizen, Emergency, and VIP.
