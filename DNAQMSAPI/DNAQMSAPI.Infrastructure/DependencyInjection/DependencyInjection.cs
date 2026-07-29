@@ -55,9 +55,10 @@ public static class DependencyInjection
         services.AddScoped<DNAQMSAPI.Application.InvoiceGeneration.Interfaces.IInvoiceService, DNAQMSAPI.Infrastructure.InvoiceGeneration.Services.InvoiceService>();
         services.AddScoped<DNAQMSAPI.Application.FinancialReporting.Interfaces.IFinancialReportingService, DNAQMSAPI.Infrastructure.FinancialReporting.Services.FinancialReportingService>();
 
-        // --- DQMS Stage 1 & 2 Services ---
+        // --- DQMS Stage 1, 2 & 3 Services ---
         services.AddScoped<IDqmsAdminService, DqmsAdminService>();
         services.AddScoped<IDqmsStaffService, DqmsStaffService>();
+        services.AddScoped<IDqmsCustomerService, DqmsCustomerService>();
 
         return services;
     }
