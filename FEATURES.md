@@ -28,7 +28,10 @@ To ensure targeted, user-centric delivery, development is organized into 3 disti
 
 ---
 
-### 1.1 Multi-Tenant Isolation
+### 1.1 Multi-Tenant Isolation & System-Wide Dynamic Configuration Standard
+> [!IMPORTANT]
+> **System-Wide Dynamic Configuration Standard**: ALL status codes, lookup types, category parameters, priority levels, workflow states, and system configurations across BOTH backend (.NET Core Web API) and frontend (Flutter) MUST ALWAYS use `ConfigCategory` and `ConfigParameters` tables. No magic strings, hardcoded enums, or inline constants are permitted anywhere in the system codebase.
+
 * **Tenant-Level Partitioning:** Complete logical separation of data, settings, and workflows per organization.
 * **Domain Adaptability:** Flexible domain classification supporting Hospitals, Passports, Banks, Restaurants & Food Courts, Government entities, Retail, and Service Centers.
 * **Location Hierarchy:** Each Tenant can create and manage multiple physical branches/centers/dining areas.
