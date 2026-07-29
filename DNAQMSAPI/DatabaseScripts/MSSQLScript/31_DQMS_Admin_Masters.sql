@@ -5,9 +5,9 @@
 --              Display Templates, Blackout Days, and Staff Counter Assignments.
 -- ============================================================================================
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DQMS_Area]') AND type in (N'U'))
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Area]') AND type in (N'U'))
 BEGIN
-CREATE TABLE [dbo].[DQMS_Area](
+CREATE TABLE [dbo].[Area](
     [AreaId] [nvarchar](50) NOT NULL,
     [OrganizationId] [nvarchar](50) NOT NULL,
     [LocationId] [nvarchar](50) NOT NULL,
@@ -19,15 +19,15 @@ CREATE TABLE [dbo].[DQMS_Area](
     [CreatedOn] [datetime] NOT NULL DEFAULT GETDATE(),
     [UpdatedBy] [nvarchar](50) NULL,
     [UpdatedOn] [datetime] NULL,
-    CONSTRAINT [PK_DQMS_Area] PRIMARY KEY CLUSTERED ([AreaId] ASC)
+    CONSTRAINT [PK_Area] PRIMARY KEY CLUSTERED ([AreaId] ASC)
 );
-CREATE NONCLUSTERED INDEX [IX_DQMS_Area_Org_Loc] ON [dbo].[DQMS_Area] ([OrganizationId], [LocationId]);
+CREATE NONCLUSTERED INDEX [IX_Area_Org_Loc] ON [dbo].[Area] ([OrganizationId], [LocationId]);
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DQMS_Counter]') AND type in (N'U'))
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Counter]') AND type in (N'U'))
 BEGIN
-CREATE TABLE [dbo].[DQMS_Counter](
+CREATE TABLE [dbo].[Counter](
     [CounterId] [nvarchar](50) NOT NULL,
     [OrganizationId] [nvarchar](50) NOT NULL,
     [LocationId] [nvarchar](50) NOT NULL,
@@ -40,15 +40,15 @@ CREATE TABLE [dbo].[DQMS_Counter](
     [CreatedOn] [datetime] NOT NULL DEFAULT GETDATE(),
     [UpdatedBy] [nvarchar](50) NULL,
     [UpdatedOn] [datetime] NULL,
-    CONSTRAINT [PK_DQMS_Counter] PRIMARY KEY CLUSTERED ([CounterId] ASC)
+    CONSTRAINT [PK_Counter] PRIMARY KEY CLUSTERED ([CounterId] ASC)
 );
-CREATE NONCLUSTERED INDEX [IX_DQMS_Counter_Area] ON [dbo].[DQMS_Counter] ([AreaId]);
+CREATE NONCLUSTERED INDEX [IX_Counter_Area] ON [dbo].[Counter] ([AreaId]);
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DQMS_Process]') AND type in (N'U'))
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Process]') AND type in (N'U'))
 BEGIN
-CREATE TABLE [dbo].[DQMS_Process](
+CREATE TABLE [dbo].[Process](
     [ProcessId] [nvarchar](50) NOT NULL,
     [OrganizationId] [nvarchar](50) NOT NULL,
     [ProcessName] [nvarchar](100) NOT NULL,
@@ -61,28 +61,28 @@ CREATE TABLE [dbo].[DQMS_Process](
     [CreatedOn] [datetime] NOT NULL DEFAULT GETDATE(),
     [UpdatedBy] [nvarchar](50) NULL,
     [UpdatedOn] [datetime] NULL,
-    CONSTRAINT [PK_DQMS_Process] PRIMARY KEY CLUSTERED ([ProcessId] ASC)
+    CONSTRAINT [PK_Process] PRIMARY KEY CLUSTERED ([ProcessId] ASC)
 );
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DQMS_ProcessStep]') AND type in (N'U'))
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ProcessStep]') AND type in (N'U'))
 BEGIN
-CREATE TABLE [dbo].[DQMS_ProcessStep](
+CREATE TABLE [dbo].[ProcessStep](
     [StepId] [nvarchar](50) NOT NULL,
     [ProcessId] [nvarchar](50) NOT NULL,
     [StepOrder] [int] NOT NULL DEFAULT 1,
     [StepName] [nvarchar](100) NOT NULL,
     [TargetTATMinutes] [int] NOT NULL DEFAULT 10,
     [IsActive] [bit] NOT NULL DEFAULT 1,
-    CONSTRAINT [PK_DQMS_ProcessStep] PRIMARY KEY CLUSTERED ([StepId] ASC)
+    CONSTRAINT [PK_ProcessStep] PRIMARY KEY CLUSTERED ([StepId] ASC)
 );
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DQMS_ProcessBlackoutDay]') AND type in (N'U'))
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ProcessBlackoutDay]') AND type in (N'U'))
 BEGIN
-CREATE TABLE [dbo].[DQMS_ProcessBlackoutDay](
+CREATE TABLE [dbo].[ProcessBlackoutDay](
     [BlackoutId] [nvarchar](50) NOT NULL,
     [OrganizationId] [nvarchar](50) NOT NULL,
     [LocationId] [nvarchar](50) NOT NULL,
@@ -90,14 +90,14 @@ CREATE TABLE [dbo].[DQMS_ProcessBlackoutDay](
     [DayOfWeek] [int] NOT NULL,
     [Reason] [nvarchar](255) NULL,
     [IsActive] [bit] NOT NULL DEFAULT 1,
-    CONSTRAINT [PK_DQMS_ProcessBlackoutDay] PRIMARY KEY CLUSTERED ([BlackoutId] ASC)
+    CONSTRAINT [PK_ProcessBlackoutDay] PRIMARY KEY CLUSTERED ([BlackoutId] ASC)
 );
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DQMS_DisplayTemplate]') AND type in (N'U'))
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DisplayTemplate]') AND type in (N'U'))
 BEGIN
-CREATE TABLE [dbo].[DQMS_DisplayTemplate](
+CREATE TABLE [dbo].[DisplayTemplate](
     [TemplateId] [nvarchar](50) NOT NULL,
     [OrganizationId] [nvarchar](50) NOT NULL,
     [TemplateName] [nvarchar](100) NOT NULL,
@@ -107,42 +107,42 @@ CREATE TABLE [dbo].[DQMS_DisplayTemplate](
     [IsActive] [bit] NOT NULL DEFAULT 1,
     [CreatedBy] [nvarchar](50) NOT NULL,
     [CreatedOn] [datetime] NOT NULL DEFAULT GETDATE(),
-    CONSTRAINT [PK_DQMS_DisplayTemplate] PRIMARY KEY CLUSTERED ([TemplateId] ASC)
+    CONSTRAINT [PK_DisplayTemplate] PRIMARY KEY CLUSTERED ([TemplateId] ASC)
 );
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DQMS_ProcessDisplayMapping]') AND type in (N'U'))
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ProcessDisplayMapping]') AND type in (N'U'))
 BEGIN
-CREATE TABLE [dbo].[DQMS_ProcessDisplayMapping](
+CREATE TABLE [dbo].[ProcessDisplayMapping](
     [MappingId] [nvarchar](50) NOT NULL,
     [OrganizationId] [nvarchar](50) NOT NULL,
     [LocationId] [nvarchar](50) NOT NULL,
     [AreaId] [nvarchar](50) NULL,
     [ProcessId] [nvarchar](50) NOT NULL,
     [TemplateId] [nvarchar](50) NOT NULL,
-    CONSTRAINT [PK_DQMS_ProcessDisplayMapping] PRIMARY KEY CLUSTERED ([MappingId] ASC)
+    CONSTRAINT [PK_ProcessDisplayMapping] PRIMARY KEY CLUSTERED ([MappingId] ASC)
 );
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DQMS_UserCounterAssignment]') AND type in (N'U'))
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UserCounterAssignment]') AND type in (N'U'))
 BEGIN
-CREATE TABLE [dbo].[DQMS_UserCounterAssignment](
+CREATE TABLE [dbo].[UserCounterAssignment](
     [AssignmentId] [nvarchar](50) NOT NULL,
     [OrganizationId] [nvarchar](50) NOT NULL,
     [UserId] [nvarchar](50) NOT NULL,
     [CounterId] [nvarchar](50) NOT NULL,
     [ProcessId] [nvarchar](50) NOT NULL,
     [AssignedOn] [datetime] NOT NULL DEFAULT GETDATE(),
-    CONSTRAINT [PK_DQMS_UserCounterAssignment] PRIMARY KEY CLUSTERED ([AssignmentId] ASC)
+    CONSTRAINT [PK_UserCounterAssignment] PRIMARY KEY CLUSTERED ([AssignmentId] ASC)
 );
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DQMS_NotificationConfig]') AND type in (N'U'))
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[NotificationConfig]') AND type in (N'U'))
 BEGIN
-CREATE TABLE [dbo].[DQMS_NotificationConfig](
+CREATE TABLE [dbo].[NotificationConfig](
     [ConfigId] [nvarchar](50) NOT NULL,
     [OrganizationId] [nvarchar](50) NOT NULL,
     [LocationId] [nvarchar](50) NOT NULL,
@@ -151,7 +151,7 @@ CREATE TABLE [dbo].[DQMS_NotificationConfig](
     [EnableSms] [bit] NOT NULL DEFAULT 0,
     [WhatsAppApiKey] [nvarchar](255) NULL,
     [CreatedOn] [datetime] NOT NULL DEFAULT GETDATE(),
-    CONSTRAINT [PK_DQMS_NotificationConfig] PRIMARY KEY CLUSTERED ([ConfigId] ASC)
+    CONSTRAINT [PK_NotificationConfig] PRIMARY KEY CLUSTERED ([ConfigId] ASC)
 );
 END
 GO

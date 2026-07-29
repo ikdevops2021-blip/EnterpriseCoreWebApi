@@ -6,7 +6,7 @@
 -- ============================================================================================
 
 -- 1. Area / Zone Master Table
-CREATE TABLE IF NOT EXISTS `DQMS_Area` (
+CREATE TABLE IF NOT EXISTS `Area` (
     `AreaId` VARCHAR(50) NOT NULL,
     `OrganizationId` VARCHAR(50) NOT NULL,
     `LocationId` VARCHAR(50) NOT NULL,
@@ -19,11 +19,11 @@ CREATE TABLE IF NOT EXISTS `DQMS_Area` (
     `UpdatedBy` VARCHAR(50) NULL,
     `UpdatedOn` DATETIME NULL,
     PRIMARY KEY (`AreaId`),
-    INDEX `IX_DQMS_Area_Org_Loc` (`OrganizationId`, `LocationId`)
+    INDEX `IX_Area_Org_Loc` (`OrganizationId`, `LocationId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 2. Counter / Station Master Table
-CREATE TABLE IF NOT EXISTS `DQMS_Counter` (
+CREATE TABLE IF NOT EXISTS `Counter` (
     `CounterId` VARCHAR(50) NOT NULL,
     `OrganizationId` VARCHAR(50) NOT NULL,
     `LocationId` VARCHAR(50) NOT NULL,
@@ -37,12 +37,12 @@ CREATE TABLE IF NOT EXISTS `DQMS_Counter` (
     `UpdatedBy` VARCHAR(50) NULL,
     `UpdatedOn` DATETIME NULL,
     PRIMARY KEY (`CounterId`),
-    INDEX `IX_DQMS_Counter_Area` (`AreaId`),
-    INDEX `IX_DQMS_Counter_Loc` (`OrganizationId`, `LocationId`)
+    INDEX `IX_Counter_Area` (`AreaId`),
+    INDEX `IX_Counter_Loc` (`OrganizationId`, `LocationId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 3. Process Pipeline Master Table
-CREATE TABLE IF NOT EXISTS `DQMS_Process` (
+CREATE TABLE IF NOT EXISTS `Process` (
     `ProcessId` VARCHAR(50) NOT NULL,
     `OrganizationId` VARCHAR(50) NOT NULL,
     `ProcessName` VARCHAR(100) NOT NULL,
@@ -56,11 +56,11 @@ CREATE TABLE IF NOT EXISTS `DQMS_Process` (
     `UpdatedBy` VARCHAR(50) NULL,
     `UpdatedOn` DATETIME NULL,
     PRIMARY KEY (`ProcessId`),
-    INDEX `IX_DQMS_Process_Org` (`OrganizationId`)
+    INDEX `IX_Process_Org` (`OrganizationId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 4. Process Multi-Level Steps Table
-CREATE TABLE IF NOT EXISTS `DQMS_ProcessStep` (
+CREATE TABLE IF NOT EXISTS `ProcessStep` (
     `StepId` VARCHAR(50) NOT NULL,
     `ProcessId` VARCHAR(50) NOT NULL,
     `StepOrder` INT NOT NULL DEFAULT 1,
@@ -68,11 +68,11 @@ CREATE TABLE IF NOT EXISTS `DQMS_ProcessStep` (
     `TargetTATMinutes` INT NOT NULL DEFAULT 10,
     `IsActive` TINYINT(1) NOT NULL DEFAULT 1,
     PRIMARY KEY (`StepId`),
-    INDEX `IX_DQMS_ProcessStep_Proc` (`ProcessId`, `StepOrder`)
+    INDEX `IX_ProcessStep_Proc` (`ProcessId`, `StepOrder`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 5. Process Selective Blackout Days Table
-CREATE TABLE IF NOT EXISTS `DQMS_ProcessBlackoutDay` (
+CREATE TABLE IF NOT EXISTS `ProcessBlackoutDay` (
     `BlackoutId` VARCHAR(50) NOT NULL,
     `OrganizationId` VARCHAR(50) NOT NULL,
     `LocationId` VARCHAR(50) NOT NULL,
@@ -81,11 +81,11 @@ CREATE TABLE IF NOT EXISTS `DQMS_ProcessBlackoutDay` (
     `Reason` VARCHAR(255) NULL,
     `IsActive` TINYINT(1) NOT NULL DEFAULT 1,
     PRIMARY KEY (`BlackoutId`),
-    INDEX `IX_DQMS_Blackout_ProcDay` (`ProcessId`, `DayOfWeek`)
+    INDEX `IX_Blackout_ProcDay` (`ProcessId`, `DayOfWeek`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 6. Display Template Master Table
-CREATE TABLE IF NOT EXISTS `DQMS_DisplayTemplate` (
+CREATE TABLE IF NOT EXISTS `DisplayTemplate` (
     `TemplateId` VARCHAR(50) NOT NULL,
     `OrganizationId` VARCHAR(50) NOT NULL,
     `TemplateName` VARCHAR(100) NOT NULL,
@@ -96,11 +96,11 @@ CREATE TABLE IF NOT EXISTS `DQMS_DisplayTemplate` (
     `CreatedBy` VARCHAR(50) NOT NULL,
     `CreatedOn` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`TemplateId`),
-    INDEX `IX_DQMS_DisplayTemplate_Org` (`OrganizationId`)
+    INDEX `IX_DisplayTemplate_Org` (`OrganizationId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 7. Process-to-Display Template Mapping Table
-CREATE TABLE IF NOT EXISTS `DQMS_ProcessDisplayMapping` (
+CREATE TABLE IF NOT EXISTS `ProcessDisplayMapping` (
     `MappingId` VARCHAR(50) NOT NULL,
     `OrganizationId` VARCHAR(50) NOT NULL,
     `LocationId` VARCHAR(50) NOT NULL,
@@ -108,11 +108,11 @@ CREATE TABLE IF NOT EXISTS `DQMS_ProcessDisplayMapping` (
     `ProcessId` VARCHAR(50) NOT NULL,
     `TemplateId` VARCHAR(50) NOT NULL,
     PRIMARY KEY (`MappingId`),
-    INDEX `IX_DQMS_Mapping_Lookup` (`LocationId`, `AreaId`, `ProcessId`)
+    INDEX `IX_Mapping_Lookup` (`LocationId`, `AreaId`, `ProcessId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 8. User Counter & Process Assignment Table
-CREATE TABLE IF NOT EXISTS `DQMS_UserCounterAssignment` (
+CREATE TABLE IF NOT EXISTS `UserCounterAssignment` (
     `AssignmentId` VARCHAR(50) NOT NULL,
     `OrganizationId` VARCHAR(50) NOT NULL,
     `UserId` VARCHAR(50) NOT NULL,
@@ -120,11 +120,11 @@ CREATE TABLE IF NOT EXISTS `DQMS_UserCounterAssignment` (
     `ProcessId` VARCHAR(50) NOT NULL,
     `AssignedOn` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`AssignmentId`),
-    INDEX `IX_DQMS_UserCounter` (`UserId`, `CounterId`)
+    INDEX `IX_UserCounter` (`UserId`, `CounterId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 9. Notification & WhatsApp Lead Threshold Config Table
-CREATE TABLE IF NOT EXISTS `DQMS_NotificationConfig` (
+CREATE TABLE IF NOT EXISTS `NotificationConfig` (
     `ConfigId` VARCHAR(50) NOT NULL,
     `OrganizationId` VARCHAR(50) NOT NULL,
     `LocationId` VARCHAR(50) NOT NULL,
@@ -134,5 +134,5 @@ CREATE TABLE IF NOT EXISTS `DQMS_NotificationConfig` (
     `WhatsAppApiKey` VARCHAR(255) NULL,
     `CreatedOn` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`ConfigId`),
-    INDEX `IX_DQMS_NotifConfig` (`OrganizationId`, `LocationId`)
+    INDEX `IX_NotifConfig` (`OrganizationId`, `LocationId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
