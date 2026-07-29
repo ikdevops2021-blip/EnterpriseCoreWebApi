@@ -218,15 +218,27 @@ EnterpriseCoreWebApi/
 2. Rename namespaces from `AntiGravity.Enterprise` / `DNAQMSAPI` to your project name (e.g. `MyCompany.NewService`).
 3. Update connection strings in `appsettings.json`.
 
-### Option B: `.net custom template` (`dotnet new`)
-You can install this repository locally as a reusable template:
+### Option B: `.NET Custom Template` (`dotnet new`)
+You can install this repository as a native reusable `.NET template` directly from GitHub or a local checkout:
 
+#### 1. Install Template:
 ```bash
-# Install the template locally
+# Install directly from local repository directory
 dotnet new install ./
 
-# Scaffolding a new microservice project
-dotnet new enterprise-api -n MyCompany.PaymentService
+# Or install directly from GitHub (once packaged/tagged)
+dotnet new install https://github.com/ikdevops2021-blip/EnterpriseCoreWebApi.git
+```
+
+#### 2. Create a Brand New API Project:
+```bash
+# Scaffolding a new enterprise API microservice (e.g. MyCompany.OrderAPI)
+dotnet new enterprise-api -n MyCompany.OrderAPI
+```
+
+#### 3. Uninstall Template (If needed):
+```bash
+dotnet new uninstall E:\MySourceCodes\AntiGravity_Projects\WebAPIs\antigravity-enterprise
 ```
 
 ---

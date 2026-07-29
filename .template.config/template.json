@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "ikdevops2021-blip",
+  "classifications": ["Web", "WebAPI", "Enterprise", "Architecture", "Dapper"],
+  "name": "Enterprise Core .NET 8 Web API Template",
+  "identity": "Enterprise.Core.WebAPI.Template",
+  "shortName": "enterprise-api",
+  "tags": {
+    "language": "C#",
+    "type": "solution"
+  },
+  "sourceName": "DNAQMSAPI",
+  "preferNameDirectory": true,
+  "symbols": {
+    "CompanyName": {
+      "type": "parameter",
+      "datatype": "text",
+      "replaces": "AntiGravity.Enterprise",
+      "defaultValue": "Enterprise"
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            "**/bin/**",
+            "**/obj/**",
+            "**/.vs/**",
+            "**/.vscode/**",
+            "**/graphify-out/**",
+            "**/*.user"
+          ]
+        }
+      ]
+    }
+  ]
+}
