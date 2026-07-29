@@ -39,8 +39,8 @@ description: Architect cross-platform Flutter applications (Web, Mobile, Linux D
 
 ### 1.1 Multi-Tenant Isolation
 * **Tenant-Level Partitioning:** Complete logical separation of data, settings, and workflows per organization.
-* **Domain Adaptability:** Flexible domain classification supporting Hospitals, Passports, Banks, Government entities, and Service Centers.
-* **Location Hierarchy:** Each Tenant can create and manage multiple physical branches/centers.
+* **Domain Adaptability:** Flexible domain classification supporting Hospitals, Passports, Banks, Restaurants & Food Courts, Government entities, Retail, and Service Centers.
+* **Location Hierarchy:** Each Tenant can create and manage multiple physical branches/centers/dining areas.
 
 ### 1.2 Cross-Platform Ecosystem
 * **Web First:** Responsive web panel for administrative tasks, tenant setup, and public views.
@@ -224,6 +224,29 @@ Tokens transition through explicit lifecycle states:
 * **SLA Breach & TAT Variance Report:** Log of tokens exceeding target TAT categorized by root cause and branch.
 * **HQ Multi-Branch Benchmark:** Comparative benchmark report ranking branches by average wait time and customer volume.
 * **Automated PDF/Excel Distribution:** Scheduled email distribution engine sending daily/weekly PDF and XLSX reports to operations managers.
+
+---
+
+## 14. Third-Party Integration & Open API Platform
+
+### 14.1 Webhook Notification Engine
+* **Event-Driven Webhook Subscriptions:** Configure real-time HTTP Webhook subscriptions for external applications triggered by queue state transitions:
+  * `token.created` — Fired when a customer takes a token (Syncs customer into CRM / HIS / POS).
+  * `token.called` — Fired when a token is called at a counter (Triggers external display TV, pager, or staff alert).
+  * `token.completed` — Fired when service/order completes (Syncs billing, kitchen status, and duration data).
+  * `token.canceled` — Fired when a token is canceled/abandoned.
+* **Webhook Retry & HMAC Signing:** Built-in exponential backoff retry mechanism (up to 5 retries) and HMAC-SHA256 signature headers (`X-DQMS-Signature`) for payload security.
+
+### 14.2 RESTful Open API & Developer Portal
+* **Developer API Gateway:** Public REST APIs for third-party systems to remotely issue tokens, query queue status, update customer info, and retrieve TAT analytics.
+* **Granular Scoped API Keys:** Issue API Keys (`x-api-key`) with restricted permissions (e.g. `read:queues`, `write:tokens`, `read:reports`).
+* **Rate Limiting & Throttling:** Built-in API rate limiting per IP / API Key to prevent API abuse.
+
+### 14.3 Out-of-the-Box Industry Connectors
+* **Restaurant & Food Court POS Integration:** Connectors for Point-of-Sale (POS) and Kitchen Display Systems (KDS) (e.g., Toast, Square, Lightspeed, Clover, Oracle MICROS) to auto-generate queue tokens upon order placement and flash order numbers when kitchen marks food ready.
+* **Healthcare HIS / EMR Connectors:** Ready adapters for HL7 FHIR standards (Epic, Cerner, Meditech) to fetch patient appointments and link medical record IDs (MRN).
+* **Core Banking Systems (CBS):** Connectors for Temenos, Finacle, and Oracle Flexcube to route VIP bank customers based on account balance tiers.
+* **CRM & Helpdesk Integrations:** Native webhooks for Salesforce, HubSpot, Microsoft Dynamics 365, and Zendesk.
 
 ---
 
