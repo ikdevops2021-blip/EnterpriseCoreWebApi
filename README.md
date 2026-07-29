@@ -48,12 +48,12 @@ It acts as a unified abstraction layer over `IDbConnection` and `Dapper`, elimin
 
 The template includes a comprehensive database schema designed for enterprise systems, fully implemented for both **MySQL** and **MS SQL Server**.
 
-### 1. Database Tables by Feature Module
+### 1. Complete List of Database Tables by Feature Module
 | Module | Table Name | Short Details & Purpose |
 | :--- | :--- | :--- |
-| **Auth & Security** | `Organization` | Multitenant organization metadata, code, status, and system settings. |
-| | `User` | User profiles, emails, password hashes, security salts, and profile data. |
-| | `Role` | Enterprise roles (`SuperAdmin`, `Admin`, `User`, `Manager`). |
+| **Auth & Security** | `Organization` | Multitenant organization metadata, tenant code, active status, and custom settings. |
+| | `User` | User profiles, email, password hash, salt, activation status, and metadata. |
+| | `Role` | System & enterprise roles (`SuperAdmin`, `Admin`, `User`, `Manager`). |
 | | `Permission` | Fine-grained application permission definitions. |
 | | `UserOrganization` | Many-to-many relationship mapping users to organizations. |
 | | `UserRole` | Role assignments per user. |
@@ -61,43 +61,85 @@ The template includes a comprehensive database schema designed for enterprise sy
 | | `UserSession` | Active user JWT sessions and login history tracking. |
 | | `UserDevice` | Registered mobile/desktop user devices for push notifications. |
 | | `UserContactAndAddress` | User contacts, phone numbers, and physical mailing addresses. |
-| **NexusCore Engine** | `NexusCore_Config` | System-wide dynamic key-value environment settings and configurations. |
+| **NexusCore Config Engine** | `ConfigCategory` | Top-level configuration categories (e.g. System, Security, Storage, Email). |
+| | `ConfigParameters` | Category-specific dynamic lookup parameters and options. |
+| | `SystemConfigurationKeys` | System-wide dynamic key-value settings with data types and lock controls. |
+| | `NexusCore_Config` | Legacy/Core key-value environment settings and configurations. |
 | | `NexusCore_ID_Generator` | Custom sequence pattern generators for auto-generating formatted IDs. |
+| **Location & Geography** | `Country` | World countries master list with ISO codes and dial codes. |
+| | `State` | States/provinces linked to countries. |
+| | `City` | Cities linked to states and countries. |
+| **Integrations & Third-Party APIs** | `APIIntegrations` | Third-party REST/SOAP API providers, credentials, auth types, and OAuth tokens. |
+| | `ApiEndpoints` | Action endpoints, relative paths, HTTP methods, and sample payloads. |
+| | `APIAuditLogs` | Request/response audit logs, HTTP status codes, execution durations, and errors. |
+| | `ThirdPartyApiConfig` | Legacy third-party integration endpoint configurations. |
+| | `IntegrationLogs` | Execution and failure logs for third-party API invocations. |
 | **Notifications & Email** | `Notification` | System notifications log with delivery statuses. |
-| | `EmailSettings` | SMTP and third-party provider configurations. |
+| | `NotificationTemplate` | Email and SMS dynamic notification templates with placeholder tokens. |
+| | `UserNotification` | User-level notification log tracking read/unread status. |
+| | `SmsQueue` | Queue table for pending outbound SMS dispatches. |
+| | `EmailSettings` | SMTP server configurations, ports, credentials, and SSL settings. |
 | | `EmailQueue` | Asynchronous outbound email dispatch queue. |
 | | `EmailSignatures` | HTML signature templates per organization/user. |
-| **Storage System** | `StoredFile` | File metadata, storage paths, mime types, and file sizes. |
+| **Storage System** | `OrganizationStorageConfig` | Per-tenant storage provider settings (Local Disk, AWS S3, Azure Blob). |
+| | `StoredFile` | File metadata, storage paths, mime types, and file sizes. |
 | | `FileAuditLogs` | Audit history of file uploads, downloads, and deletions. |
-| **Integrations & Billing** | `ThirdPartyApiConfig` | Integrations config for third-party REST/SOAP APIs. |
-| | `OrganizationPaymentProvider` | Multi-gateway payment config (Stripe, PayPal, UPI). |
-| | `PaymentTransaction` | Financial payment transactions ledger. |
-| | `SubscriptionSaaS` | SaaS subscription plans, tiers, and billing cycles. |
-| | `AppLogs` | Application logging table for audit trails and diagnostics. |
+| **Payment & Billing System** | `CurrencyMaster` | Currency master list (USD, EUR, INR, etc.) with symbols and exchange rules. |
+| | `PaymentProviders` | Master gateway list (Stripe, PayPal, Razorpay, UPI). |
+| | `OrganizationPaymentProviders` | Tenant-specific payment gateway credentials and public/private keys. |
+| | `BranchPaymentProviders` | Branch/location specific payment gateway configurations. |
+| | `ProviderPaymentMethods` | Allowed payment methods per provider (Credit Card, NetBanking, UPI). |
+| | `PaymentTransaction` / `PaymentTransactions` | Financial payment transaction ledger and tracking. |
+| | `PaymentStatusHistory` | Transaction state transition history (Pending -> Success/Failed). |
+| | `WebhookLogs` | Raw webhook payloads and processing logs from payment gateways. |
+| | `SubscriptionSaaS` | SaaS subscription plans, tiers, features, and billing cycles. |
+| **Logging & Diagnostics** | `AppLogs` | Application logging table for audit trails and diagnostics. |
 
 ---
 
-### 2. Primary Stored Procedures
+### 2. Comprehensive Stored Procedures Reference
 | Module | Stored Procedure Name | Short Details & Functionality |
 | :--- | :--- | :--- |
-| **Auth & User** | `sp_User_Authenticate` | Validates email/username and returns user authentication info. |
+| **Auth & User** | `sp_User_Authenticate` | Validates email/username and returns user authentication payload. |
 | | `sp_User_GetPermissions` | Fetches consolidated permissions for a specific user and role set. |
-| | `sp_User_Create` / `sp_User_Update` | Manages user registration, details, and profile modifications. |
-| | `sp_ApiKey_Validate` | Validates active `x-api-key` headers against hashed records. |
-| **NexusCore** | `sp_NexusCore_Config_Get` | Retrieves cached system settings by key. |
+| | `sp_User_Create` / `sp_User_Update` | Manages user registration, profile updates, and status changes. |
+| | `sp_ApiKey_Validate` | Validates active `x-api-key` headers against hashed database records. |
+| | `PR_S_UserAddresses` / `PR_IU_UserAddresses` | Search and Insert/Update operations for user physical addresses. |
+| | `PR_S_UserContacts` / `PR_IU_UserContacts` | Search and Insert/Update operations for user phone/email contacts. |
+| **NexusCore & Configuration** | `PR_S_ConfigCategory` / `PR_IU_ConfigCategory` | Search, insert, and update operations for `ConfigCategory`. |
+| | `PR_S_ConfigParameters` / `PR_IU_ConfigParameters` | Search, insert, and update operations for `ConfigParameters`. |
+| | `sp_GetConfigCategories` / `sp_GetConfigCategoryById` / `sp_GetConfigCategoryByCode` | Helper procedures for reading configuration categories. |
+| | `sp_GetConfigParametersByCategory` / `sp_GetConfigParametersByCategoryCode` | Helper procedures for fetching configuration parameter lists. |
+| | `PR_S_SystemConfigurationKeys` / `PR_IU_SystemConfigurationKeys` | Search and manage dynamic system configuration key-values. |
+| | `sp_GetSystemConfigurations` / `sp_GetSystemConfigurationByKey` | Fetch system configurations with caching options. |
+| | `sp_UpdateSystemConfiguration` | Updates system configuration values with validation. |
+| | `sp_NexusCore_Config_Get` | Retrieves cached system settings by key. |
 | | `sp_NexusCore_GenerateID` | Generates next sequence number based on specified format rules. |
-| **Location & Profile** | `sp_Location_GetCountries` | Fetches world location hierarchy (Countries, States, Cities). |
-| | `sp_UserProfile_GetFull` | Retrieves combined user profile, roles, address, and org details. |
-| **Storage & Email** | `sp_FileStorage_SaveFile` | Saves file metadata record and returns generated file GUID. |
-| | `sp_EmailQueue_Enqueue` | Inserts outbound email into dispatch queue for background processors. |
+| **Integrations** | `pr_GetThirdPartyApiConfig` | Retrieves third-party integration endpoint configurations and OAuth credentials. |
+| | `pr_InsertIntegrationLog` | Logs API request/response execution details into `IntegrationLogs`. |
+| | `pr_UpdateOAuthTokens` | Updates OAuth access/refresh tokens and expiration timestamps. |
+| **Notifications** | `PR_S_NotificationTemplate` / `PR_IU_NotificationTemplate` | Search and manage email/SMS notification templates. |
+| | `PR_S_UserNotification` / `PR_IU_UserNotification` | Search and insert/update user notification logs. |
+| | `PR_S_UnreadNotificationCount` | Counts unread notifications for a specific user. |
+| | `PR_U_MarkAllNotificationsRead` | Marks all unread user notifications as read. |
+| **Location & Geography** | `PR_S_Country` / `PR_IU_Country` | Search and manage countries master list. |
+| | `PR_S_State` / `PR_IU_State` | Search and manage state/province records. |
+| | `PR_S_City` / `PR_IU_City` | Search and manage city records. |
+| **File Storage** | `pr_GetOrganizationStorageConfig` | Retrieves tenant-specific storage credentials and provider configuration. |
+| | `pr_GetStoredFileMetadata` | Reads file metadata by File ID or GUID. |
+| | `pr_InsertStoredFileMetadata` | Saves new file record and metadata. |
+| | `pr_MarkStoredFileAsDeleted` | Soft-deletes a stored file record. |
+| | `pr_InsertFileAuditLog` | Audit logs file access operations (Upload, Download, Delete). |
 
 ---
 
-### 3. Database Views
+### 3. Database Views Reference
 | View Name | Short Details & Purpose |
 | :--- | :--- |
+| `vw_ConfigCategoryParameters` | Joins `ConfigCategory` and `ConfigParameters` into a single view for quick lookup of category parameter hierarchies. |
 | `vw_EmailQueue_Pending` | Aggregates un-sent emails ready for immediate background dispatching. |
 | `vw_UserActivePermissions` | Flattens user, role, and direct permission mappings into a single view for fast security authorization lookup. |
+| `View_DailyMailHealthReport` | Generates daily email sending health, success rates, and failure metrics. |
 
 ---
 
