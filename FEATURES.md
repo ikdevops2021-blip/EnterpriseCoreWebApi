@@ -30,7 +30,13 @@ To ensure targeted, user-centric delivery, development is organized into 3 disti
 
 ### 1.1 Multi-Tenant Isolation & System-Wide Dynamic Configuration Standard
 > [!IMPORTANT]
-> **System-Wide Dynamic Configuration Standard**: ALL status codes, lookup types, category parameters, priority levels, workflow states, and system configurations across BOTH backend (.NET Core Web API) and frontend (Flutter) MUST ALWAYS use `ConfigCategory` and `ConfigParameters` tables. No magic strings, hardcoded enums, or inline constants are permitted anywhere in the system codebase.
+> **System-Wide Dynamic Configuration & Enum Standards**: 
+> 1. ALL status codes, lookup types, category parameters, priority levels, workflow states, and system configurations across BOTH backend (.NET Core Web API) and frontend (Flutter) MUST ALWAYS use `ConfigCategory` and `ConfigParameters` tables. No magic strings or hardcoded inline constants are permitted anywhere in the codebase.
+> 2. ALL C# and Flutter/Dart enums **MUST ALWAYS** use the `e_` prefix (e.g. `e_ActiveSearchStatus`, `e_DeleteSearchStatus`, `e_TokenStatus`, `e_PriorityTier`, `e_CounterStatus`, `e_DisplayTemplateType`).
+
+* **Global Search Enums Standard**:
+  * `e_ActiveSearchStatus`: `0: Deactive` | `1: Active` | `2: All`
+  * `e_DeleteSearchStatus`: `0: NotDeleted` | `1: Deleted` | `2: All`
 
 * **Tenant-Level Partitioning:** Complete logical separation of data, settings, and workflows per organization.
 * **Domain Adaptability:** Flexible domain classification supporting Hospitals, Passports, Banks, Restaurants & Food Courts, Government entities, Retail, and Service Centers.
