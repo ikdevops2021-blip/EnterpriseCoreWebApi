@@ -33,9 +33,35 @@ description: Architect cross-platform Flutter applications (Web, Mobile, Linux D
 
 5. Create a file named `FEATURES.md` in the root of the project with the following complete feature specification:
 
-# DQMS (Digital Queue Management System) - Feature Specification
+# DQMS (Digital Queue Management System) - Feature Specification & Staging Roadmap
 
-## 1. Core Platform & Architectural Features
+## 🎯 Phased Persona-Based Development Roadmap
+
+To ensure targeted, user-centric delivery, development is organized into 3 distinct persona stages:
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────────┐
+│ STAGE 1: APPLICATION ADMIN PERSPECTIVE (Master Setup, Pipeline Configs & Analytics)      │
+├───────────────────────────────────────────────────────────────────────────────────────────┤
+│ STAGE 2: STAFF & TELLER PERSPECTIVE (High-Speed, Low-Friction, Hotkey Counter Station)     │
+├───────────────────────────────────────────────────────────────────────────────────────────┤
+│ STAGE 3: END CUSTOMER PERSPECTIVE (App-Less Mobile PWA, Kiosk, Display TVs & Voice TTS)    │
+└───────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Stage 1: Application Admin Perspective (Setup, Masters & Configurations)
+* **Goal:** Complete admin control over tenant organization, location hierarchy, multi-step process pipelines, display template mappings, staff role assignments, notification lead thresholds, and executive analytics.
+* **Scope:** Admin Web Panel, Master APIs, Database DDL Schemas, Stored Procedures, and Reporting Engine.
+
+### Stage 2: Staff & Operator Perspective (High-Speed Counter Station)
+* **Goal:** High-density, keyboard-driven desktop/web counter UI designed for minimal clicks and rapid teller execution (`Space`, `F1-F5` hotkeys).
+* **Scope:** Counter Station UI, Contextual Token Panel, Instant Transfer/Hold, SignalR Teller Events, and Simulator Mode.
+
+### Stage 3: End Customer Perspective (World-Class Customer Experience)
+* **Goal:** Stress-free, transparent customer journey across touch points.
+* **Scope:** Touch Self-Service Kiosk, App-Less Mobile PWA (QR scan), Pre-Booking Engine, Waiting Room Display TVs with Multilingual Text-to-Speech (TTS), and WhatsApp CSAT feedback.
+
+---
 
 ### 1.1 Multi-Tenant Isolation
 * **Tenant-Level Partitioning:** Complete logical separation of data, settings, and workflows per organization.
