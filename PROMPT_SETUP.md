@@ -90,6 +90,11 @@ Tokens transition through explicit lifecycle states:
 * **Process Comments:** Ability for tellers/operators to append notes and internal comments to a token at any step.
 * **Historical Audit Log:** Comprehensive time-stamped log tracking every state change, duration, counter assignment, and serving staff member.
 
+### 3.4 WhatsApp & Multi-Channel Customer Alerts
+* **Prior-to-Calling WhatsApp Notifications:** Automated WhatsApp message sent to the customer when their token reaches a configurable threshold before calling (e.g., "You are 3rd in line, please proceed towards Counter Zone B").
+* **Configurable Pre-Alert Thresholds:** Tenant/Location configurable parameters for notification lead time (e.g., Notify N position(s) ahead or N minute(s) estimated wait time).
+* **Multi-Gateway Fallback:** Support for SMS and Mobile Push notifications as fallback channels if WhatsApp delivery fails or is un-configured.
+
 ---
 
 ## 4. Multi-Interface User Experience (UX)
