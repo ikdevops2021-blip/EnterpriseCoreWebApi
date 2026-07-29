@@ -1,7 +1,7 @@
 using AntiGravity.Enterprise.Shared.Core.Controllers;
 using AntiGravity.Enterprise.Shared.Core.Enums;
 using AntiGravity.Enterprise.Shared.Core.Models.DQMS;
-using DNAQMSAPI.Infrastructure.Repositories;
+using DNAQMSAPI.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,11 +10,11 @@ namespace DNAQMSAPI.Api.Controllers
     [Authorize(AuthenticationSchemes = "BearerOrApiKey,Bearer,ApiKey")]
     public class DqmsAdminController : ApiControllerBase
     {
-        private readonly IDqmsAdminRepository _adminRepository;
+        private readonly IDqmsAdminService _adminService;
 
-        public DqmsAdminController(IDqmsAdminRepository adminRepository)
+        public DqmsAdminController(IDqmsAdminService adminService)
         {
-            _adminRepository = adminRepository;
+            _adminService = adminService;
         }
 
         /// <summary>
@@ -23,8 +23,8 @@ namespace DNAQMSAPI.Api.Controllers
         [HttpGet("areas")]
         public async Task<IActionResult> GetAreas([FromQuery] int? id, [FromQuery] int? organizationId, [FromQuery] int? locationId, [FromQuery] e_ActiveSearchStatus isActive = e_ActiveSearchStatus.Active)
         {
-            var areas = await _adminRepository.GetAreasAsync(id, organizationId, locationId, isActive);
-            return ApiResponse(areas);
+            var result = await _adminService.GetAreasAsync(id, organizationId, locationId, isActive);
+            return ApiResponse(result);
         }
 
         /// <summary>
@@ -33,12 +33,8 @@ namespace DNAQMSAPI.Api.Controllers
         [HttpPost("area")]
         public async Task<IActionResult> SaveArea([FromBody] AreaModel model, [FromHeader(Name = "X-User-Id")] int userId = 1)
         {
-            var (id, errNo, errMsg) = await _adminRepository.SaveAreaAsync(model, userId);
-            if (errNo != 0)
-            {
-                return ApiResponse<object>(null!, errMsg, isSuccess: false);
-            }
-            return ApiResponse(new { areaId = id }, "Area saved successfully");
+            var result = await _adminService.SaveAreaAsync(model, userId);
+            return ApiResponse(result);
         }
 
         /// <summary>
@@ -47,8 +43,8 @@ namespace DNAQMSAPI.Api.Controllers
         [HttpGet("processes")]
         public async Task<IActionResult> GetProcesses([FromQuery] int? id, [FromQuery] int? organizationId, [FromQuery] e_ActiveSearchStatus isActive = e_ActiveSearchStatus.Active)
         {
-            var processes = await _adminRepository.GetProcessesAsync(id, organizationId, isActive);
-            return ApiResponse(processes);
+            var result = await _adminService.GetProcessesAsync(id, organizationId, isActive);
+            return ApiResponse(result);
         }
 
         /// <summary>
@@ -57,12 +53,8 @@ namespace DNAQMSAPI.Api.Controllers
         [HttpPost("process")]
         public async Task<IActionResult> SaveProcess([FromBody] ProcessModel model, [FromHeader(Name = "X-User-Id")] int userId = 1)
         {
-            var (id, errNo, errMsg) = await _adminRepository.SaveProcessAsync(model, userId);
-            if (errNo != 0)
-            {
-                return ApiResponse<object>(null!, errMsg, isSuccess: false);
-            }
-            return ApiResponse(new { processId = id }, "Process saved successfully");
+            var result = await _adminService.SaveProcessAsync(model, userId);
+            return ApiResponse(result);
         }
     }
 }
