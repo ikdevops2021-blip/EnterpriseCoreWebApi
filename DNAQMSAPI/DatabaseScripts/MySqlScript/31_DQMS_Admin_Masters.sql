@@ -331,4 +331,149 @@ proc_body: BEGIN
     SELECT COALESCE(p_Id, 0) AS ID, COALESCE(v_err, 0) AS ErrNo, COALESCE(v_rowscount, 0) AS RowsCount, COALESCE(v_errMsg, '') AS ErrMsg, COALESCE(v_errLine, 0) AS ErrLine;
 END //
 
+-- ============================================================================
+-- STORED PROCEDURES FOR COUNTER
+-- ============================================================================
+DROP PROCEDURE IF EXISTS PR_S_Counter //
+CREATE PROCEDURE PR_S_Counter (
+    IN p_Id             INT,
+    IN p_OrganizationId INT,
+    IN p_LocationId     INT,
+    IN p_AreaId         INT,
+    IN p_IsActive       SMALLINT
+)
+BEGIN
+    SELECT * FROM Counter
+    WHERE IsDeleted = 0
+      AND (COALESCE(p_Id, -1) = -1 OR Id = p_Id)
+      AND (COALESCE(p_OrganizationId, -1) = -1 OR OrganizationId = p_OrganizationId)
+      AND (COALESCE(p_LocationId, -1) = -1 OR LocationId = p_LocationId)
+      AND (COALESCE(p_AreaId, -1) = -1 OR AreaId = p_AreaId)
+      AND (COALESCE(p_IsActive, -1) NOT IN (0, 1) OR IsActive = p_IsActive)
+    ORDER BY CounterNumber ASC;
+END //
+
+DROP PROCEDURE IF EXISTS PR_IU_Counter //
+CREATE PROCEDURE PR_IU_Counter (
+    IN p_Id             INT,
+    IN p_CounterCode    VARCHAR(50),
+    IN p_OrganizationId INT,
+    IN p_LocationId     INT,
+    IN p_AreaId         INT,
+    IN p_CounterNumber  VARCHAR(20),
+    IN p_CounterName    VARCHAR(100),
+    IN p_CurrentStatus  INT,
+    IN p_IsActive       TINYINT(1),
+    IN p_UID            INT
+)
+proc_body: BEGIN
+    DECLARE v_err INT DEFAULT 0;
+    DECLARE v_rowscount INT DEFAULT 0;
+    DECLARE v_errMsg VARCHAR(300) DEFAULT '';
+    DECLARE v_errLine INT DEFAULT 0;
+    DECLARE v_duplicateID INT DEFAULT 0;
+
+    IF EXISTS(SELECT 1 FROM Counter WHERE OrganizationId = p_OrganizationId AND LocationId = p_LocationId AND AreaId = p_AreaId AND CounterNumber = TRIM(p_CounterNumber) AND IsDeleted = 0 AND (COALESCE(p_Id, 0) <= 0 OR Id <> p_Id)) THEN
+        SELECT Id INTO v_duplicateID FROM Counter WHERE OrganizationId = p_OrganizationId AND LocationId = p_LocationId AND AreaId = p_AreaId AND CounterNumber = TRIM(p_CounterNumber) AND IsDeleted = 0 AND (COALESCE(p_Id, 0) <= 0 OR Id <> p_Id) LIMIT 1;
+        SET v_err = 51;
+        SET v_errMsg = CONCAT('Duplicate Counter Number in Area! Already exists with ID ', v_duplicateID);
+        LEAVE proc_body;
+    END IF;
+
+    IF COALESCE(p_Id, 0) <= 0 THEN
+        INSERT INTO Counter (
+            CounterCode, OrganizationId, LocationId, AreaId, CounterNumber, CounterName, CurrentStatus, IsActive,
+            CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted
+        ) VALUES (
+            TRIM(p_CounterCode), p_OrganizationId, p_LocationId, p_AreaId, TRIM(p_CounterNumber), TRIM(p_CounterName), COALESCE(p_CurrentStatus, 20001), COALESCE(p_IsActive, 1),
+            p_UID, CURRENT_TIMESTAMP, p_UID, CURRENT_TIMESTAMP, 0
+        );
+        SET p_Id = LAST_INSERT_ID();
+        SET v_rowscount = ROW_COUNT();
+    ELSE
+        UPDATE Counter
+        SET CounterCode    = TRIM(p_CounterCode),
+            AreaId         = COALESCE(p_AreaId, AreaId),
+            CounterNumber  = TRIM(p_CounterNumber),
+            CounterName    = TRIM(p_CounterName),
+            CurrentStatus  = COALESCE(p_CurrentStatus, CurrentStatus),
+            IsActive       = COALESCE(p_IsActive, IsActive),
+            ModifiedBy     = p_UID,
+            ModifiedDate   = CURRENT_TIMESTAMP
+        WHERE Id = p_Id AND IsDeleted = 0;
+        SET v_rowscount = ROW_COUNT();
+    END IF;
+
+    SELECT COALESCE(p_Id, 0) AS ID, COALESCE(v_err, 0) AS ErrNo, COALESCE(v_rowscount, 0) AS RowsCount, COALESCE(v_errMsg, '') AS ErrMsg, COALESCE(v_errLine, 0) AS ErrLine;
+END //
+
+-- ============================================================================
+-- STORED PROCEDURES FOR DISPLAY TEMPLATE
+-- ============================================================================
+DROP PROCEDURE IF EXISTS PR_S_DisplayTemplate //
+CREATE PROCEDURE PR_S_DisplayTemplate (
+    IN p_Id             INT,
+    IN p_OrganizationId INT,
+    IN p_IsActive       SMALLINT
+)
+BEGIN
+    SELECT * FROM DisplayTemplate
+    WHERE IsDeleted = 0
+      AND (COALESCE(p_Id, -1) = -1 OR Id = p_Id)
+      AND (COALESCE(p_OrganizationId, -1) = -1 OR OrganizationId = p_OrganizationId)
+      AND (COALESCE(p_IsActive, -1) NOT IN (0, 1) OR IsActive = p_IsActive)
+    ORDER BY TemplateName ASC;
+END //
+
+DROP PROCEDURE IF EXISTS PR_IU_DisplayTemplate //
+CREATE PROCEDURE PR_IU_DisplayTemplate (
+    IN p_Id               INT,
+    IN p_OrganizationId   INT,
+    IN p_TemplateName     VARCHAR(100),
+    IN p_TemplateType     INT,
+    IN p_LayoutConfigJson TEXT,
+    IN p_IsDefault        TINYINT(1),
+    IN p_IsActive         TINYINT(1),
+    IN p_UID              INT
+)
+proc_body: BEGIN
+    DECLARE v_err INT DEFAULT 0;
+    DECLARE v_rowscount INT DEFAULT 0;
+    DECLARE v_errMsg VARCHAR(300) DEFAULT '';
+    DECLARE v_errLine INT DEFAULT 0;
+    DECLARE v_duplicateID INT DEFAULT 0;
+
+    IF EXISTS(SELECT 1 FROM DisplayTemplate WHERE OrganizationId = p_OrganizationId AND TemplateName = TRIM(p_TemplateName) AND IsDeleted = 0 AND (COALESCE(p_Id, 0) <= 0 OR Id <> p_Id)) THEN
+        SELECT Id INTO v_duplicateID FROM DisplayTemplate WHERE OrganizationId = p_OrganizationId AND TemplateName = TRIM(p_TemplateName) AND IsDeleted = 0 AND (COALESCE(p_Id, 0) <= 0 OR Id <> p_Id) LIMIT 1;
+        SET v_err = 51;
+        SET v_errMsg = CONCAT('Duplicate Template Name! Already exists with ID ', v_duplicateID);
+        LEAVE proc_body;
+    END IF;
+
+    IF COALESCE(p_Id, 0) <= 0 THEN
+        INSERT INTO DisplayTemplate (
+            OrganizationId, TemplateName, TemplateType, LayoutConfigJson, IsDefault, IsActive,
+            CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted
+        ) VALUES (
+            p_OrganizationId, TRIM(p_TemplateName), COALESCE(p_TemplateType, 21001), p_LayoutConfigJson, COALESCE(p_IsDefault, 0), COALESCE(p_IsActive, 1),
+            p_UID, CURRENT_TIMESTAMP, p_UID, CURRENT_TIMESTAMP, 0
+        );
+        SET p_Id = LAST_INSERT_ID();
+        SET v_rowscount = ROW_COUNT();
+    ELSE
+        UPDATE DisplayTemplate
+        SET TemplateName     = TRIM(p_TemplateName),
+            TemplateType     = COALESCE(p_TemplateType, TemplateType),
+            LayoutConfigJson = p_LayoutConfigJson,
+            IsDefault        = COALESCE(p_IsDefault, IsDefault),
+            IsActive         = COALESCE(p_IsActive, IsActive),
+            ModifiedBy       = p_UID,
+            ModifiedDate     = CURRENT_TIMESTAMP
+        WHERE Id = p_Id AND IsDeleted = 0;
+        SET v_rowscount = ROW_COUNT();
+    END IF;
+
+    SELECT COALESCE(p_Id, 0) AS ID, COALESCE(v_err, 0) AS ErrNo, COALESCE(v_rowscount, 0) AS RowsCount, COALESCE(v_errMsg, '') AS ErrMsg, COALESCE(v_errLine, 0) AS ErrLine;
+END //
+
 DELIMITER ;

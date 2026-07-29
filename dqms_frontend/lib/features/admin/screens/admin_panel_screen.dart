@@ -141,6 +141,8 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
             onPressed: () {
               ref.read(areaListProvider.notifier).refresh();
               ref.read(processListProvider.notifier).refresh();
+              ref.read(counterListProvider.notifier).refresh();
+              ref.read(templateListProvider.notifier).refresh();
             },
             tooltip: 'Refresh Masters',
           ),
@@ -281,7 +283,6 @@ class AreaMasterTableView extends ConsumerWidget {
                     ? _buildEmptyState('No areas configured in database. Click "Create Area" to add your first zone.')
                     : Column(
                         children: [
-                          // Table Header Column
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                             decoration: const BoxDecoration(
@@ -297,7 +298,6 @@ class AreaMasterTableView extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          // Table Rows
                           Expanded(
                             child: ListView.separated(
                               itemCount: areas.length,
@@ -417,6 +417,18 @@ class ProcessMasterTableView extends ConsumerWidget {
           Row(
             children: [
               const Text('Process Pipelines & SLA Target Masters', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700)),
+              const Spacer(),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.add_rounded, size: 16),
+                label: const Text('Create Process'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: DqmsTheme.brandPrimary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                ),
+                onPressed: () => _showCreateProcessModal(context, ref),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -492,31 +504,378 @@ class ProcessMasterTableView extends ConsumerWidget {
       ),
     );
   }
-}
 
-/// ============================================================================
-/// PLACEHOLDER VIEWS FOR STAGE 1 EXPANSION
-/// ============================================================================
-class DisplayTemplateView extends StatelessWidget {
-  const DisplayTemplateView({super.key});
+  void _showCreateProcessModal(BuildContext context, WidgetRef ref) {
+    final codeCtrl = TextEditingController();
+    final nameCtrl = TextEditingController();
+    final prefixCtrl = TextEditingController(text: 'A');
+    final tatCtrl = TextEditingController(text: '15');
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: _buildEmptyState('Display Template Configuration View\nSupported layouts: GridView (21001), Split-Screen Video (21002), High-Density List (21003).'),
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: DqmsTheme.bgSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: const BorderSide(color: DqmsTheme.borderSubtle)),
+        title: const Text('Create Process Pipeline', style: TextStyle(color: DqmsTheme.textMain, fontWeight: FontWeight.w700, fontSize: 16)),
+        content: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildInputField(codeCtrl, 'Process Code', 'e.g. PROC-01'),
+              const SizedBox(height: 12),
+              _buildInputField(nameCtrl, 'Process Name', 'e.g. Consultation Pipeline'),
+              const SizedBox(height: 12),
+              _buildInputField(prefixCtrl, 'Token Prefix', 'e.g. A, B, C'),
+              const SizedBox(height: 12),
+              _buildInputField(tatCtrl, 'Target TAT (Minutes)', '15'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: DqmsTheme.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: DqmsTheme.brandPrimary, foregroundColor: Colors.white),
+            onPressed: () {
+              ref.read(processListProvider.notifier).saveProcess(ProcessDto(
+                    id: 0,
+                    processCode: codeCtrl.text,
+                    organizationId: 1,
+                    processName: nameCtrl.text,
+                    prefix: prefixCtrl.text.toUpperCase(),
+                    targetTATMinutes: int.tryParse(tatCtrl.text) ?? 15,
+                    allowSubTokens: true,
+                    isActive: true,
+                  ));
+              Navigator.pop(ctx);
+            },
+            child: const Text('Save Process'),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class CounterStationView extends StatelessWidget {
+/// ============================================================================
+/// 3. DISPLAY TEMPLATE VIEW
+/// ============================================================================
+class DisplayTemplateView extends ConsumerWidget {
+  const DisplayTemplateView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final templateState = ref.watch(templateListProvider);
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildKpiSummaryBar([
+            _KpiItem(title: 'Configured Layouts', value: templateState.asData?.value.length.toString() ?? '0', icon: Icons.tv_rounded),
+            const _KpiItem(title: 'Primary Layout Type', value: 'GridView (21001)', icon: Icons.view_comfy_rounded),
+            const _KpiItem(title: 'Audio Visual Alert', value: 'Enabled', icon: Icons.volume_up_rounded),
+          ]),
+          const SizedBox(height: 20),
+
+          Row(
+            children: [
+              const Text('Display Templates & Waiting Room TV Layouts', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700)),
+              const Spacer(),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.add_rounded, size: 16),
+                label: const Text('Create Template'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: DqmsTheme.brandPrimary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                ),
+                onPressed: () => _showCreateTemplateModal(context, ref),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: DqmsTheme.bgSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: DqmsTheme.borderSubtle),
+              ),
+              child: templateState.when(
+                loading: () => const Center(child: CircularProgressIndicator(color: DqmsTheme.brandPrimary)),
+                error: (err, _) => Center(child: Text('Error loading templates: $err', style: const TextStyle(color: DqmsTheme.statusDeactive))),
+                data: (templates) => templates.isEmpty
+                    ? _buildEmptyState('No display templates configured. Click "Create Template" to define a TV screen layout.')
+                    : Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            decoration: const BoxDecoration(
+                              color: DqmsTheme.bgHeader,
+                              border: Border(bottom: BorderSide(color: DqmsTheme.borderSubtle)),
+                            ),
+                            child: const Row(
+                              children: [
+                                SizedBox(width: 80, child: Text('ID', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                                Expanded(flex: 3, child: Text('TEMPLATE NAME', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                                Expanded(flex: 2, child: Text('TYPE (CONFIG PARAMETER)', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                                SizedBox(width: 100, child: Text('STATUS', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: templates.length,
+                              separatorBuilder: (_, __) => const Divider(color: DqmsTheme.borderSubtle, height: 1),
+                              itemBuilder: (ctx, i) {
+                                final tmpl = templates[i];
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                                  color: DqmsTheme.bgSurface,
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 80,
+                                        child: Text('#${tmpl.id}', style: const TextStyle(color: DqmsTheme.brandPrimary, fontWeight: FontWeight.w700, fontSize: 13)),
+                                      ),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(tmpl.templateName, style: const TextStyle(color: DqmsTheme.textMain, fontWeight: FontWeight.w600, fontSize: 14)),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text('Type Code: ${tmpl.templateType}', style: const TextStyle(color: DqmsTheme.textMuted, fontSize: 13)),
+                                      ),
+                                      SizedBox(
+                                        width: 100,
+                                        child: _buildStatusPill(tmpl.isActive),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCreateTemplateModal(BuildContext context, WidgetRef ref) {
+    final nameCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: DqmsTheme.bgSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: const BorderSide(color: DqmsTheme.borderSubtle)),
+        title: const Text('Create Display Template', style: TextStyle(color: DqmsTheme.textMain, fontWeight: FontWeight.w700, fontSize: 16)),
+        content: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildInputField(nameCtrl, 'Template Name', 'e.g. Main Lobby 4K Display'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: DqmsTheme.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: DqmsTheme.brandPrimary, foregroundColor: Colors.white),
+            onPressed: () {
+              ref.read(templateListProvider.notifier).saveTemplate(DisplayTemplateDto(
+                    id: 0,
+                    organizationId: 1,
+                    templateName: nameCtrl.text,
+                    templateType: 21001,
+                    isDefault: true,
+                    isActive: true,
+                  ));
+              Navigator.pop(ctx);
+            },
+            child: const Text('Save Template'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// ============================================================================
+/// 4. COUNTER STATION VIEW
+/// ============================================================================
+class CounterStationView extends ConsumerWidget {
   const CounterStationView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final counterState = ref.watch(counterListProvider);
+
     return Padding(
       padding: const EdgeInsets.all(24),
-      child: _buildEmptyState('Counter / Window Station Master View\nMaps counter numbers to assigned staff operators and area locations.'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildKpiSummaryBar([
+            _KpiItem(title: 'Configured Counters', value: counterState.asData?.value.length.toString() ?? '0', icon: Icons.desk_rounded),
+            const _KpiItem(title: 'Default Status', value: 'Idle (20001)', icon: Icons.hourglass_empty_rounded),
+            const _KpiItem(title: 'Operator Hotkeys', value: 'Space / F1-F5', icon: Icons.keyboard_rounded),
+          ]),
+          const SizedBox(height: 20),
+
+          Row(
+            children: [
+              const Text('Counter & Window Stations Directory', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700)),
+              const Spacer(),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.add_rounded, size: 16),
+                label: const Text('Create Counter'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: DqmsTheme.brandPrimary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                ),
+                onPressed: () => _showCreateCounterModal(context, ref),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: DqmsTheme.bgSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: DqmsTheme.borderSubtle),
+              ),
+              child: counterState.when(
+                loading: () => const Center(child: CircularProgressIndicator(color: DqmsTheme.brandPrimary)),
+                error: (err, _) => Center(child: Text('Error loading counters: $err', style: const TextStyle(color: DqmsTheme.statusDeactive))),
+                data: (counters) => counters.isEmpty
+                    ? _buildEmptyState('No counter stations configured yet. Click "Create Counter" to assign service windows.')
+                    : Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            decoration: const BoxDecoration(
+                              color: DqmsTheme.bgHeader,
+                              border: Border(bottom: BorderSide(color: DqmsTheme.borderSubtle)),
+                            ),
+                            child: const Row(
+                              children: [
+                                SizedBox(width: 80, child: Text('NUMBER', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                                Expanded(flex: 3, child: Text('COUNTER / WINDOW NAME', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                                Expanded(flex: 2, child: Text('CURRENT STATUS (CONFIGPARAM)', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                                SizedBox(width: 100, child: Text('STATUS', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: counters.length,
+                              separatorBuilder: (_, __) => const Divider(color: DqmsTheme.borderSubtle, height: 1),
+                              itemBuilder: (ctx, i) {
+                                final ctr = counters[i];
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                                  color: DqmsTheme.bgSurface,
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 80,
+                                        child: Text('C-${ctr.counterNumber}', style: const TextStyle(color: DqmsTheme.brandPrimary, fontWeight: FontWeight.w800, fontSize: 14)),
+                                      ),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(ctr.counterName, style: const TextStyle(color: DqmsTheme.textMain, fontWeight: FontWeight.w600, fontSize: 14)),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text('Status Code: ${ctr.currentStatus}', style: const TextStyle(color: DqmsTheme.textMuted, fontSize: 13)),
+                                      ),
+                                      SizedBox(
+                                        width: 100,
+                                        child: _buildStatusPill(ctr.isActive),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCreateCounterModal(BuildContext context, WidgetRef ref) {
+    final numCtrl = TextEditingController();
+    final nameCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: DqmsTheme.bgSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: const BorderSide(color: DqmsTheme.borderSubtle)),
+        title: const Text('Create Counter Station', style: TextStyle(color: DqmsTheme.textMain, fontWeight: FontWeight.w700, fontSize: 16)),
+        content: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildInputField(numCtrl, 'Counter Number', 'e.g. 01'),
+              const SizedBox(height: 12),
+              _buildInputField(nameCtrl, 'Counter Name', 'e.g. Window 1 - General Registration'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: DqmsTheme.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: DqmsTheme.brandPrimary, foregroundColor: Colors.white),
+            onPressed: () {
+              ref.read(counterListProvider.notifier).saveCounter(CounterDto(
+                    id: 0,
+                    counterCode: 'CTR-${numCtrl.text}',
+                    organizationId: 1,
+                    locationId: 1,
+                    areaId: 1,
+                    counterNumber: numCtrl.text,
+                    counterName: nameCtrl.text,
+                    currentStatus: 20001,
+                    isActive: true,
+                  ));
+              Navigator.pop(ctx);
+            },
+            child: const Text('Save Counter'),
+          ),
+        ],
+      ),
     );
   }
 }

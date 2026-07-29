@@ -58,5 +58,45 @@ namespace DNAQMSAPI.Api.Controllers
             var result = await _adminService.SaveProcessAsync(model, userId);
             return ApiResponse(result);
         }
+
+        /// <summary>
+        /// Gets Counters/Windows by Area/Location using e_ActiveSearchStatus.
+        /// </summary>
+        [HttpGet("counters")]
+        public async Task<IActionResult> GetCounters([FromQuery] int? id, [FromQuery] int? organizationId, [FromQuery] int? locationId, [FromQuery] int? areaId, [FromQuery] e_ActiveSearchStatus isActive = e_ActiveSearchStatus.Active)
+        {
+            var result = await _adminService.GetCountersAsync(id, organizationId, locationId, areaId, isActive);
+            return ApiResponse(result);
+        }
+
+        /// <summary>
+        /// Creates or Updates a Counter/Window.
+        /// </summary>
+        [HttpPost("counter")]
+        public async Task<IActionResult> SaveCounter([FromBody] CounterModel model, [FromHeader(Name = "X-User-Id")] int userId = 1)
+        {
+            var result = await _adminService.SaveCounterAsync(model, userId);
+            return ApiResponse(result);
+        }
+
+        /// <summary>
+        /// Gets Display Templates by Organization using e_ActiveSearchStatus.
+        /// </summary>
+        [HttpGet("templates")]
+        public async Task<IActionResult> GetDisplayTemplates([FromQuery] int? id, [FromQuery] int? organizationId, [FromQuery] e_ActiveSearchStatus isActive = e_ActiveSearchStatus.Active)
+        {
+            var result = await _adminService.GetDisplayTemplatesAsync(id, organizationId, isActive);
+            return ApiResponse(result);
+        }
+
+        /// <summary>
+        /// Creates or Updates a Display Template.
+        /// </summary>
+        [HttpPost("template")]
+        public async Task<IActionResult> SaveDisplayTemplate([FromBody] DisplayTemplateModel model, [FromHeader(Name = "X-User-Id")] int userId = 1)
+        {
+            var result = await _adminService.SaveDisplayTemplateAsync(model, userId);
+            return ApiResponse(result);
+        }
     }
 }

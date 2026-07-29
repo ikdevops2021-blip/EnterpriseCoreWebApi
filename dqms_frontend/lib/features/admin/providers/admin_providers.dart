@@ -30,7 +30,6 @@ class AreaListNotifier extends AsyncNotifier<List<AreaDto>> {
       }
       return [];
     } catch (e) {
-      // Return empty list on failure or rethrow for AsyncError
       return [];
     }
   }
@@ -77,6 +76,84 @@ class ProcessListNotifier extends AsyncNotifier<List<ProcessDto>> {
   Future<void> saveProcess(ProcessDto dto) async {
     final dio = ref.read(dioProvider);
     await dio.post('/api/v1/admin/process', data: dto.toJson());
+    ref.invalidateSelf();
+  }
+
+  Future<void> refresh() async {
+    ref.invalidateSelf();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// COUNTER LIST PROVIDER
+// ---------------------------------------------------------------------------
+final counterListProvider =
+    AsyncNotifierProvider<CounterListNotifier, List<CounterDto>>(
+        CounterListNotifier.new);
+
+class CounterListNotifier extends AsyncNotifier<List<CounterDto>> {
+  @override
+  Future<List<CounterDto>> build() async => _fetchCounters();
+
+  Future<List<CounterDto>> _fetchCounters() async {
+    try {
+      final dio = ref.read(dioProvider);
+      final response = await dio.get('/api/v1/admin/counters', queryParameters: {
+        'isActive': e_ActiveSearchStatus.active.value,
+      });
+
+      if (response.data != null && response.data is Map) {
+        final List data = response.data['data'] ?? response.data['Data'] ?? [];
+        return data.map((item) => CounterDto.fromJson(Map<String, dynamic>.from(item))).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> saveCounter(CounterDto dto) async {
+    final dio = ref.read(dioProvider);
+    await dio.post('/api/v1/admin/counter', data: dto.toJson());
+    ref.invalidateSelf();
+  }
+
+  Future<void> refresh() async {
+    ref.invalidateSelf();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// DISPLAY TEMPLATE LIST PROVIDER
+// ---------------------------------------------------------------------------
+final templateListProvider =
+    AsyncNotifierProvider<TemplateListNotifier, List<DisplayTemplateDto>>(
+        TemplateListNotifier.new);
+
+class TemplateListNotifier extends AsyncNotifier<List<DisplayTemplateDto>> {
+  @override
+  Future<List<DisplayTemplateDto>> build() async => _fetchTemplates();
+
+  Future<List<DisplayTemplateDto>> _fetchTemplates() async {
+    try {
+      final dio = ref.read(dioProvider);
+      final response = await dio.get('/api/v1/admin/templates', queryParameters: {
+        'isActive': e_ActiveSearchStatus.active.value,
+      });
+
+      if (response.data != null && response.data is Map) {
+        final List data = response.data['data'] ?? response.data['Data'] ?? [];
+        return data.map((item) => DisplayTemplateDto.fromJson(Map<String, dynamic>.from(item))).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> saveTemplate(DisplayTemplateDto dto) async {
+    final dio = ref.read(dioProvider);
+    await dio.post('/api/v1/admin/template', data: dto.toJson());
     ref.invalidateSelf();
   }
 
