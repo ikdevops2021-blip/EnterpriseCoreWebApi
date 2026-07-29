@@ -17,6 +17,13 @@ description: Architect cross-platform Flutter applications (Web, Mobile, Linux D
 
 # Flutter + .NET Core Agentic Architecture Skill
 
+### 0. Core Project Architecture & UI/UX Standards
+* **UI/UX Design Specification**: See [UI_UX_DESIGN_SPEC.md](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/UI_UX_DESIGN_SPEC.md) for the mandatory enterprise design language (Precision, Clarity, Speed, Trust, Control; restraint over visual noise; dark operational command center theme).
+* **Multi-Tenant Enterprise Queue Management System (DQMS)**: Hybrid architecture supporting SaaS & On-Premise deployments.
+* **Technology Stack:**
+  * **Backend:** C# .NET 8 Web API (`DNAQMSAPI`) using **Dapper ORM** and Service Pattern with MySQL and MS SQL Server databases (`PR_S_*`, `PR_IU_*`).
+  * **Frontend:** Flutter Cross-Platform App (`dqms_frontend`) supporting Web, Windows, Linux, Android, iOS. State management powered by **Riverpod** & HTTP by **Dio**.
+
 ## Architectural Guidelines
 1. **Backend Integration (.NET Core Web API):**
    - Use `dio` for all HTTP REST and SignalR calls.
