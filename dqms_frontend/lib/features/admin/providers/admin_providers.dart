@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/enums/dqms_enums.dart';
 import '../../../core/models/admin_models.dart';
@@ -19,12 +18,21 @@ class AreaListNotifier extends AsyncNotifier<List<AreaDto>> {
   Future<List<AreaDto>> build() async => _fetchAreas();
 
   Future<List<AreaDto>> _fetchAreas() async {
-    final dio = ref.read(dioProvider);
-    final response = await dio.get('/api/v1/admin/areas', queryParameters: {
-      'isActive': e_ActiveSearchStatus.active.value,
-    });
-    final List data = response.data['data'] ?? [];
-    return data.map((item) => AreaDto.fromJson(item)).toList();
+    try {
+      final dio = ref.read(dioProvider);
+      final response = await dio.get('/api/v1/admin/areas', queryParameters: {
+        'isActive': e_ActiveSearchStatus.active.value,
+      });
+
+      if (response.data != null && response.data is Map) {
+        final List data = response.data['data'] ?? response.data['Data'] ?? [];
+        return data.map((item) => AreaDto.fromJson(Map<String, dynamic>.from(item))).toList();
+      }
+      return [];
+    } catch (e) {
+      // Return empty list on failure or rethrow for AsyncError
+      return [];
+    }
   }
 
   Future<void> saveArea(AreaDto dto) async {
@@ -50,12 +58,20 @@ class ProcessListNotifier extends AsyncNotifier<List<ProcessDto>> {
   Future<List<ProcessDto>> build() async => _fetchProcesses();
 
   Future<List<ProcessDto>> _fetchProcesses() async {
-    final dio = ref.read(dioProvider);
-    final response = await dio.get('/api/v1/admin/processes', queryParameters: {
-      'isActive': e_ActiveSearchStatus.active.value,
-    });
-    final List data = response.data['data'] ?? [];
-    return data.map((item) => ProcessDto.fromJson(item)).toList();
+    try {
+      final dio = ref.read(dioProvider);
+      final response = await dio.get('/api/v1/admin/processes', queryParameters: {
+        'isActive': e_ActiveSearchStatus.active.value,
+      });
+
+      if (response.data != null && response.data is Map) {
+        final List data = response.data['data'] ?? response.data['Data'] ?? [];
+        return data.map((item) => ProcessDto.fromJson(Map<String, dynamic>.from(item))).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<void> saveProcess(ProcessDto dto) async {

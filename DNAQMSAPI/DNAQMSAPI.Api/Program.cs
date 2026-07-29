@@ -55,6 +55,18 @@ try
     builder.Services.AddPaymentsServices(builder.Configuration);
     builder.Services.AddStorageServices(builder.Configuration);
 
+    // CORS Policy for Flutter Web Frontend
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("DqmsCorsPolicy", policy =>
+        {
+            policy.WithOrigins("http://localhost:8080", "http://localhost:3000", "http://localhost:5173")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+    });
+
     // Add API Controllers, Versioning and Swagger
     builder.Services.AddControllers();
     builder.Services.AddHealthChecks();
@@ -98,6 +110,7 @@ try
     }
 
     app.UseHttpsRedirection();
+    app.UseCors("DqmsCorsPolicy");
     app.UseAuthentication();
     app.UseAuthorization();
 

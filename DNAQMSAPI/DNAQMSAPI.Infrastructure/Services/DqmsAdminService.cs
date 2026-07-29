@@ -1,8 +1,8 @@
 using System.Data;
-using AntiGravity.Enterprise.Shared.Core.Data;
 using AntiGravity.Enterprise.Shared.Core.Enums;
 using AntiGravity.Enterprise.Shared.Core.Models;
 using AntiGravity.Enterprise.Shared.Core.Models.DQMS;
+using DNAQMSAPI.Application.Interfaces;
 using DNAQMSAPI.Infrastructure.Models;
 
 namespace DNAQMSAPI.Infrastructure.Services
@@ -17,9 +17,9 @@ namespace DNAQMSAPI.Infrastructure.Services
 
     public class DqmsAdminService : IDqmsAdminService
     {
-        private readonly IDapperDBFactory _dbFactory;
+        private readonly DNAQMSAPI.Application.Interfaces.IDapperDBFactory _dbFactory;
 
-        public DqmsAdminService(IDapperDBFactory dbFactory)
+        public DqmsAdminService(DNAQMSAPI.Application.Interfaces.IDapperDBFactory dbFactory)
         {
             _dbFactory = dbFactory;
         }
