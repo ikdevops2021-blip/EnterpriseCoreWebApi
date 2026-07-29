@@ -120,10 +120,22 @@ Tokens transition through explicit lifecycle states:
 * **Live Counter Status:** Active vs. idle counter status monitoring.
 * **Current Queue Density:** Live volume of tokens across Queued, Active, and Hold states.
 
-### 5.2 TAT & Efficiency Analytics
-* **Process Step Heatmap:** Graphical display highlighting steps experiencing service bottlenecks.
-* **Throughput Metrics:** Tokens processed per hour grouped by counter, staff member, and process type.
-* **Cancellation & Abandonment Rates:** Tracking drop-off rates across multi-step journeys.
+### 5.2 TAT & Efficiency Analytics (Operational Formulas)
+
+* **Actual Step TAT Calculation:**
+  $$\text{Actual Step TAT} = \text{ExitTime} - \text{EntryTime}$$
+
+* **TAT Variance Percentage:**
+  $$\text{TAT Variance (\%)} = \left( \frac{\text{Actual Step TAT} - \text{Target Step TAT}}{\text{Target Step TAT}} \right) \times 100$$
+  *(Positive variance indicates SLA breach/bottleneck; negative indicates ahead of schedule).*
+
+* **Process Efficiency Score:**
+  $$\text{Process Efficiency Score} = \left( \frac{\text{Tokens Completed Within Target TAT}}{\text{Total Tokens Processed}} \right) \times 100$$
+
+* **Visual Analytics & Heatmaps:**
+  * **Process Step Heatmap:** Graphical display highlighting steps experiencing service bottlenecks based on TAT Variance.
+  * **Throughput Metrics:** Tokens processed per hour grouped by counter, staff member, and process type.
+  * **Cancellation & Abandonment Rates:** Tracking drop-off rates across multi-step journeys.
 
 ---
 
