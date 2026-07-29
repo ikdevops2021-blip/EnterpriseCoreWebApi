@@ -108,6 +108,8 @@ Tokens transition through explicit lifecycle states:
 
 ### 6.1 Process-Specific Time-Slot Configuration
 * **Process & Location Slot Scheduling:** Define available booking windows per Location and Process (e.g., Passport Renewal available 09:00 AM - 04:00 PM in 15-minute slots).
+* **Selective Service Blackout Days:** Ability to block/disable online appointments for a **specific process/service on specific days of the week** (e.g., Disable online booking for *Passport VIP Renewal* on Fridays, or block *Dental Diagnostics* on Weekends) while walk-in kiosk tokens remain active.
+* **Date-Range Blackout Windows:** Configure date-range blackout windows per service (e.g., Block online booking for *Tax Audit Process* during annual audit week).
 * **Slot Capacity & Overbooking Limits:** Configurable max token capacity per time slot (e.g., Max 5 appointment tokens per 15-minute window) to prevent counter congestion.
 * **Non-Working Days & Holiday Calendar:** Define tenant/location holidays, custom non-working hours, and blackout windows.
 
