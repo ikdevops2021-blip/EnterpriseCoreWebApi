@@ -42,6 +42,76 @@ It acts as a unified abstraction layer over `IDbConnection` and `Dapper`, elimin
 3. **Transaction Management**: Built-in Unit-of-Work support via `BeginTransaction()`, `CommitTransaction()`, and `RollbackTransaction()`.
 4. **Stored Procedure & Grid Reader Helpers**: Direct support for multi-result grid readers (`QueryMultipleAsync`) and execution helpers (`ExecuteAsync`, `QueryAsync`).
 
+---
+
+## 🗄️ Database Architecture & Pre-Packaged Objects
+
+The template includes a comprehensive database schema designed for enterprise systems, fully implemented for both **MySQL** and **MS SQL Server**.
+
+### 1. Database Tables by Feature Module
+| Module | Table Name | Short Details & Purpose |
+| :--- | :--- | :--- |
+| **Auth & Security** | `Organization` | Multitenant organization metadata, code, status, and system settings. |
+| | `User` | User profiles, emails, password hashes, security salts, and profile data. |
+| | `Role` | Enterprise roles (`SuperAdmin`, `Admin`, `User`, `Manager`). |
+| | `Permission` | Fine-grained application permission definitions. |
+| | `UserOrganization` | Many-to-many relationship mapping users to organizations. |
+| | `UserRole` | Role assignments per user. |
+| | `ApiKey` | Hashed API Keys for system-to-system integrations with expiration rules. |
+| | `UserSession` | Active user JWT sessions and login history tracking. |
+| | `UserDevice` | Registered mobile/desktop user devices for push notifications. |
+| | `UserContactAndAddress` | User contacts, phone numbers, and physical mailing addresses. |
+| **NexusCore Engine** | `NexusCore_Config` | System-wide dynamic key-value environment settings and configurations. |
+| | `NexusCore_ID_Generator` | Custom sequence pattern generators for auto-generating formatted IDs. |
+| **Notifications & Email** | `Notification` | System notifications log with delivery statuses. |
+| | `EmailSettings` | SMTP and third-party provider configurations. |
+| | `EmailQueue` | Asynchronous outbound email dispatch queue. |
+| | `EmailSignatures` | HTML signature templates per organization/user. |
+| **Storage System** | `StoredFile` | File metadata, storage paths, mime types, and file sizes. |
+| | `FileAuditLogs` | Audit history of file uploads, downloads, and deletions. |
+| **Integrations & Billing** | `ThirdPartyApiConfig` | Integrations config for third-party REST/SOAP APIs. |
+| | `OrganizationPaymentProvider` | Multi-gateway payment config (Stripe, PayPal, UPI). |
+| | `PaymentTransaction` | Financial payment transactions ledger. |
+| | `SubscriptionSaaS` | SaaS subscription plans, tiers, and billing cycles. |
+| | `AppLogs` | Application logging table for audit trails and diagnostics. |
+
+---
+
+### 2. Primary Stored Procedures
+| Module | Stored Procedure Name | Short Details & Functionality |
+| :--- | :--- | :--- |
+| **Auth & User** | `sp_User_Authenticate` | Validates email/username and returns user authentication info. |
+| | `sp_User_GetPermissions` | Fetches consolidated permissions for a specific user and role set. |
+| | `sp_User_Create` / `sp_User_Update` | Manages user registration, details, and profile modifications. |
+| | `sp_ApiKey_Validate` | Validates active `x-api-key` headers against hashed records. |
+| **NexusCore** | `sp_NexusCore_Config_Get` | Retrieves cached system settings by key. |
+| | `sp_NexusCore_GenerateID` | Generates next sequence number based on specified format rules. |
+| **Location & Profile** | `sp_Location_GetCountries` | Fetches world location hierarchy (Countries, States, Cities). |
+| | `sp_UserProfile_GetFull` | Retrieves combined user profile, roles, address, and org details. |
+| **Storage & Email** | `sp_FileStorage_SaveFile` | Saves file metadata record and returns generated file GUID. |
+| | `sp_EmailQueue_Enqueue` | Inserts outbound email into dispatch queue for background processors. |
+
+---
+
+### 3. Database Views
+| View Name | Short Details & Purpose |
+| :--- | :--- |
+| `vw_EmailQueue_Pending` | Aggregates un-sent emails ready for immediate background dispatching. |
+| `vw_UserActivePermissions` | Flattens user, role, and direct permission mappings into a single view for fast security authorization lookup. |
+
+---
+
+### 4. Migration & Seed Scripts Summary (`DatabaseScripts/`)
+| Script File | Purpose & Contents |
+| :--- | :--- |
+| `01_Organization.sql` to `10_...` | DDL Schema Table Creation for Core Entities. |
+| `12_Core_StoredProcs.sql` | Primary Auth, Organization, and System Stored Procedures. |
+| `17_NexusCore_Config.sql` | Core Nexus configuration schema setup. |
+| `21_NexusCore_SeedData.sql` | Initial System Seed Data (Default Roles, Permissions, Configs). |
+| `23_WorldLocationSeedData.sql` | Standardized World Countries, States, and Cities seed dataset. |
+| `99_DummyData.sql` | Sample test records for quick developer verification (Skipped unless `--dummy` flag used). |
+
+
 
 ---
 
