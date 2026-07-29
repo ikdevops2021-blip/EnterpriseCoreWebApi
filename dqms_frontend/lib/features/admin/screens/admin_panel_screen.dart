@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/admin_models.dart';
+import '../../customer/screens/customer_mobile_status_screen.dart';
 import '../../customer/screens/kiosk_ticket_screen.dart';
 import '../../customer/screens/waiting_room_display_screen.dart';
 import '../../staff/screens/counter_operator_screen.dart';
@@ -186,6 +187,19 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
             ),
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const KioskTicketScreen()));
+            },
+          ),
+          const SizedBox(width: 8),
+          OutlinedButton.icon(
+            icon: const Icon(Icons.phone_android_rounded, size: 14),
+            label: const Text('Stage 3 Mobile Tracker', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: DqmsTheme.statusWarning,
+              side: const BorderSide(color: DqmsTheme.statusWarning),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            ),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerMobileStatusScreen(tokenId: 1)));
             },
           ),
           const SizedBox(width: 12),
