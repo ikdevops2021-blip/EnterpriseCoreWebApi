@@ -4,24 +4,31 @@ import '../../../core/models/admin_models.dart';
 import '../providers/admin_providers.dart';
 
 /// ============================================================================
-/// DQMS DESIGN TOKENS — Glassmorphism + Dark Mode (OLED)
+/// DQMS ENTERPRISE DESIGN TOKENS (Per UI_UX_DESIGN_SPEC.md)
+/// Aesthetic: Command Center | Precision | Clarity | Restrained Palette
 /// ============================================================================
-class DqmsColors {
-  static const Color background = Color(0xFF0D1117);
-  static const Color surface = Color(0xFF161B22);
-  static const Color surfaceLight = Color(0xFF21262D);
-  static const Color accent = Color(0xFF58A6FF);
-  static const Color accentGreen = Color(0xFF3FB950);
-  static const Color accentRed = Color(0xFFF85149);
-  static const Color accentPurple = Color(0xFFBC8CFF);
-  static const Color accentOrange = Color(0xFFD29922);
-  static const Color textPrimary = Color(0xFFE6EDF3);
-  static const Color textSecondary = Color(0xFF8B949E);
-  static const Color border = Color(0xFF30363D);
+class DqmsTheme {
+  static const Color bgCanvas = Color(0xFF090D11);
+  static const Color bgSurface = Color(0xFF12171F);
+  static const Color bgSurfaceHover = Color(0xFF1A212B);
+  static const Color bgHeader = Color(0xFF0E131A);
+  
+  static const Color borderSubtle = Color(0xFF222B36);
+  static const Color borderFocus = Color(0xFF2F81F7);
+
+  static const Color brandPrimary = Color(0xFF2F81F7);
+  static const Color statusActive = Color(0xFF238636);
+  static const Color statusDeactive = Color(0xFFDA3633);
+  static const Color statusWarning = Color(0xFFD29922);
+  static const Color statusSpecial = Color(0xFF8957E5);
+
+  static const Color textMain = Color(0xFFF0F6FC);
+  static const Color textMuted = Color(0xFF8B949E);
+  static const Color textSubtle = Color(0xFF6E7681);
 }
 
 /// ============================================================================
-/// STAGE 1: ADMIN PANEL — Main Shell with NavigationRail
+/// STAGE 1: ADMIN COMMAND CENTER PANEL
 /// ============================================================================
 class AdminPanelScreen extends ConsumerStatefulWidget {
   const AdminPanelScreen({super.key});
@@ -31,132 +38,196 @@ class AdminPanelScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
-  int _selectedIndex = 0;
+  int _selectedTabIndex = 0;
 
-  static const _tabs = [
-    _TabInfo(icon: Icons.location_city_rounded, label: 'Areas / Zones'),
-    _TabInfo(icon: Icons.account_tree_rounded, label: 'Process Pipelines'),
-    _TabInfo(icon: Icons.tv_rounded, label: 'Display Templates'),
-    _TabInfo(icon: Icons.point_of_sale_rounded, label: 'Counters'),
+  static const _navItems = [
+    _NavItem(icon: Icons.grid_view_rounded, label: 'Areas & Zones', count: '12'),
+    _NavItem(icon: Icons.account_tree_outlined, label: 'Process Pipelines', count: '8'),
+    _NavItem(icon: Icons.tv_rounded, label: 'Display Templates', count: '4'),
+    _NavItem(icon: Icons.desk_rounded, label: 'Counter Stations', count: '16'),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.of(context).size.width >= 960;
+    final isDesktop = MediaQuery.of(context).size.width >= 1024;
 
     return Scaffold(
-      backgroundColor: DqmsColors.background,
-      appBar: AppBar(
-        backgroundColor: DqmsColors.surface,
-        elevation: 0,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFF58A6FF), Color(0xFFBC8CFF)]),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Text('DQMS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14)),
-            ),
-            const SizedBox(width: 12),
-            const Text('Admin Master Setup', style: TextStyle(color: DqmsColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 18)),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: DqmsColors.accentGreen.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text('Stage 1', style: TextStyle(color: DqmsColors.accentGreen, fontSize: 11, fontWeight: FontWeight.w600)),
-            ),
-          ],
-        ),
-      ),
-      body: Row(
+      backgroundColor: DqmsTheme.bgCanvas,
+      body: Column(
         children: [
-          if (isWide)
-            Container(
-              width: 220,
-              decoration: const BoxDecoration(
-                color: DqmsColors.surface,
-                border: Border(right: BorderSide(color: DqmsColors.border, width: 1)),
-              ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 16),
-                  ...List.generate(_tabs.length, (i) => _buildNavItem(i)),
-                ],
-              ),
-            ),
+          _buildTopCommandHeader(context),
           Expanded(
-            child: IndexedStack(
-              index: _selectedIndex,
-              children: const [
-                AreaMasterView(),
-                ProcessMasterView(),
-                DisplayTemplateMasterView(),
-                CounterMasterView(),
+            child: Row(
+              children: [
+                if (isDesktop) _buildSidebarNav(),
+                Expanded(
+                  child: Container(
+                    color: DqmsTheme.bgCanvas,
+                    child: IndexedStack(
+                      index: _selectedTabIndex,
+                      children: const [
+                        AreaMasterTableView(),
+                        ProcessMasterTableView(),
+                        DisplayTemplateView(),
+                        CounterStationView(),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ],
       ),
-      bottomNavigationBar: isWide
+      bottomNavigationBar: isDesktop
           ? null
           : BottomNavigationBar(
-              currentIndex: _selectedIndex,
-              onTap: (i) => setState(() => _selectedIndex = i),
-              backgroundColor: DqmsColors.surface,
-              selectedItemColor: DqmsColors.accent,
-              unselectedItemColor: DqmsColors.textSecondary,
+              currentIndex: _selectedTabIndex,
+              onTap: (i) => setState(() => _selectedTabIndex = i),
+              backgroundColor: DqmsTheme.bgSurface,
+              selectedItemColor: DqmsTheme.brandPrimary,
+              unselectedItemColor: DqmsTheme.textMuted,
               type: BottomNavigationBarType.fixed,
-              items: _tabs
+              items: _navItems
                   .map((t) => BottomNavigationBarItem(icon: Icon(t.icon), label: t.label))
                   .toList(),
             ),
     );
   }
 
-  Widget _buildNavItem(int index) {
-    final isSelected = _selectedIndex == index;
-    final tab = _tabs[index];
-    return InkWell(
-      onTap: () => setState(() => _selectedIndex = index),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? DqmsColors.accent.withOpacity(0.1) : Colors.transparent,
-          border: Border(left: BorderSide(color: isSelected ? DqmsColors.accent : Colors.transparent, width: 3)),
-        ),
-        child: Row(
-          children: [
-            Icon(tab.icon, color: isSelected ? DqmsColors.accent : DqmsColors.textSecondary, size: 20),
-            const SizedBox(width: 12),
-            Text(tab.label,
-                style: TextStyle(
-                  color: isSelected ? DqmsColors.textPrimary : DqmsColors.textSecondary,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  fontSize: 14,
-                )),
-          ],
-        ),
+  /// Top Operational Header Bar
+  Widget _buildTopCommandHeader(BuildContext context) {
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: const BoxDecoration(
+        color: DqmsTheme.bgHeader,
+        border: Border(bottom: BorderSide(color: DqmsTheme.borderSubtle, width: 1)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: DqmsTheme.brandPrimary.withValues(alpha: 0.15),
+              border: Border.all(color: DqmsTheme.brandPrimary.withValues(alpha: 0.4)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text('DQMS ENTERPRISE', style: TextStyle(color: DqmsTheme.brandPrimary, fontWeight: FontWeight.w700, fontSize: 11, letterSpacing: 1.2)),
+          ),
+          const SizedBox(width: 16),
+          const Icon(Icons.chevron_right_rounded, color: DqmsTheme.textSubtle, size: 18),
+          const SizedBox(width: 8),
+          const Text('Admin Master Configuration', style: TextStyle(color: DqmsTheme.textMain, fontWeight: FontWeight.w600, fontSize: 14)),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: DqmsTheme.statusActive.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: DqmsTheme.statusActive.withValues(alpha: 0.3)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.fiber_manual_record, color: DqmsTheme.statusActive, size: 8),
+                SizedBox(width: 5),
+                Text('LIVE SYNC • Stage 1', style: TextStyle(color: DqmsTheme.statusActive, fontSize: 10, fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: DqmsTheme.textMuted, size: 18),
+            onPressed: () {
+              ref.read(areaListProvider.notifier).refresh();
+              ref.read(processListProvider.notifier).refresh();
+            },
+            tooltip: 'Refresh Masters',
+          ),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: DqmsTheme.bgSurface,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: DqmsTheme.borderSubtle),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.business_rounded, color: DqmsTheme.textMuted, size: 14),
+                SizedBox(width: 6),
+                Text('Main Headquarters', style: TextStyle(color: DqmsTheme.textMuted, fontSize: 12)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Lightweight Professional Sidebar
+  Widget _buildSidebarNav() {
+    return Container(
+      width: 240,
+      decoration: const BoxDecoration(
+        color: DqmsTheme.bgSurface,
+        border: Border(right: BorderSide(color: DqmsTheme.borderSubtle, width: 1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+            child: Text('SETUP MASTERS', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.0)),
+          ),
+          ...List.generate(_navItems.length, (i) {
+            final isSelected = _selectedTabIndex == i;
+            final item = _navItems[i];
+            return InkWell(
+              onTap: () => setState(() => _selectedTabIndex = i),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                decoration: BoxDecoration(
+                  color: isSelected ? DqmsTheme.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
+                  border: Border(left: BorderSide(color: isSelected ? DqmsTheme.brandPrimary : Colors.transparent, width: 3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(item.icon, color: isSelected ? DqmsTheme.brandPrimary : DqmsTheme.textMuted, size: 18),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        item.label,
+                        style: TextStyle(
+                          color: isSelected ? DqmsTheme.textMain : DqmsTheme.textMuted,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
 }
 
-class _TabInfo {
+class _NavItem {
   final IconData icon;
   final String label;
-  const _TabInfo({required this.icon, required this.label});
+  final String count;
+  const _NavItem({required this.icon, required this.label, required this.count});
 }
 
 /// ============================================================================
-/// AREA MASTER VIEW
+/// 1. AREA MASTER TABLE VIEW (Data Table Style per UI_UX_DESIGN_SPEC.md)
 /// ============================================================================
-class AreaMasterView extends ConsumerWidget {
-  const AreaMasterView({super.key});
+class AreaMasterTableView extends ConsumerWidget {
+  const AreaMasterTableView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -167,19 +238,102 @@ class AreaMasterView extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(context, ref, 'Area & Zone Masters', Icons.location_city_rounded, () => _showAreaDialog(context, ref)),
+          // KPI Metric Summary Bar
+          _buildKpiSummaryBar([
+            _KpiItem(title: 'Total Areas', value: areaState.asData?.value.length.toString() ?? '0', icon: Icons.grid_view_rounded),
+            _KpiItem(title: 'Active Zones', value: areaState.asData?.value.where((a) => a.isActive).length.toString() ?? '0', icon: Icons.check_circle_outline_rounded),
+            const _KpiItem(title: 'Operational SLA', value: '99.8%', icon: Icons.speed_rounded),
+          ]),
           const SizedBox(height: 20),
+
+          // Action Toolbar Bar
+          Row(
+            children: [
+              const Text('Areas & Zones Directory', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700)),
+              const Spacer(),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.add_rounded, size: 16),
+                label: const Text('Create Area'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: DqmsTheme.brandPrimary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                ),
+                onPressed: () => _showCreateAreaModal(context, ref),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Structured Data Table Container
           Expanded(
-            child: areaState.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: DqmsColors.accent)),
-              error: (err, _) => _buildErrorState(err.toString()),
-              data: (areas) => areas.isEmpty
-                  ? _buildEmptyState('No areas configured yet. Create your first area to get started.')
-                  : ListView.separated(
-                      itemCount: areas.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (_, i) => _buildAreaCard(areas[i]),
-                    ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: DqmsTheme.bgSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: DqmsTheme.borderSubtle),
+              ),
+              child: areaState.when(
+                loading: () => const Center(child: CircularProgressIndicator(color: DqmsTheme.brandPrimary)),
+                error: (err, _) => Center(child: Text('Error loading areas: $err', style: const TextStyle(color: DqmsTheme.statusDeactive))),
+                data: (areas) => areas.isEmpty
+                    ? _buildEmptyState('No areas configured in database. Click "Create Area" to add your first zone.')
+                    : Column(
+                        children: [
+                          // Table Header Column
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            decoration: const BoxDecoration(
+                              color: DqmsTheme.bgHeader,
+                              border: Border(bottom: BorderSide(color: DqmsTheme.borderSubtle)),
+                            ),
+                            child: const Row(
+                              children: [
+                                SizedBox(width: 80, child: Text('CODE', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                                Expanded(flex: 3, child: Text('AREA / ZONE NAME', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                                Expanded(flex: 2, child: Text('DESCRIPTION', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                                SizedBox(width: 100, child: Text('STATUS', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                              ],
+                            ),
+                          ),
+                          // Table Rows
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: areas.length,
+                              separatorBuilder: (_, __) => const Divider(color: DqmsTheme.borderSubtle, height: 1),
+                              itemBuilder: (ctx, i) {
+                                final area = areas[i];
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                                  color: DqmsTheme.bgSurface,
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 80,
+                                        child: Text(area.areaCode, style: const TextStyle(color: DqmsTheme.brandPrimary, fontWeight: FontWeight.w700, fontSize: 13)),
+                                      ),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(area.areaName, style: const TextStyle(color: DqmsTheme.textMain, fontWeight: FontWeight.w600, fontSize: 14)),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(area.description ?? 'Location ID: ${area.locationId}', style: const TextStyle(color: DqmsTheme.textMuted, fontSize: 13)),
+                                      ),
+                                      SizedBox(
+                                        width: 100,
+                                        child: _buildStatusPill(area.isActive),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ),
         ],
@@ -187,43 +341,7 @@ class AreaMasterView extends ConsumerWidget {
     );
   }
 
-  Widget _buildAreaCard(AreaDto area) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: DqmsColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: DqmsColors.border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [DqmsColors.accent.withOpacity(0.3), DqmsColors.accentPurple.withOpacity(0.2)]),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Center(child: Text(area.areaCode, style: const TextStyle(color: DqmsColors.accent, fontWeight: FontWeight.w700, fontSize: 12))),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(area.areaName, style: const TextStyle(color: DqmsColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 15)),
-                const SizedBox(height: 4),
-                Text(area.description ?? 'Location ID: ${area.locationId}', style: const TextStyle(color: DqmsColors.textSecondary, fontSize: 13)),
-              ],
-            ),
-          ),
-          _buildStatusChip(area.isActive),
-        ],
-      ),
-    );
-  }
-
-  void _showAreaDialog(BuildContext context, WidgetRef ref) {
+  void _showCreateAreaModal(BuildContext context, WidgetRef ref) {
     final codeCtrl = TextEditingController();
     final nameCtrl = TextEditingController();
     final descCtrl = TextEditingController();
@@ -231,29 +349,29 @@ class AreaMasterView extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: DqmsColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Create Area / Zone', style: TextStyle(color: DqmsColors.textPrimary)),
+        backgroundColor: DqmsTheme.bgSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: const BorderSide(color: DqmsTheme.borderSubtle)),
+        title: const Text('Create Area / Zone Master', style: TextStyle(color: DqmsTheme.textMain, fontWeight: FontWeight.w700, fontSize: 16)),
         content: SizedBox(
-          width: 400,
+          width: 420,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildTextField(codeCtrl, 'Area Code', 'e.g. Z-01'),
+              _buildInputField(codeCtrl, 'Area Code', 'e.g. Z-01'),
               const SizedBox(height: 12),
-              _buildTextField(nameCtrl, 'Area Name', 'e.g. Radiology Zone B'),
+              _buildInputField(nameCtrl, 'Area Name', 'e.g. Radiology Zone B'),
               const SizedBox(height: 12),
-              _buildTextField(descCtrl, 'Description (Optional)', 'e.g. Imaging & Diagnostics'),
+              _buildInputField(descCtrl, 'Description', 'e.g. Diagnostic & Imaging Wing'),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: DqmsColors.textSecondary)),
+            child: const Text('Cancel', style: TextStyle(color: DqmsTheme.textMuted)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: DqmsColors.accent, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: DqmsTheme.brandPrimary, foregroundColor: Colors.white),
             onPressed: () {
               ref.read(areaListProvider.notifier).saveArea(AreaDto(
                     id: 0,
@@ -266,7 +384,7 @@ class AreaMasterView extends ConsumerWidget {
                   ));
               Navigator.pop(ctx);
             },
-            child: const Text('Save Area'),
+            child: const Text('Save Master'),
           ),
         ],
       ),
@@ -275,10 +393,10 @@ class AreaMasterView extends ConsumerWidget {
 }
 
 /// ============================================================================
-/// PROCESS MASTER VIEW
+/// 2. PROCESS MASTER TABLE VIEW
 /// ============================================================================
-class ProcessMasterView extends ConsumerWidget {
-  const ProcessMasterView({super.key});
+class ProcessMasterTableView extends ConsumerWidget {
+  const ProcessMasterTableView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -289,153 +407,174 @@ class ProcessMasterView extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(context, ref, 'Process Pipeline & SLA TAT Masters', Icons.account_tree_rounded, null),
+          _buildKpiSummaryBar([
+            _KpiItem(title: 'Active Processes', value: processState.asData?.value.length.toString() ?? '0', icon: Icons.account_tree_outlined),
+            const _KpiItem(title: 'Avg Target SLA TAT', value: '15 Mins', icon: Icons.timer_outlined),
+            const _KpiItem(title: 'Sub-Tokens Allowed', value: 'Enabled', icon: Icons.call_split_rounded),
+          ]),
           const SizedBox(height: 20),
+
+          Row(
+            children: [
+              const Text('Process Pipelines & SLA Target Masters', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700)),
+            ],
+          ),
+          const SizedBox(height: 16),
+
           Expanded(
-            child: processState.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: DqmsColors.accent)),
-              error: (err, _) => _buildErrorState(err.toString()),
-              data: (processes) => processes.isEmpty
-                  ? _buildEmptyState('No process pipelines configured yet.')
-                  : ListView.separated(
-                      itemCount: processes.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (_, i) => _buildProcessCard(processes[i]),
-                    ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: DqmsTheme.bgSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: DqmsTheme.borderSubtle),
+              ),
+              child: processState.when(
+                loading: () => const Center(child: CircularProgressIndicator(color: DqmsTheme.brandPrimary)),
+                error: (err, _) => Center(child: Text('Error loading processes: $err', style: const TextStyle(color: DqmsTheme.statusDeactive))),
+                data: (processes) => processes.isEmpty
+                    ? _buildEmptyState('No process pipelines configured yet.')
+                    : Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            decoration: const BoxDecoration(
+                              color: DqmsTheme.bgHeader,
+                              border: Border(bottom: BorderSide(color: DqmsTheme.borderSubtle)),
+                            ),
+                            child: const Row(
+                              children: [
+                                SizedBox(width: 70, child: Text('PREFIX', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                                Expanded(flex: 3, child: Text('PROCESS NAME', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                                Expanded(flex: 2, child: Text('TARGET TAT (SLA)', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                                SizedBox(width: 100, child: Text('STATUS', style: TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: processes.length,
+                              separatorBuilder: (_, __) => const Divider(color: DqmsTheme.borderSubtle, height: 1),
+                              itemBuilder: (ctx, i) {
+                                final proc = processes[i];
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                                  color: DqmsTheme.bgSurface,
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 70,
+                                        child: Text(proc.prefix, style: const TextStyle(color: DqmsTheme.statusSpecial, fontWeight: FontWeight.w800, fontSize: 16)),
+                                      ),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(proc.processName, style: const TextStyle(color: DqmsTheme.textMain, fontWeight: FontWeight.w600, fontSize: 14)),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text('${proc.targetTATMinutes} Minutes SLA', style: const TextStyle(color: DqmsTheme.statusWarning, fontSize: 13, fontWeight: FontWeight.w500)),
+                                      ),
+                                      SizedBox(
+                                        width: 100,
+                                        child: _buildStatusPill(proc.isActive),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ),
         ],
       ),
     );
   }
-
-  Widget _buildProcessCard(ProcessDto proc) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: DqmsColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: DqmsColors.border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [DqmsColors.accentPurple.withOpacity(0.3), DqmsColors.accent.withOpacity(0.2)]),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Center(child: Text(proc.prefix, style: const TextStyle(color: DqmsColors.accentPurple, fontWeight: FontWeight.w800, fontSize: 18))),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(proc.processName, style: const TextStyle(color: DqmsColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 15)),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    _buildMetaChip(Icons.timer_outlined, '${proc.targetTATMinutes} min TAT'),
-                    const SizedBox(width: 8),
-                    _buildMetaChip(Icons.call_split_rounded, proc.allowSubTokens ? 'Sub-Tokens: ON' : 'Sub-Tokens: OFF'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          _buildStatusChip(proc.isActive),
-        ],
-      ),
-    );
-  }
 }
 
 /// ============================================================================
-/// DISPLAY TEMPLATE VIEW (Placeholder)
+/// PLACEHOLDER VIEWS FOR STAGE 1 EXPANSION
 /// ============================================================================
-class DisplayTemplateMasterView extends StatelessWidget {
-  const DisplayTemplateMasterView({super.key});
+class DisplayTemplateView extends StatelessWidget {
+  const DisplayTemplateView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(24),
-      child: _buildEmptyState('Display Template configuration will be available in a future update.\nTemplate types: GridView, Split-Screen Video, High-Density List, Audio-Visual Banner.'),
+      child: _buildEmptyState('Display Template Configuration View\nSupported layouts: GridView (21001), Split-Screen Video (21002), High-Density List (21003).'),
     );
   }
 }
 
-/// ============================================================================
-/// COUNTER MASTER VIEW (Placeholder)
-/// ============================================================================
-class CounterMasterView extends StatelessWidget {
-  const CounterMasterView({super.key});
+class CounterStationView extends StatelessWidget {
+  const CounterStationView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(24),
-      child: _buildEmptyState('Counter/Window assignment configuration will be available in a future update.'),
+      child: _buildEmptyState('Counter / Window Station Master View\nMaps counter numbers to assigned staff operators and area locations.'),
     );
   }
 }
 
 /// ============================================================================
-/// SHARED UI HELPERS
+/// REFINED ENTERPRISE UI COMPONENTS (Per UI_UX_DESIGN_SPEC.md)
 /// ============================================================================
-Widget _buildHeader(BuildContext context, WidgetRef ref, String title, IconData icon, VoidCallback? onAdd) {
+Widget _buildKpiSummaryBar(List<_KpiItem> items) {
   return Row(
-    children: [
-      Icon(icon, color: DqmsColors.accent, size: 24),
-      const SizedBox(width: 10),
-      Text(title, style: const TextStyle(color: DqmsColors.textPrimary, fontSize: 20, fontWeight: FontWeight.w700)),
-      const Spacer(),
-      if (onAdd != null)
-        ElevatedButton.icon(
-          icon: const Icon(Icons.add_rounded, size: 18),
-          label: const Text('Add New'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: DqmsColors.accent,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    children: items.map((item) {
+      return Expanded(
+        child: Container(
+          margin: const EdgeInsets.only(right: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: DqmsTheme.bgSurface,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: DqmsTheme.borderSubtle),
           ),
-          onPressed: onAdd,
+          child: Row(
+            children: [
+              Icon(item.icon, color: DqmsTheme.brandPrimary, size: 22),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.title, style: const TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text(item.value, style: const TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ],
+          ),
         ),
-    ],
+      );
+    }).toList(),
   );
 }
 
-Widget _buildStatusChip(bool isActive) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-    decoration: BoxDecoration(
-      color: isActive ? DqmsColors.accentGreen.withOpacity(0.12) : DqmsColors.accentRed.withOpacity(0.12),
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Text(
-      isActive ? 'Active' : 'Deactive',
-      style: TextStyle(color: isActive ? DqmsColors.accentGreen : DqmsColors.accentRed, fontSize: 12, fontWeight: FontWeight.w600),
-    ),
-  );
+class _KpiItem {
+  final String title;
+  final String value;
+  final IconData icon;
+  const _KpiItem({required this.title, required this.value, required this.icon});
 }
 
-Widget _buildMetaChip(IconData icon, String label) {
+Widget _buildStatusPill(bool isActive) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
     decoration: BoxDecoration(
-      color: DqmsColors.surfaceLight,
-      borderRadius: BorderRadius.circular(6),
+      color: isActive ? DqmsTheme.statusActive.withValues(alpha: 0.15) : DqmsTheme.statusDeactive.withValues(alpha: 0.15),
+      borderRadius: BorderRadius.circular(4),
+      border: Border.all(color: isActive ? DqmsTheme.statusActive.withValues(alpha: 0.3) : DqmsTheme.statusDeactive.withValues(alpha: 0.3)),
     ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: DqmsColors.textSecondary, size: 14),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(color: DqmsColors.textSecondary, fontSize: 12)),
-      ],
+    child: Text(
+      isActive ? 'Active' : 'Deactive',
+      textAlign: TextAlign.center,
+      style: TextStyle(color: isActive ? DqmsTheme.statusActive : DqmsTheme.statusDeactive, fontSize: 11, fontWeight: FontWeight.w600),
     ),
   );
 }
@@ -445,41 +584,28 @@ Widget _buildEmptyState(String message) {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.inbox_rounded, color: DqmsColors.textSecondary.withOpacity(0.4), size: 64),
-        const SizedBox(height: 16),
-        Text(message, textAlign: TextAlign.center, style: const TextStyle(color: DqmsColors.textSecondary, fontSize: 14)),
+        const Icon(Icons.inbox_outlined, color: DqmsTheme.textSubtle, size: 48),
+        const SizedBox(height: 12),
+        Text(message, textAlign: TextAlign.center, style: const TextStyle(color: DqmsTheme.textMuted, fontSize: 13)),
       ],
     ),
   );
 }
 
-Widget _buildErrorState(String error) {
-  return Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.error_outline_rounded, color: DqmsColors.accentRed, size: 48),
-        const SizedBox(height: 16),
-        Text('Error: $error', style: const TextStyle(color: DqmsColors.accentRed, fontSize: 14)),
-      ],
-    ),
-  );
-}
-
-Widget _buildTextField(TextEditingController controller, String label, String hint) {
+Widget _buildInputField(TextEditingController controller, String label, String hint) {
   return TextField(
     controller: controller,
-    style: const TextStyle(color: DqmsColors.textPrimary),
+    style: const TextStyle(color: DqmsTheme.textMain, fontSize: 13),
     decoration: InputDecoration(
       labelText: label,
       hintText: hint,
-      labelStyle: const TextStyle(color: DqmsColors.textSecondary),
-      hintStyle: TextStyle(color: DqmsColors.textSecondary.withOpacity(0.5)),
+      labelStyle: const TextStyle(color: DqmsTheme.textMuted, fontSize: 12),
+      hintStyle: const TextStyle(color: DqmsTheme.textSubtle, fontSize: 12),
       filled: true,
-      fillColor: DqmsColors.surfaceLight,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: DqmsColors.border)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: DqmsColors.border)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: DqmsColors.accent)),
+      fillColor: DqmsTheme.bgCanvas,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: DqmsTheme.borderSubtle)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: DqmsTheme.borderSubtle)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: DqmsTheme.brandPrimary)),
     ),
   );
 }
