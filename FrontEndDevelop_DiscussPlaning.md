@@ -106,17 +106,60 @@ To achieve **100% shared code** across Web, Android, iOS, Windows, and Linux wit
 
 ---
 
-## 🌐 6. Web-First Optimizations
+## 🌐 6. Web-First & Offline-First Optimizations
 
 1. **Web-First Code Splitting (`Deferred Loading`)**:
    - Heavy feature modules use Flutter's `deferred as` import statement. Web browsers download feature bundles on-demand, keeping initial JS payload lightweight.
 2. **Declarative URL State Management (`go_router`)**:
    - Maps browser URLs directly to BLoC states for deep-linking, bookmarking, and native back/forward button behavior.
+3. **Backend Feature Flag Integration (`Microsoft.FeatureManagement`)**:
+   - On app startup, the `FeatureRegistry` queries the .NET API feature flags endpoint (`/api/v1/features`). If a feature flag is disabled on the backend, the Flutter shell automatically hides its navigation links and blocks route access at runtime.
+4. **Offline-First Synchronization Strategy**:
+   - Utilizes `Dio Cache Interceptor` + local persistent storage (`Hive` / `IndexedDB`). Requests read from local cache first while fetching updates in the background, enabling instantaneous screen rendering and offline usability.
 
 ---
 
-## 📋 7. Summary Evaluation
+## 🚀 7. Frontend CI/CD Build Matrix (GitHub Actions)
+
+Include a multi-target build pipeline inside `.github/workflows/frontend-ci.yml` in `DQMS_APP`:
+
+```yaml
+name: Flutter Multi-Target Build & Test
+
+on:
+  push:
+    branches: [ develop, qa, main ]
+  pull_request:
+    branches: [ develop, qa ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter test --coverage
+      - run: flutter analyze
+
+  build-web:
+    needs: test
+    if: github.ref == 'refs/heads/qa' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+      - run: flutter build web --wasm --release
+```
+
+---
+
+## 📋 8. Summary Evaluation
 
 - **Code Reusability**: **100% Shared Single Codebase** across Web, Mobile (Android, iOS), and Desktop (Windows, Linux).
 - **Extensibility Rating**: **High (5/5)** due to feature-sliced package isolation.
 - **Backend Alignment**: Seamless 1:1 mapping to **DNAQMS Enterprise API** (.NET 8 Modular Monolith).
+
