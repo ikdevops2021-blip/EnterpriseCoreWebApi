@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/admin_models.dart';
+import '../../staff/screens/counter_operator_screen.dart';
 import '../providers/admin_providers.dart';
 
 /// ============================================================================
@@ -145,6 +146,19 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
               ref.read(templateListProvider.notifier).refresh();
             },
             tooltip: 'Refresh Masters',
+          ),
+          const SizedBox(width: 12),
+          OutlinedButton.icon(
+            icon: const Icon(Icons.desk_rounded, size: 14),
+            label: const Text('Launch Stage 2 Operator Station', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: DqmsTheme.brandPrimary,
+              side: const BorderSide(color: DqmsTheme.brandPrimary),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            ),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CounterOperatorScreen()));
+            },
           ),
           const SizedBox(width: 12),
           Container(
