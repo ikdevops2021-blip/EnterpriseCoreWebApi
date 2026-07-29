@@ -1,0 +1,16 @@
+CREATE TABLE [ApiKey] (
+    [Id] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+    [KeyHash] NVARCHAR(255) NOT NULL,
+    [Name] NVARCHAR(100) NOT NULL,
+    [UserId] INT NOT NULL,
+    [ExpiresAt] DATETIME NULL,
+    [IsActive] BIT NOT NULL DEFAULT 1,
+    [CreatedBy] INT NOT NULL,
+    [CreatedDate] DATETIME NOT NULL DEFAULT GETDATE(),
+    [ModifiedBy] INT NOT NULL,
+    [ModifiedDate] DATETIME NOT NULL DEFAULT GETDATE(),
+    [IsDeleted] BIT NULL DEFAULT 0,
+    [DeletedBy] INT NULL,
+    [DeletedDate] DATETIME NULL
+);
+GO

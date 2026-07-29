@@ -1,0 +1,21 @@
+## Ignore Visual Studio / VS Code temporary files
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+
+## Ignore Build Outputs
+[Bb]in/
+[Oo]bj/
+out/
+publish/
+
+## Ignore OS / Log files
+*.log
+api_error.txt
+graphify-out/
+
+## Ignore User Specific Settings
+appsettings.Development.json
+appsettings.Local.json

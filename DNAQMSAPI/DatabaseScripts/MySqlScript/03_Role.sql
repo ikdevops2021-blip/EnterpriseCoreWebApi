@@ -1,0 +1,15 @@
+CREATE TABLE `Role` (
+    `Id` INT PRIMARY KEY AUTO_INCREMENT,
+    `Name` VARCHAR(100) NOT NULL,
+    `Description` VARCHAR(250) NULL,
+    `Priority` INT NOT NULL DEFAULT 1,
+    `OrganizationId` INT NULL,
+    `IsActive` TINYINT(1) NOT NULL DEFAULT 1,
+    `CreatedBy` INT NOT NULL,
+    `CreatedDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `ModifiedBy` INT NOT NULL,
+    `ModifiedDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `IsDeleted` TINYINT(1) NULL DEFAULT 0,
+    `DeletedBy` INT NULL,
+    `DeletedDate` DATETIME NULL
+);

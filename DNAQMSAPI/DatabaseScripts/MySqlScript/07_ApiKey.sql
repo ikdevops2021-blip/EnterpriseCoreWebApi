@@ -1,0 +1,15 @@
+CREATE TABLE `ApiKey` (
+    `Id` CHAR(36) NOT NULL PRIMARY KEY,
+    `KeyHash` VARCHAR(255) NOT NULL,
+    `Name` VARCHAR(100) NOT NULL,
+    `UserId` INT NOT NULL,
+    `ExpiresAt` DATETIME NULL,
+    `IsActive` TINYINT(1) NOT NULL DEFAULT 1,
+    `CreatedBy` INT NOT NULL,
+    `CreatedDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `ModifiedBy` INT NOT NULL,
+    `ModifiedDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `IsDeleted` TINYINT(1) NULL DEFAULT 0,
+    `DeletedBy` INT NULL,
+    `DeletedDate` DATETIME NULL
+);

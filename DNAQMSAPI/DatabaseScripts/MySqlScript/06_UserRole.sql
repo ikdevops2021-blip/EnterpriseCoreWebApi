@@ -1,0 +1,14 @@
+CREATE TABLE `UserRole` (
+    `Id` INT AUTO_INCREMENT PRIMARY KEY,
+    `UserId` INT NOT NULL,
+    `RoleId` INT NOT NULL,
+    `OrganizationId` INT NULL,
+    `IsActive` TINYINT(1) NOT NULL DEFAULT 1,
+    `CreatedBy` INT NOT NULL,
+    `CreatedDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `ModifiedBy` INT NOT NULL,
+    `ModifiedDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `IsDeleted` TINYINT(1) NULL DEFAULT 0,
+    `DeletedBy` INT NULL,
+    `DeletedDate` DATETIME NULL
+);
