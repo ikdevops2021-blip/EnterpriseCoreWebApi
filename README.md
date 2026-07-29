@@ -309,6 +309,14 @@ cd MyCustomEnterpriseAPI
 
 ---
 
+## 🔄 Dual-Repository Synchronization & Workflow
+
+For detailed instructions on maintaining and synchronizing core Web API features between **`EnterpriseCoreWebApi`** (Template) and active application repositories like **`DQMS_APP`**, see the dedicated guide:
+
+👉 [**CORE_TEMPLATE_SYNC_GUIDE.md**](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/CORE_TEMPLATE_SYNC_GUIDE.md)
+
+---
+
 ## 🧪 Testing & Verification Scripts
 
 The repository includes pre-built PowerShell test runners for local integration testing:
