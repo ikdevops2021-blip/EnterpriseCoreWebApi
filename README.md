@@ -211,35 +211,59 @@ EnterpriseCoreWebApi/
 
 ---
 
-## 🔧 How to Use as a Template for New Projects
+## 🔧 How to Use This Core Template
 
-### Option A: Direct Clone (Manual Re-naming)
-1. Clone this repository into your new project directory.
-2. Rename namespaces from `AntiGravity.Enterprise` / `DNAQMSAPI` to your project name (e.g. `MyCompany.NewService`).
-3. Update connection strings in `appsettings.json`.
+You can use this core template in two primary ways:
 
-### Option B: `.NET Custom Template` (`dotnet new`)
-You can install this repository as a native reusable `.NET template` directly from GitHub or a local checkout:
+---
 
-#### 1. Install Template:
+### Strategy 1: Using `.NET Custom CLI Template` (`dotnet new`) — Recommended for New Projects
+
+Install this repository as a reusable template on your development machine. The .NET CLI automatically renames all solution files, projects, namespaces, and directory structures to match your new project name.
+
+#### 1. Install the Template:
 ```bash
-# Install directly from local repository directory
-dotnet new install ./
-
-# Or install directly from GitHub (once packaged/tagged)
+# Install directly from GitHub
 dotnet new install https://github.com/ikdevops2021-blip/EnterpriseCoreWebApi.git
+
+# Or install locally from your cloned directory
+dotnet new install ./
 ```
 
-#### 2. Create a Brand New API Project:
+#### 2. Generate a New API Microservice:
 ```bash
-# Scaffolding a new enterprise API microservice (e.g. MyCompany.OrderAPI)
-dotnet new enterprise-api -n MyCompany.OrderAPI
+# Create a new project with your company/service namespace (e.g., MyCompany.PaymentAPI)
+dotnet new enterprise-api -n MyCompany.PaymentAPI
+
+# Navigate into your new project
+cd MyCompany.PaymentAPI
 ```
 
-#### 3. Uninstall Template (If needed):
+#### 3. Manage Installed Templates:
 ```bash
-dotnet new uninstall E:\MySourceCodes\AntiGravity_Projects\WebAPIs\antigravity-enterprise
+# Check installed template list
+dotnet new list
+
+# Uninstall template if needed
+dotnet new uninstall EnterpriseCoreWebApi
 ```
+
+---
+
+### Strategy 2: Direct Git Repository Workflow — For Framework Contributors & Custom Forks
+
+If you want to customize the core starter architecture, add new base modules, or maintain a company-wide base template:
+
+#### 1. Clone the Git Repository:
+```bash
+git clone https://github.com/ikdevops2021-blip/EnterpriseCoreWebApi.git MyCustomEnterpriseAPI
+cd MyCustomEnterpriseAPI
+```
+
+#### 2. Configure Database & Launch:
+1. Update `DNAQMSAPI/appsettings.json` with your MySQL or MS SQL Server connection string.
+2. Run `dotnet run --project SeederApp` to create and migrate your database.
+3. Run `dotnet run --project DNAQMSAPI/DNAQMSAPI.API` to launch your API!
 
 ---
 
