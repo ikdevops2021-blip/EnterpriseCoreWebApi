@@ -21,6 +21,30 @@ An enterprise-ready, production-grade **.NET 8 Web API Core Template** built wit
 
 ---
 
+## ⚡ Dapper DB Factory (`IDapperDBFactory`)
+
+The template includes a generic, high-performance **Dapper DB Factory** ([DapperDBFactory.cs](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/AntiGravity.Enterprise.Shared.Core/Data/DapperDBFactory.cs)) located in `AntiGravity.Enterprise.Shared.Core`. 
+
+It acts as a unified abstraction layer over `IDbConnection` and `Dapper`, eliminating boilerplate code while providing seamless connection pooling, dynamic provider switching, and transaction management across multiple connection targets simultaneously.
+
+### Supported Databases & Providers:
+| Database Type | Configuration Key (`Type`) | Underpinning ADO.NET Client | Usage / Target Scenario |
+| :--- | :--- | :--- | :--- |
+| **Microsoft SQL Server** | `"SqlServer"` | `Microsoft.Data.SqlClient` | Enterprise RDBMS (T-SQL, Stored Procs, Transactions) |
+| **MySQL / MariaDB** | `"MySql"` | `MySql.Data.MySqlClient` | Open-Source RDBMS (MySQL Dialect, Stored Procs) |
+| **Oracle Database** | `"Oracle"` | `Oracle.ManagedDataAccess.Client` | Enterprise Oracle RDBMS |
+| **SQLite** | `"SQLite"` | `Microsoft.Data.Sqlite` | Embedded / Local File Database & Lightweight Testing |
+| **MongoDB / DocumentDB**| `"MongoDb"` | `MongoDB.Driver` | NoSQL Document Store (Mapped via DB Wrapper) |
+
+### Key DB Factory Features:
+1. **Dynamic Provider Switching**: Simply change `"Type": "MySql"` or `"Type": "SqlServer"` in `appsettings.json` without modifying any repository or service code.
+2. **Multi-Connection Support**: Manage multiple database connections simultaneously by passing named connection targets to `_dbFactory.GetConnection("SecondaryConnection")`.
+3. **Transaction Management**: Built-in Unit-of-Work support via `BeginTransaction()`, `CommitTransaction()`, and `RollbackTransaction()`.
+4. **Stored Procedure & Grid Reader Helpers**: Direct support for multi-result grid readers (`QueryMultipleAsync`) and execution helpers (`ExecuteAsync`, `QueryAsync`).
+
+
+---
+
 ## 🚀 Quick Start Guide
 
 ### Prerequisites
