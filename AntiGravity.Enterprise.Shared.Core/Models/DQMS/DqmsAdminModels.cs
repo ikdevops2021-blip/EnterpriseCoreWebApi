@@ -77,4 +77,38 @@ namespace AntiGravity.Enterprise.Shared.Core.Models.DQMS
         public int CreatedBy { get; set; }
         public DateTime CreatedDate { get; set; }
     }
+
+    public class ConfigCategoryDto
+    {
+        public int CategoryId { get; set; }
+        public string CategoryCode { get; set; } = string.Empty;
+        public string CategoryName { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int Priority { get; set; } = 1;
+        public bool Active { get; set; } = true;
+        public bool AllowModify { get; set; } = true;
+        public string RangeText { get; set; } = string.Empty;
+        public string? CategoryExternalId { get; set; }
+        public string? CategoryExternalCode { get; set; }
+        public string? CategoryColor { get; set; } = "#2F81F7";
+        public string? CategoryIcon { get; set; } = "category";
+        public string? CategoryImage { get; set; }
+    }
+
+    public class ConfigParameterDto
+    {
+        public int ParameterId { get; set; }
+        public int CategoryId { get; set; }
+        public string ParamCode { get; set; } = string.Empty;
+        public string ParamName { get; set; } = string.Empty;
+        public bool IsDefault { get; set; }
+        public int Priority { get; set; } = 1;
+        public bool IsActive { get; set; } = true;
+        public string Description { get; set; } = string.Empty;
+        public string? ParameterExternalId { get; set; }
+        public string? ParameterExternalCode { get; set; }
+        public string? ParameterColor { get; set; } = "#2F81F7";
+        public string? ParameterIcon { get; set; } = "code";
+        public string? ParameterImage { get; set; }
+    }
 }

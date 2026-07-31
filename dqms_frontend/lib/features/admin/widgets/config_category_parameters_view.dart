@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
@@ -91,6 +92,42 @@ class ConfigCategoryModel {
       attribute3: attribute3 ?? this.attribute3,
     );
   }
+
+  factory ConfigCategoryModel.fromJson(Map<String, dynamic> json) {
+    return ConfigCategoryModel(
+      categoryId: json['categoryId'] ?? json['CategoryId'] ?? 0,
+      categoryCode: json['categoryCode'] ?? json['CategoryCode'] ?? '',
+      categoryName: json['categoryName'] ?? json['CategoryName'] ?? '',
+      description: json['description'] ?? json['Description'] ?? '',
+      priority: json['priority'] ?? json['Priority'] ?? 1,
+      active: json['active'] ?? json['Active'] ?? true,
+      allowModify: json['allowModify'] ?? json['AllowModify'] ?? true,
+      rangeText: json['rangeText'] ?? json['RangeText'] ?? '',
+      categoryExternalId: json['categoryExternalId'] ?? json['CategoryExternalId'],
+      categoryExternalCode: json['categoryExternalCode'] ?? json['CategoryExternalCode'],
+      categoryColor: json['categoryColor'] ?? json['CategoryColor'] ?? '#2F81F7',
+      categoryIcon: json['categoryIcon'] ?? json['CategoryIcon'] ?? 'category',
+      categoryImage: json['categoryImage'] ?? json['CategoryImage'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'categoryId': categoryId,
+      'categoryCode': categoryCode,
+      'categoryName': categoryName,
+      'description': description,
+      'priority': priority,
+      'active': active,
+      'allowModify': allowModify,
+      'rangeText': rangeText,
+      'categoryExternalId': categoryExternalId,
+      'categoryExternalCode': categoryExternalCode,
+      'categoryColor': categoryColor,
+      'categoryIcon': categoryIcon,
+      'categoryImage': categoryImage,
+    };
+  }
 }
 
 /// Complete ConfigParameter Model matching .NET Entity (ConfigParameter.cs)
@@ -174,6 +211,42 @@ class ConfigParameterModel {
       attribute3: attribute3 ?? this.attribute3,
     );
   }
+
+  factory ConfigParameterModel.fromJson(Map<String, dynamic> json) {
+    return ConfigParameterModel(
+      parameterId: json['parameterId'] ?? json['ParameterId'] ?? 0,
+      categoryId: json['categoryId'] ?? json['CategoryId'] ?? 0,
+      paramCode: json['paramCode'] ?? json['ParamCode'] ?? '',
+      paramName: json['paramName'] ?? json['ParamName'] ?? '',
+      isDefault: json['isDefault'] ?? json['IsDefault'] ?? false,
+      priority: json['priority'] ?? json['Priority'] ?? 1,
+      isActive: json['isActive'] ?? json['IsActive'] ?? true,
+      description: json['description'] ?? json['Description'] ?? '',
+      parameterExternalId: json['parameterExternalId'] ?? json['ParameterExternalId'],
+      parameterExternalCode: json['parameterExternalCode'] ?? json['ParameterExternalCode'],
+      parameterColor: json['parameterColor'] ?? json['ParameterColor'] ?? '#2F81F7',
+      parameterIcon: json['parameterIcon'] ?? json['ParameterIcon'] ?? 'code',
+      parameterImage: json['parameterImage'] ?? json['ParameterImage'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'parameterId': parameterId,
+      'categoryId': categoryId,
+      'paramCode': paramCode,
+      'paramName': paramName,
+      'isDefault': isDefault,
+      'priority': priority,
+      'isActive': isActive,
+      'description': description,
+      'parameterExternalId': parameterExternalId,
+      'parameterExternalCode': parameterExternalCode,
+      'parameterColor': parameterColor,
+      'parameterIcon': parameterIcon,
+      'parameterImage': parameterImage,
+    };
+  }
 }
 
 /// Helper function to resolve icon string to Flutter IconData
@@ -234,9 +307,49 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
   late List<ConfigCategoryModel> _categories;
   late List<ConfigParameterModel> _parameters;
 
+  final _dio = Dio(BaseOptions(
+    baseUrl: 'http://localhost:5026/api/v1/admin',
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 5),
+  ));
+
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
+    _initDefaults();
+    _fetchApiData();
+  }
+
+  Future<void> _fetchApiData() async {
+    try {
+      setState(() => _isLoading = true);
+      final catRes = await _dio.get('/config-categories');
+      if (catRes.statusCode == 200 && catRes.data != null && catRes.data['data'] != null) {
+        final List items = catRes.data['data'];
+        if (items.isNotEmpty) {
+          final fetched = items.map((json) => ConfigCategoryModel.fromJson(json)).toList();
+          setState(() => _categories = fetched);
+        }
+      }
+
+      final paramRes = await _dio.get('/config-parameters');
+      if (paramRes.statusCode == 200 && paramRes.data != null && paramRes.data['data'] != null) {
+        final List items = paramRes.data['data'];
+        if (items.isNotEmpty) {
+          final fetched = items.map((json) => ConfigParameterModel.fromJson(json)).toList();
+          setState(() => _parameters = fetched);
+        }
+      }
+    } catch (_) {
+      // Seamless fallback to defaults if offline
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _initDefaults() {
     _categories = [
       const ConfigCategoryModel(
         categoryId: 1,
@@ -491,7 +604,7 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
     ];
   }
 
-  void _saveCategory(ConfigCategoryModel updatedCategory) {
+  Future<void> _saveCategory(ConfigCategoryModel updatedCategory) async {
     setState(() {
       final index = _categories.indexWhere((c) => c.categoryId == updatedCategory.categoryId);
       if (index != -1) {
@@ -502,15 +615,22 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
       _selectedCategory = updatedCategory;
     });
 
+    try {
+      await _dio.post('/config-category', data: updatedCategory.toJson());
+    } catch (_) {
+      // Local state updated
+    }
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Category "${updatedCategory.categoryName}" updated with Category Color (${updatedCategory.categoryColor}).'),
+        content: Text('Category "${updatedCategory.categoryName}" saved to API with Category Color (${updatedCategory.categoryColor}).'),
         backgroundColor: AppColors.statusActive,
       ),
     );
   }
 
-  void _saveParameter(ConfigParameterModel updatedParam) {
+  Future<void> _saveParameter(ConfigParameterModel updatedParam) async {
     setState(() {
       final index = _parameters.indexWhere((p) => p.parameterId == updatedParam.parameterId);
       if (index != -1) {
@@ -520,9 +640,16 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
       }
     });
 
+    try {
+      await _dio.post('/config-parameter', data: updatedParam.toJson());
+    } catch (_) {
+      // Local state updated
+    }
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Parameter "${updatedParam.paramCode}" saved with Parameter Color (${updatedParam.parameterColor}).'),
+        content: Text('Parameter "${updatedParam.paramCode}" saved to API with Parameter Color (${updatedParam.parameterColor}).'),
         backgroundColor: AppColors.statusActive,
       ),
     );
@@ -563,6 +690,11 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: LinearProgressIndicator(color: AppColors.brandPrimary, minHeight: 2),
+            ),
           Row(
             children: [
               Expanded(

@@ -98,5 +98,45 @@ namespace DNAQMSAPI.Api.Controllers
             var result = await _adminService.SaveDisplayTemplateAsync(model, userId);
             return ApiResponse(result);
         }
+
+        /// <summary>
+        /// Gets Config Categories using e_ActiveSearchStatus.
+        /// </summary>
+        [HttpGet("config-categories")]
+        public async Task<IActionResult> GetConfigCategories([FromQuery] int? id, [FromQuery] e_ActiveSearchStatus isActive = e_ActiveSearchStatus.Active)
+        {
+            var result = await _adminService.GetConfigCategoriesAsync(id, isActive);
+            return ApiResponse(result);
+        }
+
+        /// <summary>
+        /// Gets Config Parameters by Category using e_ActiveSearchStatus.
+        /// </summary>
+        [HttpGet("config-parameters")]
+        public async Task<IActionResult> GetConfigParameters([FromQuery] int? categoryId, [FromQuery] int? id, [FromQuery] e_ActiveSearchStatus isActive = e_ActiveSearchStatus.Active)
+        {
+            var result = await _adminService.GetConfigParametersAsync(categoryId, id, isActive);
+            return ApiResponse(result);
+        }
+
+        /// <summary>
+        /// Creates or Updates a Config Category.
+        /// </summary>
+        [HttpPost("config-category")]
+        public async Task<IActionResult> SaveConfigCategory([FromBody] ConfigCategoryDto model, [FromHeader(Name = "X-User-Id")] int userId = 1)
+        {
+            var result = await _adminService.SaveConfigCategoryAsync(model, userId);
+            return ApiResponse(result);
+        }
+
+        /// <summary>
+        /// Creates or Updates a Config Parameter.
+        /// </summary>
+        [HttpPost("config-parameter")]
+        public async Task<IActionResult> SaveConfigParameter([FromBody] ConfigParameterDto model, [FromHeader(Name = "X-User-Id")] int userId = 1)
+        {
+            var result = await _adminService.SaveConfigParameterAsync(model, userId);
+            return ApiResponse(result);
+        }
     }
 }

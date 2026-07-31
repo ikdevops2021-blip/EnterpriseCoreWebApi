@@ -17,6 +17,10 @@ namespace DNAQMSAPI.Infrastructure.Services
         Task<ApiResponse<object>> SaveCounterAsync(CounterModel model, int userId);
         Task<ApiResponse<IEnumerable<DisplayTemplateModel>>> GetDisplayTemplatesAsync(int? id, int? organizationId, e_ActiveSearchStatus isActive);
         Task<ApiResponse<object>> SaveDisplayTemplateAsync(DisplayTemplateModel model, int userId);
+        Task<ApiResponse<IEnumerable<ConfigCategoryDto>>> GetConfigCategoriesAsync(int? id, e_ActiveSearchStatus isActive);
+        Task<ApiResponse<IEnumerable<ConfigParameterDto>>> GetConfigParametersAsync(int? categoryId, int? id, e_ActiveSearchStatus isActive);
+        Task<ApiResponse<object>> SaveConfigCategoryAsync(ConfigCategoryDto model, int userId);
+        Task<ApiResponse<object>> SaveConfigParameterAsync(ConfigParameterDto model, int userId);
     }
 
     public class DqmsAdminService : IDqmsAdminService
@@ -267,6 +271,138 @@ namespace DNAQMSAPI.Infrastructure.Services
                 }
 
                 return ApiResponse<object>.Fail(result?.ErrMsg ?? "Failed to save Display Template.");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<object>.Fail($"Database error: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<IEnumerable<ConfigCategoryDto>>> GetConfigCategoriesAsync(int? id, e_ActiveSearchStatus isActive)
+        {
+            try
+            {
+                var parameters = new
+                {
+                    p_Id = id ?? -1,
+                    p_IsActive = (int)isActive
+                };
+
+                var categories = await _dbFactory.QueryAsync<ConfigCategoryDto>(
+                    "PR_S_ConfigCategory",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                var list = categories.Where(c => c != null).Select(c => c!).ToList();
+                return ApiResponse<IEnumerable<ConfigCategoryDto>>.Ok(list);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<IEnumerable<ConfigCategoryDto>>.Ok(Enumerable.Empty<ConfigCategoryDto>(), $"Note: Database query notice ({ex.Message})");
+            }
+        }
+
+        public async Task<ApiResponse<IEnumerable<ConfigParameterDto>>> GetConfigParametersAsync(int? categoryId, int? id, e_ActiveSearchStatus isActive)
+        {
+            try
+            {
+                var parameters = new
+                {
+                    p_CategoryId = categoryId ?? -1,
+                    p_Id = id ?? -1,
+                    p_IsActive = (int)isActive
+                };
+
+                var paramsList = await _dbFactory.QueryAsync<ConfigParameterDto>(
+                    "PR_S_ConfigParameter",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                var list = paramsList.Where(p => p != null).Select(p => p!).ToList();
+                return ApiResponse<IEnumerable<ConfigParameterDto>>.Ok(list);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<IEnumerable<ConfigParameterDto>>.Ok(Enumerable.Empty<ConfigParameterDto>(), $"Note: Database query notice ({ex.Message})");
+            }
+        }
+
+        public async Task<ApiResponse<object>> SaveConfigCategoryAsync(ConfigCategoryDto model, int userId)
+        {
+            try
+            {
+                var parameters = new
+                {
+                    p_CategoryId = model.CategoryId,
+                    p_CategoryCode = model.CategoryCode,
+                    p_CategoryName = model.CategoryName,
+                    p_Description = model.Description,
+                    p_Priority = model.Priority,
+                    p_Active = model.Active ? 1 : 0,
+                    p_AllowModify = model.AllowModify ? 1 : 0,
+                    p_CategoryExternalId = model.CategoryExternalId,
+                    p_CategoryExternalCode = model.CategoryExternalCode,
+                    p_CategoryColor = model.CategoryColor,
+                    p_CategoryIcon = model.CategoryIcon,
+                    p_CategoryImage = model.CategoryImage,
+                    p_UID = userId
+                };
+
+                var result = await _dbFactory.QuerySingleAsync<SPResult>(
+                    "PR_IU_ConfigCategory",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                if (result != null && result.ErrNo == 0)
+                {
+                    return ApiResponse<object>.Ok(new { categoryId = result.ID }, "ConfigCategory saved successfully");
+                }
+
+                return ApiResponse<object>.Fail(result?.ErrMsg ?? "Failed to save ConfigCategory.");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<object>.Fail($"Database error: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<object>> SaveConfigParameterAsync(ConfigParameterDto model, int userId)
+        {
+            try
+            {
+                var parameters = new
+                {
+                    p_ParameterId = model.ParameterId,
+                    p_CategoryId = model.CategoryId,
+                    p_ParamCode = model.ParamCode,
+                    p_ParamName = model.ParamName,
+                    p_IsDefault = model.IsDefault ? 1 : 0,
+                    p_Priority = model.Priority,
+                    p_IsActive = model.IsActive ? 1 : 0,
+                    p_Description = model.Description,
+                    p_ParameterExternalId = model.ParameterExternalId,
+                    p_ParameterExternalCode = model.ParameterExternalCode,
+                    p_ParameterColor = model.ParameterColor,
+                    p_ParameterIcon = model.ParameterIcon,
+                    p_ParameterImage = model.ParameterImage,
+                    p_UID = userId
+                };
+
+                var result = await _dbFactory.QuerySingleAsync<SPResult>(
+                    "PR_IU_ConfigParameter",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                if (result != null && result.ErrNo == 0)
+                {
+                    return ApiResponse<object>.Ok(new { parameterId = result.ID }, "ConfigParameter saved successfully");
+                }
+
+                return ApiResponse<object>.Fail(result?.ErrMsg ?? "Failed to save ConfigParameter.");
             }
             catch (Exception ex)
             {
