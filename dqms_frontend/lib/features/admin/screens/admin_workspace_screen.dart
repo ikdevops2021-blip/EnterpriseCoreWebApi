@@ -18,6 +18,8 @@ import 'package:dqms_frontend/features/admin/widgets/analytics_entry_view.dart';
 
 import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart';
+import 'package:dqms_frontend/features/auth/providers/auth_provider.dart';
+import 'package:dqms_frontend/features/auth/screens/login_screen.dart';
 
 /// Navigation Item Model
 class _AdminNavItem {
@@ -217,50 +219,106 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
             ),
             const SizedBox(width: 16),
 
-            // Logged-In System Admin User Profile Details
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.bgSurface,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: AppColors.borderSubtle),
+            // Logged-In User Profile Details with Dropdown & Logout
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'logout') {
+                  ref.read(authStateProvider.notifier).logout();
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    (route) => false,
+                  );
+                }
+              },
+              tooltip: 'Account Session Options',
+              color: AppColors.bgSurface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: const BorderSide(color: AppColors.borderSubtle),
               ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 12,
-                    backgroundColor: AppColors.brandPrimary.withValues(alpha: 0.2),
-                    child: const Text(
-                      'SA',
-                      style: TextStyle(color: AppColors.brandPrimary, fontSize: 10, fontWeight: FontWeight.w800),
+              itemBuilder: (context) {
+                final user = ref.read(authStateProvider).currentUser;
+                return [
+                  PopupMenuItem<String>(
+                    enabled: false,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(user?.fullName ?? 'System Admin', style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w800)),
+                        Text(user?.email ?? 'admin@dnaqms.com', style: const TextStyle(color: AppColors.textSubtle, fontSize: 11)),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        children: [
-                          Text('System Admin', style: TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w700)),
-                          SizedBox(width: 4),
-                          Text('(ID: 1)', style: TextStyle(color: AppColors.textSubtle, fontSize: 10)),
-                        ],
-                      ),
-                      Text('SuperAdmin • Role ID: 1', style: TextStyle(color: AppColors.brandAccent, fontSize: 9, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: AppColors.statusActive,
-                      shape: BoxShape.circle,
+                  const PopupMenuDivider(),
+                  const PopupMenuItem<String>(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout_rounded, size: 16, color: AppColors.statusDeactive),
+                        SizedBox(width: 8),
+                        Text('Log Out / Switch Tenant', style: TextStyle(color: AppColors.statusDeactive, fontSize: 12, fontWeight: FontWeight.w700)),
+                      ],
                     ),
                   ),
-                ],
+                ];
+              },
+              child: Builder(
+                builder: (context) {
+                  final user = ref.watch(authStateProvider).currentUser;
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgSurface,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppColors.borderSubtle),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 12,
+                          backgroundColor: AppColors.brandPrimary.withValues(alpha: 0.2),
+                          child: Text(
+                            (user?.fullName.isNotEmpty == true) ? user!.fullName[0].toUpperCase() : 'S',
+                            style: const TextStyle(color: AppColors.brandPrimary, fontSize: 10, fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                Text(user?.fullName ?? 'System Admin', style: const TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w700)),
+                                const SizedBox(width: 4),
+                                Text('(ID: ${user?.userId ?? 1})', style: const TextStyle(color: AppColors.textSubtle, fontSize: 10)),
+                              ],
+                            ),
+                            Text('${user?.roleName ?? "SuperAdmin"} • Role ID: 1', style: const TextStyle(color: AppColors.brandAccent, fontSize: 9, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.arrow_drop_down_rounded, size: 16, color: AppColors.textSubtle),
+                      ],
+                    ),
+                  );
+                },
               ),
+            ),
+            const SizedBox(width: 8),
+
+            // Standalone Logout Button
+            IconButton(
+              icon: const Icon(Icons.power_settings_new_rounded, color: AppColors.statusDeactive, size: 20),
+              tooltip: 'Sign Out of Account',
+              onPressed: () {
+                ref.read(authStateProvider.notifier).logout();
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              },
             ),
           ],
         ),
