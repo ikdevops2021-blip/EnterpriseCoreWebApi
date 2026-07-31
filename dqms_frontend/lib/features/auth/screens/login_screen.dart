@@ -82,12 +82,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: const Icon(Icons.shield_rounded, color: AppColors.brandPrimary, size: 28),
                     ),
                     const SizedBox(width: 14),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('DQMS Enterprise', style: TextStyle(color: AppColors.textMain, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
-                        Text('Intelligent Queue Platform', style: TextStyle(color: AppColors.textSubtle, fontSize: 12, fontWeight: FontWeight.w500)),
-                      ],
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text('DQMS Enterprise', style: TextStyle(color: AppColors.textMain, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.3), overflow: TextOverflow.ellipsis),
+                          Text('Intelligent Queue Platform', style: TextStyle(color: AppColors.textSubtle, fontSize: 12, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -158,9 +160,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Organization Key: ${AppConfig.organizationApiKey}',
+                          'Org Key: ${AppConfig.organizationApiKey}',
                           style: const TextStyle(color: AppColors.brandAccent, fontSize: 10, fontFamily: 'monospace', fontWeight: FontWeight.w700),
                           overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                     ],

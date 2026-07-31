@@ -43,8 +43,9 @@ void main() {
         child: DqmsApp(),
       ),
     );
-    await tester.pump(const Duration(seconds: 1));
-    expect(find.textContaining('DQMS'), findsWidgets);
+    await tester.pump(const Duration(milliseconds: 500));
+    // LoginScreen is the entry point — verify login form text is visible
+    expect(find.text('Sign In to Account'), findsOneWidget);
   });
 
   testWidgets('DQMS Command Center DashboardScreen smoke test', (WidgetTester tester) async {
