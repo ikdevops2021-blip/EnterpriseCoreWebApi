@@ -96,12 +96,12 @@ class ConfigCategoryModel {
 
   factory ConfigCategoryModel.fromJson(Map<String, dynamic> json) {
     return ConfigCategoryModel(
-      categoryId: json['categoryId'] ?? json['CategoryId'] ?? 0,
-      categoryCode: json['categoryCode'] ?? json['CategoryCode'] ?? '',
-      categoryName: json['categoryName'] ?? json['CategoryName'] ?? '',
+      categoryId: json['categoryId'] ?? json['CategoryId'] ?? json['id'] ?? json['Id'] ?? json['configCategoryId'] ?? json['ConfigCategoryID'] ?? 0,
+      categoryCode: json['categoryCode'] ?? json['CategoryCode'] ?? json['code'] ?? json['Code'] ?? '',
+      categoryName: json['categoryName'] ?? json['CategoryName'] ?? json['name'] ?? json['Name'] ?? '',
       description: json['description'] ?? json['Description'] ?? '',
       priority: json['priority'] ?? json['Priority'] ?? 1,
-      active: json['active'] ?? json['Active'] ?? true,
+      active: json['active'] ?? json['Active'] ?? json['isActive'] ?? json['IsActive'] ?? true,
       allowModify: json['allowModify'] ?? json['AllowModify'] ?? true,
       rangeText: json['rangeText'] ?? json['RangeText'] ?? '',
       categoryExternalId: json['categoryExternalId'] ?? json['CategoryExternalId'],
@@ -215,13 +215,13 @@ class ConfigParameterModel {
 
   factory ConfigParameterModel.fromJson(Map<String, dynamic> json) {
     return ConfigParameterModel(
-      parameterId: json['parameterId'] ?? json['ParameterId'] ?? 0,
-      categoryId: json['categoryId'] ?? json['CategoryId'] ?? 0,
-      paramCode: json['paramCode'] ?? json['ParamCode'] ?? '',
-      paramName: json['paramName'] ?? json['ParamName'] ?? '',
+      parameterId: json['parameterId'] ?? json['ParameterId'] ?? json['id'] ?? json['Id'] ?? json['configParameterId'] ?? json['ConfigParameterID'] ?? 0,
+      categoryId: json['categoryId'] ?? json['CategoryId'] ?? json['configCategoryId'] ?? json['ConfigCategoryID'] ?? 0,
+      paramCode: json['paramCode'] ?? json['ParamCode'] ?? json['code'] ?? json['Code'] ?? '',
+      paramName: json['paramName'] ?? json['ParamName'] ?? json['name'] ?? json['Name'] ?? '',
       isDefault: json['isDefault'] ?? json['IsDefault'] ?? false,
       priority: json['priority'] ?? json['Priority'] ?? 1,
-      isActive: json['isActive'] ?? json['IsActive'] ?? true,
+      isActive: json['isActive'] ?? json['IsActive'] ?? json['active'] ?? json['Active'] ?? true,
       description: json['description'] ?? json['Description'] ?? '',
       parameterExternalId: json['parameterExternalId'] ?? json['ParameterExternalId'],
       parameterExternalCode: json['parameterExternalCode'] ?? json['ParameterExternalCode'],
