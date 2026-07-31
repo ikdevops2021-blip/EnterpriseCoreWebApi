@@ -4,12 +4,13 @@ import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
 import 'package:dqms_frontend/core/widgets/dqms_states.dart';
+import 'package:dqms_frontend/core/widgets/dqms_kpi_card.dart';
 import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart';
 import 'package:dqms_frontend/features/admin/widgets/master_detail_layout.dart';
 
 /// ============================================================================
 /// ANALYTICS & REPORTS WORKSPACE VIEW (Domain 8)
-/// Master-Detail management interface for SLA reports, exports, & audit logs
+/// Master-Detail management interface for SLA reports, CSV/PDF exports & audit logs
 /// ============================================================================
 class AnalyticsEntryView extends ConsumerStatefulWidget {
   const AnalyticsEntryView({super.key});
@@ -21,6 +22,7 @@ class AnalyticsEntryView extends ConsumerStatefulWidget {
 class _AnalyticsEntryViewState extends ConsumerState<AnalyticsEntryView> {
   String _searchQuery = '';
   AnalyticsReportEntryModel? _selectedReport;
+  String _selectedDateRange = 'Last 7 Days';
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +56,52 @@ class _AnalyticsEntryViewState extends ConsumerState<AnalyticsEntryView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // KPI Metric Cards Strip
+          Row(
+            children: [
+              const Expanded(
+                child: DqmsKpiCard(
+                  title: 'TOTAL TOKENS ISSUED',
+                  value: '1,420',
+                  subtitle: '+12.4% vs last week',
+                  accentColor: AppColors.statusActive,
+                  icon: Icons.confirmation_number_rounded,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: DqmsKpiCard(
+                  title: 'AVG WAIT TIME',
+                  value: '7.4 mins',
+                  subtitle: 'Target SLA: 10.0 mins',
+                  accentColor: AppColors.statusActive,
+                  icon: Icons.timer_outlined,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: DqmsKpiCard(
+                  title: 'SLA COMPLIANCE',
+                  value: '96.8%',
+                  subtitle: '28 SLA breaches',
+                  accentColor: AppColors.statusActive,
+                  icon: Icons.verified_user_rounded,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: DqmsKpiCard(
+                  title: 'ACTIVE COUNTERS',
+                  value: '6 / 8',
+                  subtitle: '88% peak utilization',
+                  accentColor: AppColors.brandAccent,
+                  icon: Icons.desktop_windows_rounded,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+
           // Toolbar
           Row(
             children: [
@@ -69,20 +117,42 @@ class _AnalyticsEntryViewState extends ConsumerState<AnalyticsEntryView> {
                 ),
               ),
               const SizedBox(width: 12),
+              // Date Range Filter Dropdown
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.bgCard,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: AppColors.borderSubtle),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedDateRange,
+                    dropdownColor: AppColors.bgSurface,
+                    style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
+                    items: const [
+                      DropdownMenuItem(value: 'Today', child: Text('Today')),
+                      DropdownMenuItem(value: 'Yesterday', child: Text('Yesterday')),
+                      DropdownMenuItem(value: 'Last 7 Days', child: Text('Last 7 Days')),
+                      DropdownMenuItem(value: 'Last 30 Days', child: Text('Last 30 Days')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) setState(() => _selectedDateRange = val);
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
               DqmsButton(
-                label: 'Generate New Audit Report',
-                icon: Icons.analytics_rounded,
+                label: 'Export All CSV',
+                icon: Icons.download_rounded,
                 onPressed: () {
-                  setState(() {
-                    _selectedReport = const AnalyticsReportEntryModel(
-                      reportId: 'REP-NEW',
-                      reportName: 'Live Ad-Hoc SLA Audit',
-                      category: 'SLA Compliance',
-                      format: 'PDF',
-                      lastGeneratedTime: '2026-07-30 17:00',
-                      totalRecords: 500,
-                    );
-                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Exporting complete DQMS Queue Analytics dataset as CSV...'),
+                      backgroundColor: AppColors.statusActive,
+                    ),
+                  );
                 },
               ),
             ],
