@@ -1255,10 +1255,17 @@ class _CategoryInspectorPanelState extends State<_CategoryInspectorPanel> {
                                 ),
                               ),
                               DqmsStatusBadge.activeState(p.isActive),
-                              const SizedBox(width: 6),
-                              IconButton(
-                                icon: const Icon(Icons.edit_outlined, size: 16, color: AppColors.brandAccent),
-                                tooltip: 'Edit Parameter Properties',
+                              const SizedBox(width: 8),
+                              OutlinedButton.icon(
+                                icon: const Icon(Icons.edit_outlined, size: 13),
+                                label: const Text('Edit', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.brandAccent,
+                                  side: const BorderSide(color: AppColors.brandAccent),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
                                 onPressed: () => widget.onEditParameter(p),
                               ),
                             ],
