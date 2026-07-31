@@ -4,5 +4,7 @@
   "adminApiBase": "http://localhost:5026/api/v1/admin",
   "dqmsApiBase": "http://localhost:5026/api/v1/dqms",
   "authApiBase": "http://localhost:5026/api/v1/auth",
-  "reportsApiBase": "http://localhost:5026/api/v1/reports"
+  "reportsApiBase": "http://localhost:5026/api/v1/reports",
+  "organizationApiKey": "ORG-KEY-8871-ACME-ENTERPRISE",
+  "organizationId": 1
 }

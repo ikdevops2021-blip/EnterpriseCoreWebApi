@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 import 'package:dqms_frontend/core/config/app_config.dart';
+import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
@@ -308,12 +308,6 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
   late List<ConfigCategoryModel> _categories;
   late List<ConfigParameterModel> _parameters;
 
-  final _dio = Dio(BaseOptions(
-    baseUrl: AppConfig.adminApiBase,
-    connectTimeout: const Duration(seconds: 5),
-    receiveTimeout: const Duration(seconds: 5),
-  ));
-
   bool _isLoading = false;
 
   @override
@@ -326,7 +320,10 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
   Future<void> _fetchApiData() async {
     try {
       setState(() => _isLoading = true);
-      final catRes = await _dio.get('/config-categories');
+      final dio = ref.read(dioProvider);
+
+      // Primary fetch using ConfigurationController endpoint with automatic Bearer & API Key headers
+      final catRes = await dio.get('${AppConfig.apiBaseUrl}/api/v1/Configuration/categories');
       if (catRes.statusCode == 200 && catRes.data != null && catRes.data['data'] != null) {
         final List items = catRes.data['data'];
         if (items.isNotEmpty) {
@@ -335,7 +332,7 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
         }
       }
 
-      final paramRes = await _dio.get('/config-parameters');
+      final paramRes = await dio.get('${AppConfig.adminApiBase}/config-parameters');
       if (paramRes.statusCode == 200 && paramRes.data != null && paramRes.data['data'] != null) {
         final List items = paramRes.data['data'];
         if (items.isNotEmpty) {
@@ -348,6 +345,24 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  /// Fetches parameters specifically for a category using GET /api/v1/Configuration/categories/{categoryId}/parameters
+  Future<void> _fetchCategoryParameters(int categoryId) async {
+    try {
+      final dio = ref.read(dioProvider);
+      final res = await dio.get('${AppConfig.apiBaseUrl}/api/v1/Configuration/categories/$categoryId/parameters');
+      if (res.statusCode == 200 && res.data != null && res.data['data'] != null) {
+        final List items = res.data['data'];
+        if (items.isNotEmpty) {
+          final fetched = items.map((j) => ConfigParameterModel.fromJson(j)).toList();
+          setState(() {
+            _parameters.removeWhere((p) => p.categoryId == categoryId);
+            _parameters.addAll(fetched);
+          });
+        }
+      }
+    } catch (_) {}
   }
 
   void _initDefaults() {
@@ -617,7 +632,8 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
     });
 
     try {
-      await _dio.post('/config-category', data: updatedCategory.toJson());
+      final dio = ref.read(dioProvider);
+      await dio.post('${AppConfig.adminApiBase}/config-category', data: updatedCategory.toJson());
     } catch (_) {
       // Local state updated
     }
@@ -642,7 +658,8 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
     });
 
     try {
-      await _dio.post('/config-parameter', data: updatedParam.toJson());
+      final dio = ref.read(dioProvider);
+      await dio.post('${AppConfig.adminApiBase}/config-parameter', data: updatedParam.toJson());
     } catch (_) {
       // Local state updated
     }
@@ -745,7 +762,10 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                       final isSelected = _selectedCategory?.categoryId == cat.categoryId;
 
                       return InkWell(
-                        onTap: () => setState(() => _selectedCategory = cat),
+                        onTap: () {
+                          setState(() => _selectedCategory = cat);
+                          _fetchCategoryParameters(cat.categoryId);
+                        },
                         borderRadius: BorderRadius.circular(4),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

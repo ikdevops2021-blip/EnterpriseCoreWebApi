@@ -22,6 +22,10 @@ class AppConfig {
   static String get authApiBase => _runtimeConfig['authApiBase'] ?? '$apiV1Base/auth';
   static String get reportsApiBase => _runtimeConfig['reportsApiBase'] ?? '$apiV1Base/reports';
 
+  /// Central Organization API Key and Tenant Context
+  static String get organizationApiKey => _runtimeConfig['organizationApiKey'] ?? 'ORG-KEY-8871-ACME-ENTERPRISE';
+  static int get organizationId => _runtimeConfig['organizationId'] ?? 1;
+
   /// Returns current map of active configuration endpoints
   static Map<String, dynamic> get currentEndpoints => {
     'apiBaseUrl': apiBaseUrl,
@@ -30,6 +34,8 @@ class AppConfig {
     'dqmsApiBase': dqmsApiBase,
     'authApiBase': authApiBase,
     'reportsApiBase': reportsApiBase,
+    'organizationApiKey': organizationApiKey,
+    'organizationId': organizationId,
   };
 
   /// Loads runtime configuration from assets/config.json dynamically at app boot.
@@ -49,11 +55,15 @@ class AppConfig {
     String? dqmsApiBase,
     String? authApiBase,
     String? reportsApiBase,
+    String? organizationApiKey,
+    int? organizationId,
   }) {
     if (apiBaseUrl != null && apiBaseUrl.isNotEmpty) _runtimeConfig['apiBaseUrl'] = apiBaseUrl;
     if (adminApiBase != null && adminApiBase.isNotEmpty) _runtimeConfig['adminApiBase'] = adminApiBase;
     if (dqmsApiBase != null && dqmsApiBase.isNotEmpty) _runtimeConfig['dqmsApiBase'] = dqmsApiBase;
     if (authApiBase != null && authApiBase.isNotEmpty) _runtimeConfig['authApiBase'] = authApiBase;
     if (reportsApiBase != null && reportsApiBase.isNotEmpty) _runtimeConfig['reportsApiBase'] = reportsApiBase;
+    if (organizationApiKey != null && organizationApiKey.isNotEmpty) _runtimeConfig['organizationApiKey'] = organizationApiKey;
+    if (organizationId != null) _runtimeConfig['organizationId'] = organizationId;
   }
 }

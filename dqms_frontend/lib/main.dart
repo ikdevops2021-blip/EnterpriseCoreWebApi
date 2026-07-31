@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/config/app_config.dart';
 import 'core/theme/app_theme.dart';
-import 'features/admin/screens/admin_workspace_screen.dart';
+import 'features/auth/screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,8 +21,7 @@ class DqmsApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark, // Default Command Center Dark Aesthetic
-      home: const AdminWorkspaceScreen(),
+      home: const LoginScreen(),
     );
   }
 }
-
