@@ -59,6 +59,7 @@ public static class DependencyInjection
         services.AddScoped<IDqmsAdminService, DqmsAdminService>();
         services.AddScoped<IDqmsStaffService, DqmsStaffService>();
         services.AddScoped<IDqmsCustomerService, DqmsCustomerService>();
+        services.AddScoped<IDqmsDashboardService, DqmsDashboardService>();
 
         return services;
     }

@@ -1,4 +1,6 @@
 /// ============================================================================
+// ignore_for_file: dangling_library_doc_comments
+
 /// DQMS Staff Operator & Token DTO Models
 /// Maps to C# DqmsStaffModels.cs in Shared Core
 /// ============================================================================

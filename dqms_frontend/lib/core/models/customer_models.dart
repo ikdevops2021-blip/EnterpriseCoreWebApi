@@ -1,3 +1,5 @@
+// ignore_for_file: dangling_library_doc_comments
+
 /// ============================================================================
 /// Stage 3 Customer & Display DTO Models
 /// Maps to C# DqmsCustomerModels.cs in Shared Core

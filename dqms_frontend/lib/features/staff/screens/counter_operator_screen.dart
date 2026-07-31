@@ -333,20 +333,23 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
               ? const Center(child: Text('Queue Empty', style: TextStyle(color: OperatorTheme.textSubtle, fontSize: 13)))
               : ListView.separated(
                   itemCount: waitingTokens.length,
-                  separatorBuilder: (_, __) => const Divider(color: OperatorTheme.borderSubtle, height: 1),
+                  separatorBuilder: (_, _) => const Divider(color: OperatorTheme.borderSubtle, height: 1),
                   itemBuilder: (ctx, i) {
                     final item = waitingTokens[i];
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                      title: Row(
-                        children: [
-                          Text(item.tokenNumber, style: const TextStyle(color: OperatorTheme.textMain, fontWeight: FontWeight.w800, fontSize: 16)),
-                          const SizedBox(width: 10),
-                          _buildPriorityBadge(item.priorityTier),
-                        ],
+                    return Material(
+                      color: Colors.transparent,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                        title: Row(
+                          children: [
+                            Text(item.tokenNumber, style: const TextStyle(color: OperatorTheme.textMain, fontWeight: FontWeight.w800, fontSize: 16)),
+                            const SizedBox(width: 10),
+                            _buildPriorityBadge(item.priorityTier),
+                          ],
+                        ),
+                        subtitle: Text(item.customerName ?? 'Walk-in Ticket', style: const TextStyle(color: OperatorTheme.textMuted, fontSize: 12)),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded, color: OperatorTheme.textSubtle, size: 14),
                       ),
-                      subtitle: Text(item.customerName ?? 'Walk-in Ticket', style: const TextStyle(color: OperatorTheme.textMuted, fontSize: 12)),
-                      trailing: const Icon(Icons.arrow_forward_ios_rounded, color: OperatorTheme.textSubtle, size: 14),
                     );
                   },
                 ),

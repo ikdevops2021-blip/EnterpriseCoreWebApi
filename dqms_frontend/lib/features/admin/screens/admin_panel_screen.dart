@@ -4,6 +4,7 @@ import '../../../core/models/admin_models.dart';
 import '../../customer/screens/customer_mobile_status_screen.dart';
 import '../../customer/screens/kiosk_ticket_screen.dart';
 import '../../customer/screens/waiting_room_display_screen.dart';
+import '../../dashboard/screens/dashboard_screen.dart';
 import '../../staff/screens/counter_operator_screen.dart';
 import '../providers/admin_providers.dart';
 
@@ -108,117 +109,133 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen> {
         color: DqmsTheme.bgHeader,
         border: Border(bottom: BorderSide(color: DqmsTheme.borderSubtle, width: 1)),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: DqmsTheme.brandPrimary.withValues(alpha: 0.15),
-              border: Border.all(color: DqmsTheme.brandPrimary.withValues(alpha: 0.4)),
-              borderRadius: BorderRadius.circular(4),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: DqmsTheme.brandPrimary.withValues(alpha: 0.15),
+                border: Border.all(color: DqmsTheme.brandPrimary.withValues(alpha: 0.4)),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text('DQMS ENTERPRISE', style: TextStyle(color: DqmsTheme.brandPrimary, fontWeight: FontWeight.w700, fontSize: 11, letterSpacing: 1.2)),
             ),
-            child: const Text('DQMS ENTERPRISE', style: TextStyle(color: DqmsTheme.brandPrimary, fontWeight: FontWeight.w700, fontSize: 11, letterSpacing: 1.2)),
-          ),
-          const SizedBox(width: 16),
-          const Icon(Icons.chevron_right_rounded, color: DqmsTheme.textSubtle, size: 18),
-          const SizedBox(width: 8),
-          const Text('Admin Master Configuration', style: TextStyle(color: DqmsTheme.textMain, fontWeight: FontWeight.w600, fontSize: 14)),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: DqmsTheme.statusActive.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: DqmsTheme.statusActive.withValues(alpha: 0.3)),
+            const SizedBox(width: 16),
+            const Icon(Icons.chevron_right_rounded, color: DqmsTheme.textSubtle, size: 18),
+            const SizedBox(width: 8),
+            const Text('Admin Master Configuration', style: TextStyle(color: DqmsTheme.textMain, fontWeight: FontWeight.w600, fontSize: 14)),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: DqmsTheme.statusActive.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: DqmsTheme.statusActive.withValues(alpha: 0.3)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.fiber_manual_record, color: DqmsTheme.statusActive, size: 8),
+                  SizedBox(width: 5),
+                  Text('LIVE SYNC • Stage 1', style: TextStyle(color: DqmsTheme.statusActive, fontSize: 10, fontWeight: FontWeight.w600)),
+                ],
+              ),
             ),
-            child: const Row(
-              children: [
-                Icon(Icons.fiber_manual_record, color: DqmsTheme.statusActive, size: 8),
-                SizedBox(width: 5),
-                Text('LIVE SYNC • Stage 1', style: TextStyle(color: DqmsTheme.statusActive, fontSize: 10, fontWeight: FontWeight.w600)),
-              ],
+            const SizedBox(width: 24),
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded, color: DqmsTheme.textMuted, size: 18),
+              onPressed: () {
+                ref.read(areaListProvider.notifier).refresh();
+                ref.read(processListProvider.notifier).refresh();
+                ref.read(counterListProvider.notifier).refresh();
+                ref.read(templateListProvider.notifier).refresh();
+              },
+              tooltip: 'Refresh Masters',
             ),
-          ),
-          const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: DqmsTheme.textMuted, size: 18),
-            onPressed: () {
-              ref.read(areaListProvider.notifier).refresh();
-              ref.read(processListProvider.notifier).refresh();
-              ref.read(counterListProvider.notifier).refresh();
-              ref.read(templateListProvider.notifier).refresh();
-            },
-            tooltip: 'Refresh Masters',
-          ),
-          const SizedBox(width: 12),
-          OutlinedButton.icon(
-            icon: const Icon(Icons.desk_rounded, size: 14),
-            label: const Text('Stage 2 Operator', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: DqmsTheme.brandPrimary,
-              side: const BorderSide(color: DqmsTheme.brandPrimary),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            const SizedBox(width: 12),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.dashboard_customize_rounded, size: 14),
+              label: const Text('Stage 3 Command Center', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: DqmsTheme.brandPrimary,
+                side: const BorderSide(color: DqmsTheme.brandPrimary),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              ),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
+              },
             ),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const CounterOperatorScreen()));
-            },
-          ),
-          const SizedBox(width: 8),
-          OutlinedButton.icon(
-            icon: const Icon(Icons.tv_rounded, size: 14),
-            label: const Text('Stage 3 TV Display', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: DqmsTheme.statusSpecial,
-              side: const BorderSide(color: DqmsTheme.statusSpecial),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.desk_rounded, size: 14),
+              label: const Text('Stage 2 Operator', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: DqmsTheme.brandPrimary,
+                side: const BorderSide(color: DqmsTheme.brandPrimary),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              ),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CounterOperatorScreen()));
+              },
             ),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const WaitingRoomDisplayScreen()));
-            },
-          ),
-          const SizedBox(width: 8),
-          OutlinedButton.icon(
-            icon: const Icon(Icons.touch_app_rounded, size: 14),
-            label: const Text('Stage 3 Kiosk', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: DqmsTheme.statusActive,
-              side: const BorderSide(color: DqmsTheme.statusActive),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.tv_rounded, size: 14),
+              label: const Text('Stage 3 TV Display', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: DqmsTheme.statusSpecial,
+                side: const BorderSide(color: DqmsTheme.statusSpecial),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              ),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const WaitingRoomDisplayScreen()));
+              },
             ),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const KioskTicketScreen()));
-            },
-          ),
-          const SizedBox(width: 8),
-          OutlinedButton.icon(
-            icon: const Icon(Icons.phone_android_rounded, size: 14),
-            label: const Text('Stage 3 Mobile Tracker', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: DqmsTheme.statusWarning,
-              side: const BorderSide(color: DqmsTheme.statusWarning),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.touch_app_rounded, size: 14),
+              label: const Text('Stage 3 Kiosk', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: DqmsTheme.statusActive,
+                side: const BorderSide(color: DqmsTheme.statusActive),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              ),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const KioskTicketScreen()));
+              },
             ),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerMobileStatusScreen(tokenId: 1)));
-            },
-          ),
-          const SizedBox(width: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: DqmsTheme.bgSurface,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: DqmsTheme.borderSubtle),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.phone_android_rounded, size: 14),
+              label: const Text('Stage 3 Mobile Tracker', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: DqmsTheme.statusWarning,
+                side: const BorderSide(color: DqmsTheme.statusWarning),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              ),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerMobileStatusScreen(tokenId: 1)));
+              },
             ),
-            child: const Row(
-              children: [
-                Icon(Icons.business_rounded, color: DqmsTheme.textMuted, size: 14),
-                SizedBox(width: 6),
-                Text('Main Headquarters', style: TextStyle(color: DqmsTheme.textMuted, fontSize: 12)),
-              ],
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: DqmsTheme.bgSurface,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: DqmsTheme.borderSubtle),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.business_rounded, color: DqmsTheme.textMuted, size: 14),
+                  SizedBox(width: 6),
+                  Text('Main Headquarters', style: TextStyle(color: DqmsTheme.textMuted, fontSize: 12)),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -307,8 +324,8 @@ class AreaMasterTableView extends ConsumerWidget {
           // Action Toolbar Bar
           Row(
             children: [
-              const Text('Areas & Zones Directory', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700)),
-              const Spacer(),
+              const Expanded(child: Text('Areas & Zones Directory', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis)),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 icon: const Icon(Icons.add_rounded, size: 16),
                 label: const Text('Create Area'),
@@ -357,7 +374,7 @@ class AreaMasterTableView extends ConsumerWidget {
                           Expanded(
                             child: ListView.separated(
                               itemCount: areas.length,
-                              separatorBuilder: (_, __) => const Divider(color: DqmsTheme.borderSubtle, height: 1),
+                              separatorBuilder: (_, _) => const Divider(color: DqmsTheme.borderSubtle, height: 1),
                               itemBuilder: (ctx, i) {
                                 final area = areas[i];
                                 return Container(
@@ -472,8 +489,8 @@ class ProcessMasterTableView extends ConsumerWidget {
 
           Row(
             children: [
-              const Text('Process Pipelines & SLA Target Masters', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700)),
-              const Spacer(),
+              const Expanded(child: Text('Process Pipelines & SLA Target Masters', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis)),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 icon: const Icon(Icons.add_rounded, size: 16),
                 label: const Text('Create Process'),
@@ -521,7 +538,7 @@ class ProcessMasterTableView extends ConsumerWidget {
                           Expanded(
                             child: ListView.separated(
                               itemCount: processes.length,
-                              separatorBuilder: (_, __) => const Divider(color: DqmsTheme.borderSubtle, height: 1),
+                              separatorBuilder: (_, _) => const Divider(color: DqmsTheme.borderSubtle, height: 1),
                               itemBuilder: (ctx, i) {
                                 final proc = processes[i];
                                 return Container(
@@ -640,8 +657,8 @@ class DisplayTemplateView extends ConsumerWidget {
 
           Row(
             children: [
-              const Text('Display Templates & Waiting Room TV Layouts', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700)),
-              const Spacer(),
+              const Expanded(child: Text('Display Templates & Waiting Room TV Layouts', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis)),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 icon: const Icon(Icons.add_rounded, size: 16),
                 label: const Text('Create Template'),
@@ -689,7 +706,7 @@ class DisplayTemplateView extends ConsumerWidget {
                           Expanded(
                             child: ListView.separated(
                               itemCount: templates.length,
-                              separatorBuilder: (_, __) => const Divider(color: DqmsTheme.borderSubtle, height: 1),
+                              separatorBuilder: (_, _) => const Divider(color: DqmsTheme.borderSubtle, height: 1),
                               itemBuilder: (ctx, i) {
                                 final tmpl = templates[i];
                                 return Container(
@@ -797,8 +814,8 @@ class CounterStationView extends ConsumerWidget {
 
           Row(
             children: [
-              const Text('Counter & Window Stations Directory', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700)),
-              const Spacer(),
+              const Expanded(child: Text('Counter & Window Stations Directory', style: TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis)),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 icon: const Icon(Icons.add_rounded, size: 16),
                 label: const Text('Create Counter'),
@@ -846,7 +863,7 @@ class CounterStationView extends ConsumerWidget {
                           Expanded(
                             child: ListView.separated(
                               itemCount: counters.length,
-                              separatorBuilder: (_, __) => const Divider(color: DqmsTheme.borderSubtle, height: 1),
+                              separatorBuilder: (_, _) => const Divider(color: DqmsTheme.borderSubtle, height: 1),
                               itemBuilder: (ctx, i) {
                                 final ctr = counters[i];
                                 return Container(
@@ -955,13 +972,16 @@ Widget _buildKpiSummaryBar(List<_KpiItem> items) {
             children: [
               Icon(item.icon, color: DqmsTheme.brandPrimary, size: 22),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(item.title, style: const TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 2),
-                  Text(item.value, style: const TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700)),
-                ],
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.title, style: const TextStyle(color: DqmsTheme.textSubtle, fontSize: 11, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 2),
+                    Text(item.value, style: const TextStyle(color: DqmsTheme.textMain, fontSize: 18, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis),
+                  ],
+                ),
               ),
             ],
           ),

@@ -1,3 +1,5 @@
+// ignore_for_file: camel_case_types, dangling_library_doc_comments
+
 /// ============================================================================
 /// DQMS Dart Enums — MANDATORY e_ PREFIX STANDARD
 /// Maps to ConfigCategory & ConfigParameters tables in the database.

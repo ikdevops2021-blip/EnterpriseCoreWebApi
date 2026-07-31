@@ -60,7 +60,7 @@ try
     {
         options.AddPolicy("DqmsCorsPolicy", policy =>
         {
-            policy.WithOrigins("http://localhost:8080", "http://localhost:3000", "http://localhost:5173")
+            policy.SetIsOriginAllowed(_ => true)
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
@@ -103,14 +103,18 @@ try
     // Use Global Exception handler
     app.UseMiddleware<GlobalExceptionMiddleware>();
 
+    app.UseCors("DqmsCorsPolicy");
+
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
         app.UseSwaggerUI();
     }
+    else
+    {
+        app.UseHttpsRedirection();
+    }
 
-    app.UseHttpsRedirection();
-    app.UseCors("DqmsCorsPolicy");
     app.UseAuthentication();
     app.UseAuthorization();
 

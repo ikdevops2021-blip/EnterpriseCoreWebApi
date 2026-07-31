@@ -1,3 +1,4 @@
+// ignore_for_file: dangling_library_doc_comments
 /// ============================================================================
 /// DQMS Admin Master DTO Models
 /// Maps to C# DqmsAdminModels.cs in Shared Core

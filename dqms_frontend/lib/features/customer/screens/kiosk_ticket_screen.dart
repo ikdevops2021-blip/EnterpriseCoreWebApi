@@ -165,7 +165,7 @@ class _KioskTicketScreenState extends ConsumerState<KioskTicketScreen> {
                                 _isIssuing = false;
                                 _selectedProcessId = null;
                               });
-                              if (mounted) {
+                              if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Ticket Printed! Please collect your ticket.'), backgroundColor: Color(0xFF238636)),
                                 );
