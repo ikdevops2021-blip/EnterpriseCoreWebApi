@@ -49,6 +49,48 @@ class ConfigCategoryModel {
     this.attribute2,
     this.attribute3,
   });
+
+  ConfigCategoryModel copyWith({
+    int? categoryId,
+    String? categoryCode,
+    String? categoryName,
+    String? description,
+    int? priority,
+    bool? active,
+    bool? allowModify,
+    int? parentCategoryId,
+    String? rangeText,
+    String? categoryExternalId,
+    String? categoryExternalName,
+    String? categoryExternalCode,
+    String? categoryColor,
+    String? categoryIcon,
+    String? categoryImage,
+    String? attribute1,
+    String? attribute2,
+    String? attribute3,
+  }) {
+    return ConfigCategoryModel(
+      categoryId: categoryId ?? this.categoryId,
+      categoryCode: categoryCode ?? this.categoryCode,
+      categoryName: categoryName ?? this.categoryName,
+      description: description ?? this.description,
+      priority: priority ?? this.priority,
+      active: active ?? this.active,
+      allowModify: allowModify ?? this.allowModify,
+      parentCategoryId: parentCategoryId ?? this.parentCategoryId,
+      rangeText: rangeText ?? this.rangeText,
+      categoryExternalId: categoryExternalId ?? this.categoryExternalId,
+      categoryExternalName: categoryExternalName ?? this.categoryExternalName,
+      categoryExternalCode: categoryExternalCode ?? this.categoryExternalCode,
+      categoryColor: categoryColor ?? this.categoryColor,
+      categoryIcon: categoryIcon ?? this.categoryIcon,
+      categoryImage: categoryImage ?? this.categoryImage,
+      attribute1: attribute1 ?? this.attribute1,
+      attribute2: attribute2 ?? this.attribute2,
+      attribute3: attribute3 ?? this.attribute3,
+    );
+  }
 }
 
 /// Complete ConfigParameter Model matching .NET Entity (ConfigParameter.cs)
@@ -92,6 +134,89 @@ class ConfigParameterModel {
     this.attribute2,
     this.attribute3,
   });
+
+  ConfigParameterModel copyWith({
+    int? parameterId,
+    int? categoryId,
+    String? paramCode,
+    String? paramName,
+    bool? isDefault,
+    int? priority,
+    bool? isActive,
+    String? description,
+    String? parameterExternalId,
+    String? parameterExternalName,
+    String? parameterExternalCode,
+    String? parameterColor,
+    String? parameterIcon,
+    String? parameterImage,
+    String? attribute1,
+    String? attribute2,
+    String? attribute3,
+  }) {
+    return ConfigParameterModel(
+      parameterId: parameterId ?? this.parameterId,
+      categoryId: categoryId ?? this.categoryId,
+      paramCode: paramCode ?? this.paramCode,
+      paramName: paramName ?? this.paramName,
+      isDefault: isDefault ?? this.isDefault,
+      priority: priority ?? this.priority,
+      isActive: isActive ?? this.isActive,
+      description: description ?? this.description,
+      parameterExternalId: parameterExternalId ?? this.parameterExternalId,
+      parameterExternalName: parameterExternalName ?? this.parameterExternalName,
+      parameterExternalCode: parameterExternalCode ?? this.parameterExternalCode,
+      parameterColor: parameterColor ?? this.parameterColor,
+      parameterIcon: parameterIcon ?? this.parameterIcon,
+      parameterImage: parameterImage ?? this.parameterImage,
+      attribute1: attribute1 ?? this.attribute1,
+      attribute2: attribute2 ?? this.attribute2,
+      attribute3: attribute3 ?? this.attribute3,
+    );
+  }
+}
+
+/// Helper function to resolve icon string to Flutter IconData
+IconData _getIconData(String? iconName) {
+  switch (iconName?.toLowerCase()) {
+    case 'bloodtype':
+      return Icons.bloodtype_rounded;
+    case 'people':
+      return Icons.people_rounded;
+    case 'home_work':
+      return Icons.home_work_rounded;
+    case 'phone_android':
+      return Icons.phone_android_rounded;
+    case 'notifications':
+      return Icons.notifications_rounded;
+    case 'male':
+      return Icons.male_rounded;
+    case 'female':
+      return Icons.female_rounded;
+    case 'payments':
+      return Icons.payments_rounded;
+    case 'campaign':
+      return Icons.campaign_rounded;
+    case 'warning':
+      return Icons.warning_rounded;
+    case 'badge':
+      return Icons.badge_rounded;
+    case 'category':
+      return Icons.category_rounded;
+    default:
+      return Icons.code_rounded;
+  }
+}
+
+/// Helper function to parse Hex color safely
+Color _parseHexColor(String? hexString) {
+  if (hexString == null || hexString.isEmpty) return AppColors.brandPrimary;
+  try {
+    final hex = hexString.replaceAll('#', '');
+    return Color(int.parse('FF$hex', radix: 16));
+  } catch (_) {
+    return AppColors.brandPrimary;
+  }
 }
 
 /// NEXUSCORE CONFIG CATEGORY & PARAMETERS MASTER VIEW
@@ -106,92 +231,93 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
   String _searchQuery = '';
   ConfigCategoryModel? _selectedCategory;
 
-  final List<ConfigCategoryModel> _categories = const [
-    ConfigCategoryModel(
-      categoryId: 1,
-      categoryCode: 'GEN',
-      categoryName: 'C_GENDER',
-      description: 'Gender salutations & identification parameters',
-      priority: 1,
-      active: true,
-      allowModify: false,
-      rangeText: '1001 – 1999',
-      categoryExternalCode: 'EXT-GEN-01',
-      categoryColor: '#2F81F7',
-      categoryIcon: 'people',
-    ),
-    ConfigCategoryModel(
-      categoryId: 2,
-      categoryCode: 'TITLE',
-      categoryName: 'C_TITLE',
-      description: 'Name salutation titles (Mr, Dr, Ms, Prof)',
-      priority: 2,
-      active: true,
-      allowModify: true,
-      rangeText: '2001 – 2999',
-      categoryExternalCode: 'EXT-TTL-02',
-      categoryColor: '#8957E5',
-      categoryIcon: 'badge',
-    ),
-    ConfigCategoryModel(
-      categoryId: 3,
-      categoryCode: 'BLD',
-      categoryName: 'C_BLOODGROUP',
-      description: 'Human blood group classifications',
-      priority: 3,
-      active: true,
-      allowModify: true,
-      rangeText: '3001 – 3999',
-      categoryExternalCode: 'EXT-BLD-03',
-      categoryColor: '#DA3633',
-      categoryIcon: 'bloodtype',
-    ),
-    ConfigCategoryModel(
-      categoryId: 4,
-      categoryCode: 'ADRTYPE',
-      categoryName: 'C_ADDRESSTYPE',
-      description: 'Address categories (Home, Work, Billing, Shipping)',
-      priority: 4,
-      active: true,
-      allowModify: true,
-      rangeText: '4001 – 4999',
-      categoryExternalCode: 'EXT-ADR-04',
-      categoryColor: '#D29922',
-      categoryIcon: 'home_work',
-    ),
-    ConfigCategoryModel(
-      categoryId: 5,
-      categoryCode: 'CNTTYPE',
-      categoryName: 'C_CONTACTTYPE',
-      description: 'Communication channels (Mobile, Email, Work Phone)',
-      priority: 5,
-      active: true,
-      allowModify: true,
-      rangeText: '5001 – 5999',
-      categoryExternalCode: 'EXT-CNT-05',
-      categoryColor: '#238636',
-      categoryIcon: 'phone_android',
-    ),
-    ConfigCategoryModel(
-      categoryId: 17,
-      categoryCode: 'NOTIF_EVT',
-      categoryName: 'C_NOTIFICATION_EVENT',
-      description: 'Master notification event catalog',
-      priority: 17,
-      active: true,
-      allowModify: true,
-      rangeText: '17001 – 17999',
-      categoryExternalCode: 'EXT-EVT-17',
-      categoryColor: '#2F81F7',
-      categoryIcon: 'notifications',
-    ),
-  ];
-
+  late List<ConfigCategoryModel> _categories;
   late List<ConfigParameterModel> _parameters;
 
   @override
   void initState() {
     super.initState();
+    _categories = [
+      const ConfigCategoryModel(
+        categoryId: 1,
+        categoryCode: 'GEN',
+        categoryName: 'C_GENDER',
+        description: 'Gender salutations & identification parameters',
+        priority: 1,
+        active: true,
+        allowModify: false,
+        rangeText: '1001 – 1999',
+        categoryExternalCode: 'EXT-GEN-01',
+        categoryColor: '#2F81F7',
+        categoryIcon: 'people',
+      ),
+      const ConfigCategoryModel(
+        categoryId: 2,
+        categoryCode: 'TITLE',
+        categoryName: 'C_TITLE',
+        description: 'Name salutation titles (Mr, Dr, Ms, Prof)',
+        priority: 2,
+        active: true,
+        allowModify: true,
+        rangeText: '2001 – 2999',
+        categoryExternalCode: 'EXT-TTL-02',
+        categoryColor: '#8957E5',
+        categoryIcon: 'badge',
+      ),
+      const ConfigCategoryModel(
+        categoryId: 3,
+        categoryCode: 'BLD',
+        categoryName: 'C_BLOODGROUP',
+        description: 'Human blood group classifications',
+        priority: 3,
+        active: true,
+        allowModify: true,
+        rangeText: '3001 – 3999',
+        categoryExternalCode: 'EXT-BLD-03',
+        categoryColor: '#DA3633',
+        categoryIcon: 'bloodtype',
+      ),
+      const ConfigCategoryModel(
+        categoryId: 4,
+        categoryCode: 'ADRTYPE',
+        categoryName: 'C_ADDRESSTYPE',
+        description: 'Address categories (Home, Work, Billing, Shipping)',
+        priority: 4,
+        active: true,
+        allowModify: true,
+        rangeText: '4001 – 4999',
+        categoryExternalCode: 'EXT-ADR-04',
+        categoryColor: '#D29922',
+        categoryIcon: 'home_work',
+      ),
+      const ConfigCategoryModel(
+        categoryId: 5,
+        categoryCode: 'CNTTYPE',
+        categoryName: 'C_CONTACTTYPE',
+        description: 'Communication channels (Mobile, Email, Work Phone)',
+        priority: 5,
+        active: true,
+        allowModify: true,
+        rangeText: '5001 – 5999',
+        categoryExternalCode: 'EXT-CNT-05',
+        categoryColor: '#238636',
+        categoryIcon: 'phone_android',
+      ),
+      const ConfigCategoryModel(
+        categoryId: 17,
+        categoryCode: 'NOTIF_EVT',
+        categoryName: 'C_NOTIFICATION_EVENT',
+        description: 'Master notification event catalog',
+        priority: 17,
+        active: true,
+        allowModify: true,
+        rangeText: '17001 – 17999',
+        categoryExternalCode: 'EXT-EVT-17',
+        categoryColor: '#2F81F7',
+        categoryIcon: 'notifications',
+      ),
+    ];
+
     _parameters = [
       const ConfigParameterModel(
         parameterId: 1001,
@@ -300,6 +426,43 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
     ];
   }
 
+  void _saveCategory(ConfigCategoryModel updatedCategory) {
+    setState(() {
+      final index = _categories.indexWhere((c) => c.categoryId == updatedCategory.categoryId);
+      if (index != -1) {
+        _categories[index] = updatedCategory;
+      } else {
+        _categories.add(updatedCategory);
+      }
+      _selectedCategory = updatedCategory;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Category "${updatedCategory.categoryName}" updated with Category Color (${updatedCategory.categoryColor}).'),
+        backgroundColor: AppColors.statusActive,
+      ),
+    );
+  }
+
+  void _saveParameter(ConfigParameterModel updatedParam) {
+    setState(() {
+      final index = _parameters.indexWhere((p) => p.parameterId == updatedParam.parameterId);
+      if (index != -1) {
+        _parameters[index] = updatedParam;
+      } else {
+        _parameters.add(updatedParam);
+      }
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Parameter "${updatedParam.paramCode}" saved with Parameter Color (${updatedParam.parameterColor}).'),
+        backgroundColor: AppColors.statusActive,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filtered = _categories.where((c) {
@@ -310,7 +473,15 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
 
     return MasterDetailLayout(
       masterWidget: _buildMasterTable(filtered),
-      detailWidget: _selectedCategory != null ? _buildDetailInspector(_selectedCategory!) : null,
+      detailWidget: _selectedCategory != null
+          ? _CategoryInspectorPanel(
+              category: _selectedCategory!,
+              parameters: _parameters.where((p) => p.categoryId == _selectedCategory!.categoryId).toList(),
+              onSaveCategory: _saveCategory,
+              onAddParameter: () => _showAddParameterModal(context, _selectedCategory!),
+              onEditParameter: (param) => _showEditParameterModal(context, param),
+            )
+          : null,
       detailTitle: _selectedCategory != null ? 'Category Inspector — ${_selectedCategory!.categoryName}' : 'Category Catalog',
       onCloseDetail: () => setState(() => _selectedCategory = null),
     );
@@ -392,7 +563,19 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                               ),
                               Expanded(
                                 flex: 3,
-                                child: Text(cat.categoryName, style: const TextStyle(color: AppColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w800, fontFamily: 'monospace')),
+                                child: Row(
+                                  children: [
+                                    Icon(_getIconData(cat.categoryIcon), size: 16, color: _parseHexColor(cat.categoryColor)),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        cat.categoryName,
+                                        style: const TextStyle(color: AppColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w800, fontFamily: 'monospace'),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               SizedBox(
                                 width: 70,
@@ -412,7 +595,13 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    Text('${cat.categoryColor ?? "#2F81F7"} (${cat.categoryExternalCode ?? "N/A"})', style: const TextStyle(color: AppColors.textSubtle, fontSize: 11, fontFamily: 'monospace')),
+                                    Expanded(
+                                      child: Text(
+                                        '${cat.categoryColor ?? "#2F81F7"} (${cat.categoryExternalCode ?? "N/A"})',
+                                        style: const TextStyle(color: AppColors.textSubtle, fontSize: 11, fontFamily: 'monospace'),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -439,172 +628,6 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
     );
   }
 
-  Widget _buildDetailInspector(ConfigCategoryModel cat) {
-    final catParams = _parameters.where((p) => p.categoryId == cat.categoryId).toList();
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(child: DqmsTextField(label: 'Category Code', initialValue: cat.categoryCode)),
-              const SizedBox(width: 12),
-              Expanded(child: DqmsTextField(label: 'Priority Level', initialValue: '${cat.priority}')),
-            ],
-          ),
-          const SizedBox(height: 14),
-          DqmsTextField(label: 'Category Name (C_*)', initialValue: cat.categoryName),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(child: DqmsTextField(label: 'External Code', initialValue: cat.categoryExternalCode ?? '')),
-              const SizedBox(width: 12),
-              Expanded(child: DqmsTextField(label: 'External ID', initialValue: cat.categoryExternalId ?? '')),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // INTERACTIVE CATEGORY COLOR PICKER & DISPLAY VALUE
-          _DqmsColorPicker(
-            label: 'Category Color',
-            initialHex: cat.categoryColor ?? '#2F81F7',
-            onColorChanged: (hex) {
-              // Updates category color
-            },
-          ),
-          const SizedBox(height: 14),
-
-          Row(
-            children: [
-              Expanded(child: DqmsTextField(label: 'Icon Identifier', initialValue: cat.categoryIcon ?? 'category')),
-              const SizedBox(width: 12),
-              Expanded(child: DqmsTextField(label: 'Category Image URL', initialValue: cat.categoryImage ?? 'https://cdn.dqms.org/categories/default.png')),
-            ],
-          ),
-          const SizedBox(height: 14),
-          DqmsTextField(label: 'Description & System Usage', initialValue: cat.description, maxLines: 2),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Text('Allow User Modifications: ${cat.allowModify ? "YES" : "NO (System Fixed)"}', style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
-              const Spacer(),
-              DqmsStatusBadge.activeState(cat.active),
-            ],
-          ),
-          const SizedBox(height: 20),
-          const Divider(color: AppColors.borderSubtle, height: 1),
-          const SizedBox(height: 16),
-
-          // Parameter List Header with Add Parameter Button
-          Row(
-            children: [
-              const Text('Seeded Category Parameters', style: TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text('${catParams.length} Items', style: const TextStyle(color: AppColors.brandPrimary, fontSize: 10, fontWeight: FontWeight.w800)),
-              ),
-              const Spacer(),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.add_rounded, size: 14),
-                label: const Text('Add Parameter', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.brandPrimary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                ),
-                onPressed: () => _showAddParameterModal(context, cat),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // Parameter Items Container
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              color: AppColors.bgCard,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppColors.borderSubtle),
-            ),
-            child: catParams.isEmpty
-                ? const Center(
-                    child: Text('No parameters configured. Click "+ Add Parameter" above.', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
-                  )
-                : ListView.separated(
-                    itemCount: catParams.length,
-                    separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                    itemBuilder: (ctx, idx) {
-                      final p = catParams[idx];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        child: Row(
-                          children: [
-                            Text('${p.parameterId}', style: const TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w800, fontFamily: 'monospace')),
-                            const SizedBox(width: 10),
-
-                            // Display Swatch for Parameter Color
-                            Container(
-                              width: 14,
-                              height: 14,
-                              decoration: BoxDecoration(
-                                color: _parseHexColor(p.parameterColor),
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white30, width: 1),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(p.paramCode, style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w700)),
-                                      if (p.isDefault) ...[
-                                        const SizedBox(width: 6),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                          decoration: BoxDecoration(color: AppColors.statusSpecial.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(3)),
-                                          child: const Text('DEFAULT', style: TextStyle(color: AppColors.statusSpecial, fontSize: 8, fontWeight: FontWeight.w900)),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                  Text('Color: ${p.parameterColor ?? "#2F81F7"} • ExtCode: ${p.parameterExternalCode ?? "N/A"} • Prio: ${p.priority}', style: const TextStyle(color: AppColors.textSubtle, fontSize: 10)),
-                                ],
-                              ),
-                            ),
-                            DqmsStatusBadge.activeState(p.isActive),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          const SizedBox(height: 24),
-          DqmsButton(
-            label: 'Save Category & Category Color',
-            icon: Icons.save_rounded,
-            isFullWidth: true,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Category ${cat.categoryName} updated with Category Color.'), backgroundColor: AppColors.statusActive),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   /// Add Category Modal
   void _showAddCategoryModal(BuildContext context) {
     final codeCtrl = TextEditingController();
@@ -612,8 +635,10 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
     final descCtrl = TextEditingController();
     final prioCtrl = TextEditingController(text: '1');
     final extCodeCtrl = TextEditingController();
+    final extIdCtrl = TextEditingController();
     String selectedCategoryColor = '#2F81F7';
     final iconCtrl = TextEditingController(text: 'category');
+    bool isActive = true;
 
     showDialog(
       context: context,
@@ -623,7 +648,7 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: const BorderSide(color: AppColors.borderSubtle)),
           title: const Text('Create ConfigCategory (.NET Entity)', style: TextStyle(color: AppColors.textMain, fontSize: 16, fontWeight: FontWeight.w700)),
           content: SizedBox(
-            width: 480,
+            width: 500,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -638,10 +663,16 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                   const SizedBox(height: 12),
                   DqmsTextField(label: 'Category Name (e.g., C_NOTIFICATION_EVENT)', controller: nameCtrl),
                   const SizedBox(height: 12),
-                  DqmsTextField(label: 'External Code', controller: extCodeCtrl),
+                  Row(
+                    children: [
+                      Expanded(child: DqmsTextField(label: 'External Code', controller: extCodeCtrl)),
+                      const SizedBox(width: 12),
+                      Expanded(child: DqmsTextField(label: 'External ID', controller: extIdCtrl)),
+                    ],
+                  ),
                   const SizedBox(height: 12),
 
-                  // Category Color Picker with Display Value
+                  // Category Color Picker with Live Hex Display Value
                   _DqmsColorPicker(
                     label: 'Category Color',
                     initialHex: selectedCategoryColor,
@@ -649,9 +680,25 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                   ),
                   const SizedBox(height: 12),
 
-                  DqmsTextField(label: 'Category Icon Identifier', controller: iconCtrl),
+                  Row(
+                    children: [
+                      Expanded(child: DqmsTextField(label: 'Category Icon Identifier', controller: iconCtrl)),
+                      const SizedBox(width: 8),
+                      Icon(_getIconData(iconCtrl.text), size: 24, color: _parseHexColor(selectedCategoryColor)),
+                    ],
+                  ),
                   const SizedBox(height: 12),
                   DqmsTextField(label: 'Description & System Usage', controller: descCtrl, maxLines: 2),
+                  const SizedBox(height: 8),
+                  Material(
+                    color: Colors.transparent,
+                    child: SwitchListTile(
+                      value: isActive,
+                      onChanged: (val) => setModalState(() => isActive = val),
+                      title: Text(isActive ? 'Category Active' : 'Category Inactive', style: TextStyle(color: isActive ? AppColors.statusActive : AppColors.textMuted, fontSize: 12, fontWeight: FontWeight.w700)),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -661,10 +708,24 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandPrimary, foregroundColor: Colors.white),
               onPressed: () {
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('ConfigCategory created.'), backgroundColor: AppColors.statusActive),
+                final newId = _categories.length + 1;
+                final newCat = ConfigCategoryModel(
+                  categoryId: newId,
+                  categoryCode: codeCtrl.text.isEmpty ? 'CAT_$newId' : codeCtrl.text.toUpperCase(),
+                  categoryName: nameCtrl.text.isEmpty ? 'C_NEWCATEGORY' : nameCtrl.text,
+                  description: descCtrl.text.isEmpty ? 'New Config Category' : descCtrl.text,
+                  priority: int.tryParse(prioCtrl.text) ?? 1,
+                  active: isActive,
+                  allowModify: true,
+                  rangeText: '${newId * 1000 + 1} – ${newId * 1000 + 999}',
+                  categoryExternalCode: extCodeCtrl.text.isEmpty ? null : extCodeCtrl.text,
+                  categoryExternalId: extIdCtrl.text.isEmpty ? null : extIdCtrl.text,
+                  categoryColor: selectedCategoryColor,
+                  categoryIcon: iconCtrl.text,
                 );
+
+                _saveCategory(newCat);
+                Navigator.pop(ctx);
               },
               child: const Text('Save Category'),
             ),
@@ -683,10 +744,12 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
     final idCtrl = TextEditingController(text: '$baseId');
     final prioCtrl = TextEditingController(text: '1');
     final extCodeCtrl = TextEditingController();
-    String selectedParameterColor = '#2F81F7'; // Parameter Color
+    final extIdCtrl = TextEditingController();
+    String selectedParameterColor = '#2F81F7';
     final iconCtrl = TextEditingController(text: 'code');
     final imageCtrl = TextEditingController();
     bool isDefault = false;
+    bool isActive = true;
 
     showDialog(
       context: context,
@@ -699,14 +762,14 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
           ),
           title: Text('Add Parameter to ${category.categoryName}', style: const TextStyle(color: AppColors.textMain, fontSize: 15, fontWeight: FontWeight.w700)),
           content: SizedBox(
-            width: 480,
+            width: 500,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     children: [
-                      Expanded(flex: 2, child: DqmsTextField(label: 'Parameter ID (Range)', controller: idCtrl)),
+                      Expanded(flex: 2, child: DqmsTextField(label: 'Parameter ID', controller: idCtrl)),
                       const SizedBox(width: 12),
                       Expanded(flex: 1, child: DqmsTextField(label: 'Priority', controller: prioCtrl)),
                     ],
@@ -721,7 +784,7 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                   ),
                   const SizedBox(height: 12),
 
-                  // INTERACTIVE PARAMETER COLOR PICKER WITH DISPLAY VALUE
+                  // Parameter Color Picker with Display Value
                   _DqmsColorPicker(
                     label: 'Parameter Color',
                     initialHex: selectedParameterColor,
@@ -731,16 +794,31 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
 
                   Row(
                     children: [
-                      Expanded(child: DqmsTextField(label: 'External Code', controller: extCodeCtrl)),
+                      Expanded(child: DqmsTextField(label: 'Icon Identifier', controller: iconCtrl)),
                       const SizedBox(width: 12),
-                      Expanded(child: DqmsTextField(label: 'Icon Name', controller: iconCtrl)),
+                      Expanded(child: DqmsTextField(label: 'External Code', controller: extCodeCtrl)),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  DqmsTextField(label: 'Image Asset URL', controller: imageCtrl),
+                  Row(
+                    children: [
+                      Expanded(child: DqmsTextField(label: 'External ID', controller: extIdCtrl)),
+                      const SizedBox(width: 12),
+                      Expanded(child: DqmsTextField(label: 'Image Asset URL', controller: imageCtrl)),
+                    ],
+                  ),
                   const SizedBox(height: 12),
                   DqmsTextField(label: 'Description', controller: descCtrl, maxLines: 2),
                   const SizedBox(height: 8),
+                  Material(
+                    color: Colors.transparent,
+                    child: SwitchListTile(
+                      value: isActive,
+                      onChanged: (val) => setModalState(() => isActive = val),
+                      title: Text(isActive ? 'Parameter Active' : 'Parameter Inactive', style: TextStyle(color: isActive ? AppColors.statusActive : AppColors.textMuted, fontSize: 12, fontWeight: FontWeight.w700)),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
                   Material(
                     color: Colors.transparent,
                     child: CheckboxListTile(
@@ -772,22 +850,17 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                   paramName: nameCtrl.text.isEmpty ? 'New Parameter' : nameCtrl.text,
                   isDefault: isDefault,
                   priority: int.tryParse(prioCtrl.text) ?? 1,
-                  isActive: true,
+                  isActive: isActive,
                   description: descCtrl.text.isEmpty ? 'Custom Parameter' : descCtrl.text,
                   parameterExternalCode: extCodeCtrl.text.isEmpty ? null : extCodeCtrl.text,
+                  parameterExternalId: extIdCtrl.text.isEmpty ? null : extIdCtrl.text,
                   parameterColor: selectedParameterColor,
                   parameterIcon: iconCtrl.text,
                   parameterImage: imageCtrl.text.isEmpty ? null : imageCtrl.text,
                 );
 
-                setState(() {
-                  _parameters.add(newParam);
-                });
-
+                _saveParameter(newParam);
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Parameter ${newParam.paramCode} created with Parameter Color ${newParam.parameterColor}.'), backgroundColor: AppColors.statusActive),
-                );
               },
               child: const Text('Add Parameter'),
             ),
@@ -797,14 +870,428 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
     );
   }
 
-  Color _parseHexColor(String? hexString) {
-    if (hexString == null || hexString.isEmpty) return AppColors.brandPrimary;
-    try {
-      final hex = hexString.replaceAll('#', '');
-      return Color(int.parse('FF$hex', radix: 16));
-    } catch (_) {
-      return AppColors.brandPrimary;
+  /// Edit Parameter Modal Dialog with Interactive Parameter Color Picker & Display Value
+  void _showEditParameterModal(BuildContext context, ConfigParameterModel parameter) {
+    final codeCtrl = TextEditingController(text: parameter.paramCode);
+    final nameCtrl = TextEditingController(text: parameter.paramName);
+    final descCtrl = TextEditingController(text: parameter.description);
+    final idCtrl = TextEditingController(text: '${parameter.parameterId}');
+    final prioCtrl = TextEditingController(text: '${parameter.priority}');
+    final extCodeCtrl = TextEditingController(text: parameter.parameterExternalCode ?? '');
+    final extIdCtrl = TextEditingController(text: parameter.parameterExternalId ?? '');
+    String selectedParameterColor = parameter.parameterColor ?? '#2F81F7';
+    final iconCtrl = TextEditingController(text: parameter.parameterIcon ?? 'code');
+    final imageCtrl = TextEditingController(text: parameter.parameterImage ?? '');
+    bool isDefault = parameter.isDefault;
+    bool isActive = parameter.isActive;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => AlertDialog(
+          backgroundColor: AppColors.bgSurface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: const BorderSide(color: AppColors.borderSubtle),
+          ),
+          title: Text('Edit Parameter — ${parameter.paramCode} (#${parameter.parameterId})', style: const TextStyle(color: AppColors.textMain, fontSize: 15, fontWeight: FontWeight.w700)),
+          content: SizedBox(
+            width: 500,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(flex: 2, child: DqmsTextField(label: 'Parameter ID (Fixed)', controller: idCtrl)),
+                      const SizedBox(width: 12),
+                      Expanded(flex: 1, child: DqmsTextField(label: 'Priority Level', controller: prioCtrl)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: DqmsTextField(label: 'Parameter Code', controller: codeCtrl)),
+                      const SizedBox(width: 12),
+                      Expanded(child: DqmsTextField(label: 'Parameter Name', controller: nameCtrl)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Parameter Color Picker with Display Value
+                  _DqmsColorPicker(
+                    label: 'Parameter Color',
+                    initialHex: selectedParameterColor,
+                    onColorChanged: (hex) => setModalState(() => selectedParameterColor = hex),
+                  ),
+                  const SizedBox(height: 12),
+
+                  Row(
+                    children: [
+                      Expanded(child: DqmsTextField(label: 'Icon Identifier', controller: iconCtrl)),
+                      const SizedBox(width: 8),
+                      Icon(_getIconData(iconCtrl.text), size: 22, color: _parseHexColor(selectedParameterColor)),
+                      const SizedBox(width: 12),
+                      Expanded(child: DqmsTextField(label: 'External Code', controller: extCodeCtrl)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: DqmsTextField(label: 'External ID', controller: extIdCtrl)),
+                      const SizedBox(width: 12),
+                      Expanded(child: DqmsTextField(label: 'Image Asset URL', controller: imageCtrl)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  DqmsTextField(label: 'Description', controller: descCtrl, maxLines: 2),
+                  const SizedBox(height: 8),
+                  Material(
+                    color: Colors.transparent,
+                    child: SwitchListTile(
+                      value: isActive,
+                      onChanged: (val) => setModalState(() => isActive = val),
+                      title: Text(isActive ? 'Parameter Active' : 'Parameter Inactive', style: TextStyle(color: isActive ? AppColors.statusActive : AppColors.textMuted, fontSize: 12, fontWeight: FontWeight.w700)),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  Material(
+                    color: Colors.transparent,
+                    child: CheckboxListTile(
+                      value: isDefault,
+                      onChanged: (val) => setModalState(() => isDefault = val ?? false),
+                      title: const Text('Set as Category Default Parameter (IsDefault)', style: TextStyle(color: AppColors.textMain, fontSize: 12)),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brandPrimary,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                final updatedParam = parameter.copyWith(
+                  paramCode: codeCtrl.text.toUpperCase(),
+                  paramName: nameCtrl.text,
+                  priority: int.tryParse(prioCtrl.text) ?? parameter.priority,
+                  isActive: isActive,
+                  isDefault: isDefault,
+                  description: descCtrl.text,
+                  parameterExternalCode: extCodeCtrl.text.isEmpty ? null : extCodeCtrl.text,
+                  parameterExternalId: extIdCtrl.text.isEmpty ? null : extIdCtrl.text,
+                  parameterColor: selectedParameterColor,
+                  parameterIcon: iconCtrl.text,
+                  parameterImage: imageCtrl.text.isEmpty ? null : imageCtrl.text,
+                );
+
+                _saveParameter(updatedParam);
+                Navigator.pop(ctx);
+              },
+              child: const Text('Save Parameter Changes'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// CATEGORY INSPECTOR PANEL
+class _CategoryInspectorPanel extends StatefulWidget {
+  final ConfigCategoryModel category;
+  final List<ConfigParameterModel> parameters;
+  final ValueChanged<ConfigCategoryModel> onSaveCategory;
+  final VoidCallback onAddParameter;
+  final ValueChanged<ConfigParameterModel> onEditParameter;
+
+  const _CategoryInspectorPanel({
+    required this.category,
+    required this.parameters,
+    required this.onSaveCategory,
+    required this.onAddParameter,
+    required this.onEditParameter,
+  });
+
+  @override
+  State<_CategoryInspectorPanel> createState() => _CategoryInspectorPanelState();
+}
+
+class _CategoryInspectorPanelState extends State<_CategoryInspectorPanel> {
+  late TextEditingController _codeCtrl;
+  late TextEditingController _nameCtrl;
+  late TextEditingController _prioCtrl;
+  late TextEditingController _extCodeCtrl;
+  late TextEditingController _extIdCtrl;
+  late TextEditingController _iconCtrl;
+  late TextEditingController _imageCtrl;
+  late TextEditingController _descCtrl;
+  late String _categoryColor;
+  late bool _isActive;
+  late bool _allowModify;
+
+  @override
+  void initState() {
+    super.initState();
+    _initFields();
+  }
+
+  void _initFields() {
+    _codeCtrl = TextEditingController(text: widget.category.categoryCode);
+    _nameCtrl = TextEditingController(text: widget.category.categoryName);
+    _prioCtrl = TextEditingController(text: '${widget.category.priority}');
+    _extCodeCtrl = TextEditingController(text: widget.category.categoryExternalCode ?? '');
+    _extIdCtrl = TextEditingController(text: widget.category.categoryExternalId ?? '');
+    _iconCtrl = TextEditingController(text: widget.category.categoryIcon ?? 'category');
+    _imageCtrl = TextEditingController(text: widget.category.categoryImage ?? '');
+    _descCtrl = TextEditingController(text: widget.category.description);
+    _categoryColor = widget.category.categoryColor ?? '#2F81F7';
+    _isActive = widget.category.active;
+    _allowModify = widget.category.allowModify;
+  }
+
+  @override
+  void didUpdateWidget(_CategoryInspectorPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.category.categoryId != widget.category.categoryId ||
+        oldWidget.category.categoryColor != widget.category.categoryColor ||
+        oldWidget.category.active != widget.category.active) {
+      _codeCtrl.text = widget.category.categoryCode;
+      _nameCtrl.text = widget.category.categoryName;
+      _prioCtrl.text = '${widget.category.priority}';
+      _extCodeCtrl.text = widget.category.categoryExternalCode ?? '';
+      _extIdCtrl.text = widget.category.categoryExternalId ?? '';
+      _iconCtrl.text = widget.category.categoryIcon ?? 'category';
+      _imageCtrl.text = widget.category.categoryImage ?? '';
+      _descCtrl.text = widget.category.description;
+      _categoryColor = widget.category.categoryColor ?? '#2F81F7';
+      _isActive = widget.category.active;
+      _allowModify = widget.category.allowModify;
     }
+  }
+
+  @override
+  void dispose() {
+    _codeCtrl.dispose();
+    _nameCtrl.dispose();
+    _prioCtrl.dispose();
+    _extCodeCtrl.dispose();
+    _extIdCtrl.dispose();
+    _iconCtrl.dispose();
+    _imageCtrl.dispose();
+    _descCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: DqmsTextField(label: 'Category Code', controller: _codeCtrl)),
+              const SizedBox(width: 12),
+              Expanded(child: DqmsTextField(label: 'Priority Level', controller: _prioCtrl)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          DqmsTextField(label: 'Category Name (C_*)', controller: _nameCtrl),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(child: DqmsTextField(label: 'External Code', controller: _extCodeCtrl)),
+              const SizedBox(width: 12),
+              Expanded(child: DqmsTextField(label: 'External ID', controller: _extIdCtrl)),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // INTERACTIVE CATEGORY COLOR PICKER & DISPLAY VALUE
+          _DqmsColorPicker(
+            label: 'Category Color',
+            initialHex: _categoryColor,
+            onColorChanged: (hex) {
+              setState(() {
+                _categoryColor = hex;
+              });
+            },
+          ),
+          const SizedBox(height: 14),
+
+          Row(
+            children: [
+              Expanded(child: DqmsTextField(label: 'Icon Identifier', controller: _iconCtrl, onChanged: (_) => setState(() {}))),
+              const SizedBox(width: 8),
+              Icon(_getIconData(_iconCtrl.text), size: 24, color: _parseHexColor(_categoryColor)),
+              const SizedBox(width: 12),
+              Expanded(child: DqmsTextField(label: 'Category Image URL', controller: _imageCtrl)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          DqmsTextField(label: 'Description & System Usage', controller: _descCtrl, maxLines: 2),
+          const SizedBox(height: 16),
+
+          Row(
+            children: [
+              Text('Allow User Modifications: ${_allowModify ? "YES" : "NO (System Fixed)"}', style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
+              const Spacer(),
+              Material(
+                color: Colors.transparent,
+                child: Switch(
+                  value: _isActive,
+                  onChanged: (val) => setState(() => _isActive = val),
+                  activeTrackColor: AppColors.statusActive,
+                ),
+              ),
+              const SizedBox(width: 6),
+              DqmsStatusBadge.activeState(_isActive),
+            ],
+          ),
+          const SizedBox(height: 20),
+          const Divider(color: AppColors.borderSubtle, height: 1),
+          const SizedBox(height: 16),
+
+          // Parameter List Header with Add Parameter Button
+          Row(
+            children: [
+              const Text('Seeded Category Parameters', style: TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text('${widget.parameters.length} Items', style: const TextStyle(color: AppColors.brandPrimary, fontSize: 10, fontWeight: FontWeight.w800)),
+              ),
+              const Spacer(),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.add_rounded, size: 14),
+                label: const Text('Add Parameter', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.brandPrimary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                ),
+                onPressed: widget.onAddParameter,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Parameter Items Container
+          Container(
+            height: 230,
+            decoration: BoxDecoration(
+              color: AppColors.bgCard,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: AppColors.borderSubtle),
+            ),
+            child: widget.parameters.isEmpty
+                ? const Center(
+                    child: Text('No parameters configured. Click "+ Add Parameter" above.', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                  )
+                : ListView.separated(
+                    itemCount: widget.parameters.length,
+                    separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                    itemBuilder: (ctx, idx) {
+                      final p = widget.parameters[idx];
+                      return InkWell(
+                        onTap: () => widget.onEditParameter(p),
+                        borderRadius: BorderRadius.circular(4),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Row(
+                            children: [
+                              Text('${p.parameterId}', style: const TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w800, fontFamily: 'monospace')),
+                              const SizedBox(width: 8),
+
+                              // Display Swatch for Parameter Color
+                              Container(
+                                width: 14,
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  color: _parseHexColor(p.parameterColor),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white30, width: 1),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(_getIconData(p.parameterIcon), size: 14, color: _parseHexColor(p.parameterColor)),
+                              const SizedBox(width: 8),
+
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(p.paramCode, style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w700)),
+                                        const SizedBox(width: 6),
+                                        Text('— ${p.paramName}', style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                                        if (p.isDefault) ...[
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                            decoration: BoxDecoration(color: AppColors.statusSpecial.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(3)),
+                                            child: const Text('DEFAULT', style: TextStyle(color: AppColors.statusSpecial, fontSize: 8, fontWeight: FontWeight.w900)),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    Text('Color: ${p.parameterColor ?? "#2F81F7"} • ExtCode: ${p.parameterExternalCode ?? "N/A"} • Prio: ${p.priority}', style: const TextStyle(color: AppColors.textSubtle, fontSize: 10)),
+                                  ],
+                                ),
+                              ),
+                              DqmsStatusBadge.activeState(p.isActive),
+                              const SizedBox(width: 6),
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, size: 16, color: AppColors.brandAccent),
+                                tooltip: 'Edit Parameter Properties',
+                                onPressed: () => widget.onEditParameter(p),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          const SizedBox(height: 24),
+          DqmsButton(
+            label: 'Save Category & Category Color',
+            icon: Icons.save_rounded,
+            isFullWidth: true,
+            onPressed: () {
+              final updated = widget.category.copyWith(
+                categoryCode: _codeCtrl.text.toUpperCase(),
+                categoryName: _nameCtrl.text,
+                priority: int.tryParse(_prioCtrl.text) ?? widget.category.priority,
+                categoryExternalCode: _extCodeCtrl.text.isEmpty ? null : _extCodeCtrl.text,
+                categoryExternalId: _extIdCtrl.text.isEmpty ? null : _extIdCtrl.text,
+                categoryColor: _categoryColor,
+                categoryIcon: _iconCtrl.text,
+                categoryImage: _imageCtrl.text.isEmpty ? null : _imageCtrl.text,
+                description: _descCtrl.text,
+                active: _isActive,
+              );
+              widget.onSaveCategory(updated);
+            },
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -844,6 +1331,15 @@ class _DqmsColorPickerState extends State<_DqmsColorPicker> {
     super.initState();
     _currentHex = widget.initialHex;
     _textCtrl = TextEditingController(text: _currentHex);
+  }
+
+  @override
+  void didUpdateWidget(_DqmsColorPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialHex != widget.initialHex) {
+      _currentHex = widget.initialHex;
+      _textCtrl.text = _currentHex;
+    }
   }
 
   @override
