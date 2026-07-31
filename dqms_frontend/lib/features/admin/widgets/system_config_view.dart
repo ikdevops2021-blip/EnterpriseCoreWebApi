@@ -1,12 +1,15 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:dqms_frontend/core/config/app_config.dart';
+import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
 import 'package:dqms_frontend/core/widgets/dqms_status_badge.dart';
 import 'package:dqms_frontend/features/admin/widgets/master_detail_layout.dart';
+import 'package:dqms_frontend/features/admin/providers/config_cache_provider.dart';
 
 /// Complete SystemConfigurationKey Model matching .NET Entity (SystemConfigurationKey.cs)
 class SystemConfigModel {
@@ -33,6 +36,22 @@ class SystemConfigModel {
     this.allowEdit = true,
     this.active = true,
   });
+
+  factory SystemConfigModel.fromJson(Map<String, dynamic> json) {
+    final rawId = json['configId'] ?? json['ConfigId'] ?? json['systemConfigurationKeyID'] ?? json['SystemConfigurationKeyID'] ?? json['id'] ?? json['Id'] ?? 0;
+    return SystemConfigModel(
+      configId: rawId is int ? rawId : int.tryParse(rawId.toString()) ?? 0,
+      categoryName: (json['categoryName'] ?? json['CategoryName'] ?? json['category'] ?? json['Category'] ?? 'General').toString(),
+      paramKey: (json['paramKey'] ?? json['ParamKey'] ?? json['key'] ?? json['Key'] ?? json['systemConfigKey'] ?? '').toString(),
+      paramValue: (json['paramValue'] ?? json['ParamValue'] ?? json['value'] ?? json['Value'] ?? json['systemConfigValue'] ?? '').toString(),
+      description: (json['description'] ?? json['Description'] ?? '').toString(),
+      acceptedValues: json['acceptedValues'] ?? json['AcceptedValues'],
+      dataTypeId: json['dataTypeId'] ?? json['DataTypeId'] ?? 15001,
+      valueDataType: (json['valueDataType'] ?? json['ValueDataType'] ?? json['dataTypeCode'] ?? json['DataTypeCode'] ?? 'STRING (15001)').toString(),
+      allowEdit: json['allowEdit'] ?? json['AllowEdit'] ?? true,
+      active: json['active'] ?? json['Active'] ?? json['isActive'] ?? json['IsActive'] ?? true,
+    );
+  }
 }
 
 /// SYSTEM CONFIGURATION KEYS & API GATEWAY WORKSPACE VIEW
@@ -46,9 +65,10 @@ class SystemConfigView extends ConsumerStatefulWidget {
 class _SystemConfigViewState extends ConsumerState<SystemConfigView> {
   String _searchQuery = '';
   SystemConfigModel? _selectedConfig;
+  bool _isLoading = false;
 
-  final List<SystemConfigModel> _configs = const [
-    SystemConfigModel(
+  List<SystemConfigModel> _configs = [
+    const SystemConfigModel(
       configId: 1,
       categoryName: 'General',
       paramKey: 'App.Name',
@@ -60,7 +80,7 @@ class _SystemConfigViewState extends ConsumerState<SystemConfigView> {
       allowEdit: true,
       active: true,
     ),
-    SystemConfigModel(
+    const SystemConfigModel(
       configId: 2,
       categoryName: 'QueueThresholds',
       paramKey: 'Queue.MaxWaitSlaMinutes',
@@ -72,7 +92,7 @@ class _SystemConfigViewState extends ConsumerState<SystemConfigView> {
       allowEdit: true,
       active: true,
     ),
-    SystemConfigModel(
+    const SystemConfigModel(
       configId: 3,
       categoryName: 'QueueThresholds',
       paramKey: 'Queue.RecallMaxAttempts',
@@ -84,7 +104,7 @@ class _SystemConfigViewState extends ConsumerState<SystemConfigView> {
       allowEdit: true,
       active: true,
     ),
-    SystemConfigModel(
+    const SystemConfigModel(
       configId: 4,
       categoryName: 'DisplayEngine',
       paramKey: 'Tv.AutoRefreshIntervalSeconds',
@@ -96,7 +116,7 @@ class _SystemConfigViewState extends ConsumerState<SystemConfigView> {
       allowEdit: true,
       active: true,
     ),
-    SystemConfigModel(
+    const SystemConfigModel(
       configId: 5,
       categoryName: 'Security',
       paramKey: 'Security.RequireOrganizationHeader',
@@ -109,6 +129,71 @@ class _SystemConfigViewState extends ConsumerState<SystemConfigView> {
       active: true,
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchApiData();
+    });
+  }
+
+  List _extractDataList(dynamic responseData) {
+    if (responseData == null) return [];
+    if (responseData is String) {
+      try {
+        responseData = jsonDecode(responseData);
+      } catch (_) {
+        return [];
+      }
+    }
+    if (responseData is List) return responseData;
+    if (responseData is Map) {
+      final dataObj = responseData['data'] ?? responseData['Data'] ?? responseData['items'] ?? responseData['Items'] ?? responseData['result'] ?? responseData['Result'];
+      if (dataObj is List) return dataObj;
+      if (dataObj is String) {
+        try {
+          final parsed = jsonDecode(dataObj);
+          if (parsed is List) return parsed;
+        } catch (_) {}
+      }
+    }
+    return [];
+  }
+
+  Future<void> _fetchApiData({bool forceRefresh = false}) async {
+    final cacheState = ref.read(systemConfigCacheProvider);
+    if (!forceRefresh && cacheState.items.isNotEmpty) {
+      setState(() {
+        _configs = cacheState.items;
+        if (_selectedConfig == null && _configs.isNotEmpty) {
+          _selectedConfig = _configs.first;
+        }
+      });
+      return;
+    }
+
+    try {
+      setState(() => _isLoading = true);
+      final dio = ref.read(dioProvider);
+      final res = await dio.get('${AppConfig.apiBaseUrl}/api/v1/Configuration/system');
+      final items = _extractDataList(res.data);
+      if (items.isNotEmpty) {
+        final fetched = items.map((j) => SystemConfigModel.fromJson(Map<String, dynamic>.from(j))).toList();
+        ref.read(systemConfigCacheProvider.notifier).setCache(fetched);
+        setState(() {
+          _configs = fetched;
+          if (_selectedConfig == null && _configs.isNotEmpty) {
+            _selectedConfig = _configs.first;
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching system configurations: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +222,11 @@ class _SystemConfigViewState extends ConsumerState<SystemConfigView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: LinearProgressIndicator(color: AppColors.brandPrimary, minHeight: 2),
+            ),
           Row(
             children: [
               Expanded(

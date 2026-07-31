@@ -20,6 +20,7 @@ import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart';
 import 'package:dqms_frontend/features/auth/providers/auth_provider.dart';
 import 'package:dqms_frontend/features/auth/screens/login_screen.dart';
+import 'package:dqms_frontend/features/admin/providers/config_cache_provider.dart';
 
 /// Navigation Item Model
 class _AdminNavItem {
@@ -158,20 +159,34 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
             ),
             const SizedBox(width: 14),
 
-            // Live Sync Pill
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.statusActive.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: AppColors.statusActive.withValues(alpha: 0.3)),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.fiber_manual_record, color: AppColors.statusActive, size: 8),
-                  SizedBox(width: 5),
-                  Text('MASTER SYNC', style: TextStyle(color: AppColors.statusActive, fontSize: 10, fontWeight: FontWeight.w700)),
-                ],
+            // Interactive Master Sync & Cache Purge Button
+            InkWell(
+              onTap: () {
+                ref.read(systemConfigCacheProvider.notifier).invalidate();
+                ref.read(categoryParametersCacheProvider.notifier).invalidate();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('⚡ System Configuration & Category Parameters cache invalidated! Re-fetching fresh data from API...'),
+                    backgroundColor: AppColors.brandPrimary,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(4),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.statusActive.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: AppColors.statusActive.withValues(alpha: 0.3)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.bolt_rounded, color: AppColors.statusActive, size: 12),
+                    SizedBox(width: 4),
+                    Text('MASTER SYNC (CACHED)', style: TextStyle(color: AppColors.statusActive, fontSize: 10, fontWeight: FontWeight.w800)),
+                  ],
+                ),
               ),
             ),
             const SizedBox(width: 20),

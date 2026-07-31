@@ -8,6 +8,7 @@ import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
 import 'package:dqms_frontend/core/widgets/dqms_status_badge.dart';
 import 'package:dqms_frontend/features/admin/widgets/master_detail_layout.dart';
+import 'package:dqms_frontend/features/admin/providers/config_cache_provider.dart';
 
 /// Complete ConfigCategory Model matching .NET Entity (ConfigCategory.cs)
 class ConfigCategoryModel {
@@ -341,7 +342,25 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
     return [];
   }
 
-  Future<void> _fetchApiData() async {
+  Future<void> _fetchApiData({bool forceRefresh = false}) async {
+    final cacheState = ref.read(categoryParametersCacheProvider);
+    if (!forceRefresh && cacheState.categories.isNotEmpty) {
+      setState(() {
+        _categories = cacheState.categories;
+        if (_selectedCategory == null || !_categories.any((c) => c.categoryId == _selectedCategory?.categoryId)) {
+          _selectedCategory = _categories.first;
+        }
+        final cachedParams = <ConfigParameterModel>[];
+        for (final list in cacheState.parametersByCategory.values) {
+          cachedParams.addAll(list);
+        }
+        if (cachedParams.isNotEmpty) {
+          _parameters = cachedParams;
+        }
+      });
+      return;
+    }
+
     try {
       setState(() => _isLoading = true);
       final dio = ref.read(dioProvider);
@@ -351,6 +370,7 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
       final catItems = _extractDataList(catRes.data);
       if (catItems.isNotEmpty) {
         final fetched = catItems.map((json) => ConfigCategoryModel.fromJson(Map<String, dynamic>.from(json))).toList();
+        ref.read(categoryParametersCacheProvider.notifier).setCategories(fetched);
         setState(() {
           _categories = fetched;
           if (_selectedCategory == null || !_categories.any((c) => c.categoryId == _selectedCategory?.categoryId)) {
@@ -366,14 +386,16 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
           final res = await dio.get('${AppConfig.apiBaseUrl}/api/v1/Configuration/categories/${cat.categoryId}/parameters');
           final paramItems = _extractDataList(res.data);
           if (paramItems.isNotEmpty) {
-            allCategoryParams.addAll(paramItems.map((j) {
+            final fetched = paramItems.map((j) {
               final map = Map<String, dynamic>.from(j);
               final existingCatId = map['categoryId'] ?? map['CategoryId'] ?? map['categoryID'] ?? map['CategoryID'] ?? 0;
               if (existingCatId == 0) {
                 map['categoryId'] = cat.categoryId;
               }
               return ConfigParameterModel.fromJson(map);
-            }));
+            }).toList();
+            allCategoryParams.addAll(fetched);
+            ref.read(categoryParametersCacheProvider.notifier).setCategoryParameters(cat.categoryId, fetched);
           }
         } catch (_) {}
       }
@@ -415,6 +437,7 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
           return ConfigParameterModel.fromJson(map);
         }).toList();
 
+        ref.read(categoryParametersCacheProvider.notifier).setCategoryParameters(categoryId, fetched);
         setState(() {
           _parameters.removeWhere((p) => p.categoryId == categoryId);
           _parameters.addAll(fetched);

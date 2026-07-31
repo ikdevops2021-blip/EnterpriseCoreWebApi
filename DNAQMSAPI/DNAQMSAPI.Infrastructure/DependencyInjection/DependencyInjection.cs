@@ -17,6 +17,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<DatabaseSettings>(configuration.GetSection("DatabaseSettings"));
+        services.AddMemoryCache();
         services.AddScoped<IDapperDBFactory, DapperDBFactory>();
         services.AddScoped<IConfigurationService, ConfigurationService>();
         services.AddScoped<IUserService, UserService>();
