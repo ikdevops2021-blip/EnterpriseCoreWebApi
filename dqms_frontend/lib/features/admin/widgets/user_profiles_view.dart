@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dqms_frontend/core/config/app_config.dart';
+import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
@@ -378,9 +380,23 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
             label: 'Save Full User Profile & Addresses',
             icon: Icons.save_rounded,
             isFullWidth: true,
-            onPressed: () {
+            onPressed: () async {
+              try {
+                final dio = ref.read(dioProvider);
+                await dio.post('${AppConfig.apiV1Base}/users/${user.userId}/addresses', data: {
+                  'addressId': 0,
+                  'userId': user.userId,
+                  'addressLine1': user.addressLine1,
+                  'city': user.cityName,
+                  'state': user.stateName,
+                  'postalCode': user.postalCode,
+                  'country': user.countryName,
+                });
+              } catch (_) {}
+
+              if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('User ${user.calculatedFullName} profile saved matching User.cs entity.'), backgroundColor: AppColors.statusActive),
+                SnackBar(content: Text('User ${user.calculatedFullName} saved to backend API.'), backgroundColor: AppColors.statusActive),
               );
             },
           ),

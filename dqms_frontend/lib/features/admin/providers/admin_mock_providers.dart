@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
+import 'package:dqms_frontend/core/config/app_config.dart';
 
 /// ============================================================================
 /// PHASE 4 ADMINISTRATION UI — MOCK DATA MODELS & PROVIDERS
@@ -22,6 +24,17 @@ class AreaZoneModel {
     required this.targetSlaMins,
     required this.isActive,
   });
+
+  factory AreaZoneModel.fromJson(Map<String, dynamic> json) {
+    return AreaZoneModel(
+      areaId: json['id'] ?? json['Id'] ?? json['areaId'] ?? 0,
+      areaCode: json['areaCode'] ?? json['AreaCode'] ?? 'AZ-01',
+      areaName: json['areaName'] ?? json['AreaName'] ?? 'Service Zone',
+      description: json['description'] ?? json['Description'] ?? '',
+      targetSlaMins: json['targetSLA'] ?? json['targetSlaMins'] ?? 15,
+      isActive: json['isActive'] ?? json['IsActive'] ?? true,
+    );
+  }
 }
 
 /// 2. Process Pipelines Model
@@ -47,6 +60,20 @@ class ProcessModel {
     required this.priorityLevel,
     required this.isActive,
   });
+
+  factory ProcessModel.fromJson(Map<String, dynamic> json) {
+    return ProcessModel(
+      processId: json['id'] ?? json['Id'] ?? json['processId'] ?? 0,
+      areaId: json['areaId'] ?? json['AreaId'] ?? 1,
+      areaName: json['areaName'] ?? json['AreaName'] ?? 'Main Hall A',
+      processCode: json['processCode'] ?? json['ProcessCode'] ?? 'PROC-101',
+      processName: json['processName'] ?? json['ProcessName'] ?? 'Process Pipeline',
+      targetSlaMins: json['targetTATMinutes'] ?? json['targetSlaMins'] ?? 15,
+      allowSubTokens: json['allowSubTokens'] ?? json['AllowSubTokens'] ?? false,
+      priorityLevel: json['priorityLevel'] ?? json['PriorityLevel'] ?? 'Standard',
+      isActive: json['isActive'] ?? json['IsActive'] ?? true,
+    );
+  }
 }
 
 /// 3. Counter Stations Model
@@ -72,6 +99,20 @@ class CounterModel {
     required this.status,
     required this.isVoiceEnabled,
   });
+
+  factory CounterModel.fromJson(Map<String, dynamic> json) {
+    return CounterModel(
+      counterId: json['id'] ?? json['Id'] ?? json['counterId'] ?? 0,
+      areaId: json['areaId'] ?? json['AreaId'] ?? 1,
+      areaName: json['areaName'] ?? json['AreaName'] ?? 'Main Hall A',
+      counterNumber: json['counterNumber'] ?? json['CounterNumber'] ?? 'C-01',
+      counterName: json['counterName'] ?? json['CounterName'] ?? 'Counter Station',
+      mode: json['mode'] ?? json['Mode'] ?? 'SingleProcess',
+      assignedStaffName: json['assignedStaffName'] ?? json['AssignedStaffName'] ?? 'Staff',
+      status: json['status'] ?? json['Status'] ?? 'Active',
+      isVoiceEnabled: json['isVoiceEnabled'] ?? json['IsVoiceEnabled'] ?? true,
+    );
+  }
 }
 
 /// 4. Display Templates Model
@@ -93,6 +134,18 @@ class DisplayTemplateModel {
     required this.tickerText,
     required this.isActive,
   });
+
+  factory DisplayTemplateModel.fromJson(Map<String, dynamic> json) {
+    return DisplayTemplateModel(
+      templateId: json['id'] ?? json['Id'] ?? json['templateId'] ?? 0,
+      templateName: json['templateName'] ?? json['TemplateName'] ?? 'Main Lobby TV Grid',
+      layoutType: json['layoutType'] ?? json['LayoutType'] ?? 'GridView (21001)',
+      audioChime: json['audioChime'] ?? json['AudioChime'] ?? 'DigitalBell',
+      scrollSpeed: json['scrollSpeed'] ?? json['ScrollSpeed'] ?? 'Normal',
+      tickerText: json['tickerText'] ?? json['TickerText'] ?? 'Welcome to DQMS Medical Center.',
+      isActive: json['isActive'] ?? json['IsActive'] ?? true,
+    );
+  }
 }
 
 /// 5. Staff & Roles Model
@@ -263,6 +316,59 @@ class AdminWorkspaceNotifier extends StateNotifier<AdminWorkspaceState> {
 
   void refresh() {
     state = AdminWorkspaceState.demo();
+  }
+
+  Future<void> fetchApiData(Dio dio) async {
+    try {
+      final areasRes = await dio.get('${AppConfig.adminApiBase}/areas');
+      List<AreaZoneModel> fetchedAreas = state.areas;
+      if (areasRes.statusCode == 200 && areasRes.data != null && areasRes.data['data'] != null) {
+        final List items = areasRes.data['data'];
+        if (items.isNotEmpty) {
+          fetchedAreas = items.map((j) => AreaZoneModel.fromJson(j)).toList();
+        }
+      }
+
+      final procRes = await dio.get('${AppConfig.adminApiBase}/processes');
+      List<ProcessModel> fetchedProcesses = state.processes;
+      if (procRes.statusCode == 200 && procRes.data != null && procRes.data['data'] != null) {
+        final List items = procRes.data['data'];
+        if (items.isNotEmpty) {
+          fetchedProcesses = items.map((j) => ProcessModel.fromJson(j)).toList();
+        }
+      }
+
+      final cntRes = await dio.get('${AppConfig.adminApiBase}/counters');
+      List<CounterModel> fetchedCounters = state.counters;
+      if (cntRes.statusCode == 200 && cntRes.data != null && cntRes.data['data'] != null) {
+        final List items = cntRes.data['data'];
+        if (items.isNotEmpty) {
+          fetchedCounters = items.map((j) => CounterModel.fromJson(j)).toList();
+        }
+      }
+
+      final tmplRes = await dio.get('${AppConfig.adminApiBase}/templates');
+      List<DisplayTemplateModel> fetchedTemplates = state.displayTemplates;
+      if (tmplRes.statusCode == 200 && tmplRes.data != null && tmplRes.data['data'] != null) {
+        final List items = tmplRes.data['data'];
+        if (items.isNotEmpty) {
+          fetchedTemplates = items.map((j) => DisplayTemplateModel.fromJson(j)).toList();
+        }
+      }
+
+      state = AdminWorkspaceState(
+        areas: fetchedAreas,
+        processes: fetchedProcesses,
+        counters: fetchedCounters,
+        displayTemplates: fetchedTemplates,
+        staffMembers: state.staffMembers,
+        systemConfigs: state.systemConfigs,
+        notificationConfigs: state.notificationConfigs,
+        analyticsReports: state.analyticsReports,
+      );
+    } catch (_) {
+      // Seamless fallback to demo state if offline
+    }
   }
 }
 

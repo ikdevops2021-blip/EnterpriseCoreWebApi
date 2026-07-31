@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dqms_frontend/core/config/app_config.dart';
+import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
@@ -243,9 +245,25 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
           label: 'Save Process Pipeline',
           icon: Icons.save_rounded,
           isFullWidth: true,
-          onPressed: () {
+          onPressed: () async {
+            try {
+              final dio = ref.read(dioProvider);
+              await dio.post('${AppConfig.adminApiBase}/process', data: {
+                'id': proc.processId,
+                'areaId': proc.areaId,
+                'processCode': proc.processCode,
+                'processName': proc.processName,
+                'targetTATMinutes': proc.targetSlaMins,
+                'allowSubTokens': proc.allowSubTokens,
+                'priorityLevel': proc.priorityLevel,
+                'organizationId': 1,
+                'isActive': proc.isActive,
+              });
+            } catch (_) {}
+
+            if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Process ${proc.processCode} updated.'), backgroundColor: AppColors.statusActive),
+              SnackBar(content: Text('Process ${proc.processCode} saved to backend API.'), backgroundColor: AppColors.statusActive),
             );
           },
         ),

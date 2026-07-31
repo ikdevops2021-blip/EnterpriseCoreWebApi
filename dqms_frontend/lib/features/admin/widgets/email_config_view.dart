@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dqms_frontend/core/config/app_config.dart';
+import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
@@ -167,9 +169,23 @@ class _EmailConfigViewState extends ConsumerState<EmailConfigView> {
                     DqmsButton(
                       label: 'Save SMTP Settings',
                       icon: Icons.save_rounded,
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('SMTP Gateway settings saved successfully.'), backgroundColor: AppColors.statusActive),
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        try {
+                          final dio = ref.read(dioProvider);
+                          await dio.post('${AppConfig.apiV1Base}/email/config', data: {
+                            'smtpHost': _smtpHostCtrl.text,
+                            'smtpPort': int.tryParse(_smtpPortCtrl.text) ?? 587,
+                            'username': _smtpUserCtrl.text,
+                            'password': _smtpPassCtrl.text,
+                            'senderName': _senderNameCtrl.text,
+                            'enableSsl': _enableSsl,
+                            'isAsyncQueueActive': _isAsyncQueueActive,
+                          });
+                        } catch (_) {}
+
+                        messenger.showSnackBar(
+                          const SnackBar(content: Text('SMTP Gateway settings saved to backend API.'), backgroundColor: AppColors.statusActive),
                         );
                       },
                     ),

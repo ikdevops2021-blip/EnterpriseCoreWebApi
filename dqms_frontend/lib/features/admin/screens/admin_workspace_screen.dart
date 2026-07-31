@@ -16,6 +16,9 @@ import 'package:dqms_frontend/features/admin/widgets/notification_config_view.da
 import 'package:dqms_frontend/features/admin/widgets/email_config_view.dart';
 import 'package:dqms_frontend/features/admin/widgets/analytics_entry_view.dart';
 
+import 'package:dqms_frontend/core/network/dio_provider.dart';
+import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart';
+
 /// Navigation Item Model
 class _AdminNavItem {
   final String title;
@@ -42,6 +45,15 @@ class AdminWorkspaceScreen extends ConsumerStatefulWidget {
 
 class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
   int _selectedDomainIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final dio = ref.read(dioProvider);
+      ref.read(adminWorkspaceStateProvider.notifier).fetchApiData(dio);
+    });
+  }
 
   static const List<_AdminNavItem> _navItems = [
     _AdminNavItem(title: 'Areas & Zones', icon: Icons.grid_view_rounded, view: AreasZonesView()),

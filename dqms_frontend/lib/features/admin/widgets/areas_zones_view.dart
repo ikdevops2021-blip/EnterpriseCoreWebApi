@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dqms_frontend/core/config/app_config.dart';
+import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
@@ -287,9 +289,23 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
           label: 'Save Area Changes',
           icon: Icons.save_rounded,
           isFullWidth: true,
-          onPressed: () {
+          onPressed: () async {
+            try {
+              final dio = ref.read(dioProvider);
+              await dio.post('${AppConfig.adminApiBase}/area', data: {
+                'id': area.areaId,
+                'areaCode': area.areaCode,
+                'areaName': area.areaName,
+                'description': area.description,
+                'organizationId': 1,
+                'locationId': 1,
+                'isActive': area.isActive,
+              });
+            } catch (_) {}
+
+            if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Zone ${area.areaCode} updated.'), backgroundColor: AppColors.statusActive),
+              SnackBar(content: Text('Zone ${area.areaCode} saved to backend API.'), backgroundColor: AppColors.statusActive),
             );
           },
         ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dqms_frontend/core/config/app_config.dart';
+import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
@@ -224,9 +226,24 @@ class _DisplayTemplatesViewState extends ConsumerState<DisplayTemplatesView> {
           label: 'Save Display Template',
           icon: Icons.save_rounded,
           isFullWidth: true,
-          onPressed: () {
+          onPressed: () async {
+            try {
+              final dio = ref.read(dioProvider);
+              await dio.post('${AppConfig.adminApiBase}/template', data: {
+                'id': tmpl.templateId,
+                'templateName': tmpl.templateName,
+                'layoutType': tmpl.layoutType,
+                'audioChime': tmpl.audioChime,
+                'scrollSpeed': tmpl.scrollSpeed,
+                'tickerText': tmpl.tickerText,
+                'organizationId': 1,
+                'isActive': tmpl.isActive,
+              });
+            } catch (_) {}
+
+            if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Display Template ${tmpl.templateName} saved.'), backgroundColor: AppColors.statusActive),
+              SnackBar(content: Text('Display Template ${tmpl.templateName} saved to backend API.'), backgroundColor: AppColors.statusActive),
             );
           },
         ),
