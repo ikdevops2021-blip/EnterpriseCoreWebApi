@@ -18,7 +18,7 @@ public class ConfigurationService : IConfigurationService
     {
         var categories = await _dbFactory.QueryAsync<ConfigCategory>(
             "PR_S_ConfigCategory",
-            new { p_CategoryID = -1, p_CategoryCode = "", p_CategoryName = "", p_Active = 1 },
+            new { p_CategoryID = -1, p_CategoryCode = "", p_CategoryName = "", p_Active = -1 },
             commandType: CommandType.StoredProcedure);
         return categories.Where(c => c != null).Select(c => c!).ToList();
     }
@@ -117,7 +117,7 @@ public class ConfigurationService : IConfigurationService
     {
         var parameters = await _dbFactory.QueryAsync<ConfigParameter>(
             "PR_S_ConfigParameters",
-            new { p_ParameterID = -1, p_CategoryID = categoryId, p_CategoryCode = "", p_ParameterCode = "", p_ParameterName = "", p_IsActive = 1 },
+            new { p_ParameterID = -1, p_CategoryID = categoryId, p_CategoryCode = "", p_ParameterCode = "", p_ParameterName = "", p_IsActive = -1 },
             commandType: CommandType.StoredProcedure);
 
         return parameters.Where(p => p != null).Select(p => p!).ToList();
@@ -127,7 +127,7 @@ public class ConfigurationService : IConfigurationService
     {
         var parameters = await _dbFactory.QueryAsync<ConfigParameter>(
             "PR_S_ConfigParameters",
-            new { p_ParameterID = -1, p_CategoryID = -1, p_CategoryCode = categoryCode, p_ParameterCode = "", p_ParameterName = "", p_IsActive = 1 },
+            new { p_ParameterID = -1, p_CategoryID = -1, p_CategoryCode = categoryCode, p_ParameterCode = "", p_ParameterName = "", p_IsActive = -1 },
             commandType: CommandType.StoredProcedure);
 
         return parameters.Where(p => p != null).Select(p => p!).ToList();
