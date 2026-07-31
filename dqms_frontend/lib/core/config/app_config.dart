@@ -22,8 +22,17 @@ class AppConfig {
   static String get authApiBase => _runtimeConfig['authApiBase'] ?? '$apiV1Base/auth';
   static String get reportsApiBase => _runtimeConfig['reportsApiBase'] ?? '$apiV1Base/reports';
 
+  /// Returns current map of active configuration endpoints
+  static Map<String, dynamic> get currentEndpoints => {
+    'apiBaseUrl': apiBaseUrl,
+    'apiV1Base': apiV1Base,
+    'adminApiBase': adminApiBase,
+    'dqmsApiBase': dqmsApiBase,
+    'authApiBase': authApiBase,
+    'reportsApiBase': reportsApiBase,
+  };
+
   /// Loads runtime configuration from assets/config.json dynamically at app boot.
-  /// Modifying config.json on deployment updates endpoints without app re-compilation.
   static Future<void> loadRuntimeConfig() async {
     try {
       final jsonString = await rootBundle.loadString('assets/config.json');
@@ -31,5 +40,20 @@ class AppConfig {
     } catch (_) {
       // Seamless fallback to default compile-time values if file is unreadable
     }
+  }
+
+  /// Updates runtime endpoints dynamically from the UI without rebuilding
+  static void updateEndpoints({
+    String? apiBaseUrl,
+    String? adminApiBase,
+    String? dqmsApiBase,
+    String? authApiBase,
+    String? reportsApiBase,
+  }) {
+    if (apiBaseUrl != null && apiBaseUrl.isNotEmpty) _runtimeConfig['apiBaseUrl'] = apiBaseUrl;
+    if (adminApiBase != null && adminApiBase.isNotEmpty) _runtimeConfig['adminApiBase'] = adminApiBase;
+    if (dqmsApiBase != null && dqmsApiBase.isNotEmpty) _runtimeConfig['dqmsApiBase'] = dqmsApiBase;
+    if (authApiBase != null && authApiBase.isNotEmpty) _runtimeConfig['authApiBase'] = authApiBase;
+    if (reportsApiBase != null && reportsApiBase.isNotEmpty) _runtimeConfig['reportsApiBase'] = reportsApiBase;
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
+import 'package:dqms_frontend/core/config/app_config.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
@@ -33,7 +35,7 @@ class SystemConfigModel {
   });
 }
 
-/// SYSTEM CONFIGURATION KEYS WORKSPACE VIEW
+/// SYSTEM CONFIGURATION KEYS & API GATEWAY WORKSPACE VIEW
 class SystemConfigView extends ConsumerStatefulWidget {
   const SystemConfigView({super.key});
 
@@ -145,6 +147,18 @@ class _SystemConfigViewState extends ConsumerState<SystemConfigView> {
                 ),
               ),
               const SizedBox(width: 12),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.dns_rounded, size: 16),
+                label: const Text('API Gateway Endpoints', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.brandAccent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                ),
+                onPressed: () => _showApiEndpointsModal(context),
+              ),
+              const SizedBox(width: 10),
               DqmsButton(
                 label: 'Add System Key',
                 icon: Icons.add_rounded,
@@ -168,6 +182,35 @@ class _SystemConfigViewState extends ConsumerState<SystemConfigView> {
             ],
           ),
           const SizedBox(height: 16),
+
+          // Active Endpoint Status Banner
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.brandPrimary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.cloud_sync_rounded, size: 16, color: AppColors.brandPrimary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Active Root API Endpoint: ${AppConfig.apiBaseUrl} (Admin API: ${AppConfig.adminApiBase})',
+                    style: const TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w600, fontFamily: 'monospace'),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => _showApiEndpointsModal(context),
+                  child: const Text('Configure Endpoints', style: TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w700)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
           Expanded(
             child: Column(
               children: [
@@ -281,6 +324,165 @@ class _SystemConfigViewState extends ConsumerState<SystemConfigView> {
           },
         ),
       ],
+    );
+  }
+
+  /// Interactive Modal Screen to View, Test & Edit API Gateway Endpoints Live from Frontend
+  void _showApiEndpointsModal(BuildContext context) {
+    final hostCtrl = TextEditingController(text: AppConfig.apiBaseUrl);
+    final adminCtrl = TextEditingController(text: AppConfig.adminApiBase);
+    final dqmsCtrl = TextEditingController(text: AppConfig.dqmsApiBase);
+    final authCtrl = TextEditingController(text: AppConfig.authApiBase);
+    final reportsCtrl = TextEditingController(text: AppConfig.reportsApiBase);
+
+    String pingResult = 'Click "Test API Connection" to verify server connectivity.';
+    bool isTesting = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => AlertDialog(
+          backgroundColor: AppColors.bgSurface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: const BorderSide(color: AppColors.borderSubtle),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.dns_rounded, color: AppColors.brandPrimary, size: 20),
+              const SizedBox(width: 10),
+              const Text('API Gateway & Subsystem Endpoints Config', style: TextStyle(color: AppColors.textMain, fontSize: 15, fontWeight: FontWeight.w700)),
+            ],
+          ),
+          content: SizedBox(
+            width: 540,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgCard,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppColors.borderSubtle),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.info_outline_rounded, color: AppColors.brandPrimary, size: 16),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Modify API Gateway & microservice subsystem base URLs live without rebuilding the application binary.',
+                            style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  DqmsTextField(label: 'Root API Host URL (apiBaseUrl)', controller: hostCtrl),
+                  const SizedBox(height: 12),
+                  DqmsTextField(label: 'Admin Subsystem Endpoint (adminApiBase)', controller: adminCtrl),
+                  const SizedBox(height: 12),
+                  DqmsTextField(label: 'Queue Core Subsystem Endpoint (dqmsApiBase)', controller: dqmsCtrl),
+                  const SizedBox(height: 12),
+                  DqmsTextField(label: 'Authentication Subsystem Endpoint (authApiBase)', controller: authCtrl),
+                  const SizedBox(height: 12),
+                  DqmsTextField(label: 'Reports & Analytics Subsystem Endpoint (reportsApiBase)', controller: reportsCtrl),
+                  const SizedBox(height: 14),
+
+                  // Ping & Test Result Box
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgCanvas,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppColors.borderSubtle),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text('API Health Status', style: TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w700)),
+                            const Spacer(),
+                            if (isTesting)
+                              const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.brandPrimary))
+                            else
+                              TextButton.icon(
+                                icon: const Icon(Icons.bolt_rounded, size: 14),
+                                label: const Text('Test Connection', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                                onPressed: () async {
+                                  setModalState(() {
+                                    isTesting = true;
+                                    pingResult = 'Pinging ${hostCtrl.text}...';
+                                  });
+                                  final stopwatch = Stopwatch()..start();
+                                  try {
+                                    final dio = Dio();
+                                    final res = await dio.get('${hostCtrl.text}/api/v1/admin/areas', options: Options(validateStatus: (_) => true));
+                                    stopwatch.stop();
+                                    setModalState(() {
+                                      isTesting = false;
+                                      pingResult = '🟢 Server Online — HTTP ${res.statusCode} (${stopwatch.elapsedMilliseconds}ms response time)';
+                                    });
+                                  } catch (err) {
+                                    stopwatch.stop();
+                                    setModalState(() {
+                                      isTesting = false;
+                                      pingResult = '🔴 Connection Notice (${err.toString()})';
+                                    });
+                                  }
+                                },
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(pingResult, style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontFamily: 'monospace')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.save_rounded, size: 16),
+              label: const Text('Apply Endpoint Changes'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brandPrimary,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                AppConfig.updateEndpoints(
+                  apiBaseUrl: hostCtrl.text,
+                  adminApiBase: adminCtrl.text,
+                  dqmsApiBase: dqmsCtrl.text,
+                  authApiBase: authCtrl.text,
+                  reportsApiBase: reportsCtrl.text,
+                );
+
+                setState(() {});
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('API Gateway Endpoints updated live! Root URL set to ${hostCtrl.text}.'),
+                    backgroundColor: AppColors.statusActive,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
