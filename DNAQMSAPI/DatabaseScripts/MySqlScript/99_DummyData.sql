@@ -15,11 +15,11 @@ SET @AdminUserId = 0;
 SET @RegularUserId = 0;
 
 INSERT INTO `User` (UserCode, FirstName, LastName, DisplayName, Email, PasswordHash, IsActive, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate)
-VALUES ('admin@dnaqms.com', 'System', 'Admin', 'System Admin', 'admin@dnaqms.com', 'hashed_pwd_here', 1, 0, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP);
+VALUES ('admin@dnaqms.com', 'System', 'Admin', 'System Admin', 'admin@dnaqms.com', 'AfmujfSre94cxjceo8EavMmDjLywD6GuUKQq+9x28/XvpkBgr+NByUE99VDm/t1+vQ==', 1, 0, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP);
 SET @AdminUserId = LAST_INSERT_ID();
 
 INSERT INTO `User` (UserCode, FirstName, LastName, DisplayName, Email, PasswordHash, IsActive, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate)
-VALUES ('john@dnaqms.com', 'John', 'Doe', 'John Doe', 'john@dnaqms.com', 'hashed_pwd_here', 1, 0, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP);
+VALUES ('john@dnaqms.com', 'John', 'Doe', 'John Doe', 'john@dnaqms.com', 'AeY7lmJzo/eZfCtWDmIY//plBawcCwZnT7I8zVq3m0N1nAOfjzjwtcCI/vCf9Jd1TQ==', 1, 0, CURRENT_TIMESTAMP, 0, CURRENT_TIMESTAMP);
 SET @RegularUserId = LAST_INSERT_ID();
 
 -- Dummy Data for Role

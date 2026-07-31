@@ -15,11 +15,11 @@ DECLARE @AdminUserId INT;
 DECLARE @RegularUserId INT;
 
 INSERT INTO [User] (UserCode, FirstName, LastName, DisplayName, Email, PasswordHash, IsActive, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate)
-VALUES ('admin@dnaqms.com', 'System', 'Admin', 'System Admin', 'admin@dnaqms.com', 'hashed_pwd_here', 1, 0, GETDATE(), 0, GETDATE());
+VALUES ('admin@dnaqms.com', 'System', 'Admin', 'System Admin', 'admin@dnaqms.com', 'AfmujfSre94cxjceo8EavMmDjLywD6GuUKQq+9x28/XvpkBgr+NByUE99VDm/t1+vQ==', 1, 0, GETDATE(), 0, GETDATE());
 SET @AdminUserId = SCOPE_IDENTITY();
 
 INSERT INTO [User] (UserCode, FirstName, LastName, DisplayName, Email, PasswordHash, IsActive, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate)
-VALUES ('john@dnaqms.com', 'John', 'Doe', 'John Doe', 'john@dnaqms.com', 'hashed_pwd_here', 1, 0, GETDATE(), 0, GETDATE());
+VALUES ('john@dnaqms.com', 'John', 'Doe', 'John Doe', 'john@dnaqms.com', 'AeY7lmJzo/eZfCtWDmIY//plBawcCwZnT7I8zVq3m0N1nAOfjzjwtcCI/vCf9Jd1TQ==', 1, 0, GETDATE(), 0, GETDATE());
 SET @RegularUserId = SCOPE_IDENTITY();
 
 -- Dummy Data for Role
