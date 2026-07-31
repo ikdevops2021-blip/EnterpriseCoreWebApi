@@ -85,7 +85,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('DNAQMS Enterprise', style: TextStyle(color: AppColors.textMain, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
+                        Text('DQMS Enterprise', style: TextStyle(color: AppColors.textMain, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
                         Text('Intelligent Queue Platform', style: TextStyle(color: AppColors.textSubtle, fontSize: 12, fontWeight: FontWeight.w500)),
                       ],
                     ),
