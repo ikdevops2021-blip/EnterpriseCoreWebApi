@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dqms_frontend/core/config/app_config.dart';
@@ -319,10 +320,23 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
 
   List _extractDataList(dynamic responseData) {
     if (responseData == null) return [];
+    if (responseData is String) {
+      try {
+        responseData = jsonDecode(responseData);
+      } catch (_) {
+        return [];
+      }
+    }
     if (responseData is List) return responseData;
     if (responseData is Map) {
-      final dataObj = responseData['data'] ?? responseData['Data'] ?? responseData['items'] ?? responseData['Items'];
+      final dataObj = responseData['data'] ?? responseData['Data'] ?? responseData['items'] ?? responseData['Items'] ?? responseData['result'] ?? responseData['Result'];
       if (dataObj is List) return dataObj;
+      if (dataObj is String) {
+        try {
+          final parsed = jsonDecode(dataObj);
+          if (parsed is List) return parsed;
+        } catch (_) {}
+      }
     }
     return [];
   }
@@ -352,7 +366,14 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
           final res = await dio.get('${AppConfig.apiBaseUrl}/api/v1/Configuration/categories/${cat.categoryId}/parameters');
           final paramItems = _extractDataList(res.data);
           if (paramItems.isNotEmpty) {
-            allCategoryParams.addAll(paramItems.map((j) => ConfigParameterModel.fromJson(Map<String, dynamic>.from(j))));
+            allCategoryParams.addAll(paramItems.map((j) {
+              final map = Map<String, dynamic>.from(j);
+              final existingCatId = map['categoryId'] ?? map['CategoryId'] ?? map['categoryID'] ?? map['CategoryID'] ?? 0;
+              if (existingCatId == 0) {
+                map['categoryId'] = cat.categoryId;
+              }
+              return ConfigParameterModel.fromJson(map);
+            }));
           }
         } catch (_) {}
       }
@@ -366,6 +387,10 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
           final fetched = paramItems.map((json) => ConfigParameterModel.fromJson(Map<String, dynamic>.from(json))).toList();
           setState(() => _parameters = fetched);
         }
+      }
+
+      if (_selectedCategory != null) {
+        _fetchCategoryParameters(_selectedCategory!.categoryId);
       }
     } catch (e) {
       debugPrint('Error in _fetchApiData: $e');
@@ -381,7 +406,15 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
       final res = await dio.get('${AppConfig.apiBaseUrl}/api/v1/Configuration/categories/$categoryId/parameters');
       final paramItems = _extractDataList(res.data);
       if (paramItems.isNotEmpty) {
-        final fetched = paramItems.map((j) => ConfigParameterModel.fromJson(Map<String, dynamic>.from(j))).toList();
+        final fetched = paramItems.map((j) {
+          final map = Map<String, dynamic>.from(j);
+          final existingCatId = map['categoryId'] ?? map['CategoryId'] ?? map['categoryID'] ?? map['CategoryID'] ?? 0;
+          if (existingCatId == 0) {
+            map['categoryId'] = categoryId;
+          }
+          return ConfigParameterModel.fromJson(map);
+        }).toList();
+
         setState(() {
           _parameters.removeWhere((p) => p.categoryId == categoryId);
           _parameters.addAll(fetched);
