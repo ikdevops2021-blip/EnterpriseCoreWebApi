@@ -96,7 +96,7 @@ class ConfigCategoryModel {
 
   factory ConfigCategoryModel.fromJson(Map<String, dynamic> json) {
     return ConfigCategoryModel(
-      categoryId: json['categoryId'] ?? json['CategoryId'] ?? json['id'] ?? json['Id'] ?? json['configCategoryId'] ?? json['ConfigCategoryID'] ?? 0,
+      categoryId: json['categoryId'] ?? json['CategoryId'] ?? json['categoryID'] ?? json['CategoryID'] ?? json['id'] ?? json['Id'] ?? json['configCategoryId'] ?? json['ConfigCategoryID'] ?? 0,
       categoryCode: json['categoryCode'] ?? json['CategoryCode'] ?? json['code'] ?? json['Code'] ?? '',
       categoryName: json['categoryName'] ?? json['CategoryName'] ?? json['name'] ?? json['Name'] ?? '',
       description: json['description'] ?? json['Description'] ?? '',
@@ -215,10 +215,10 @@ class ConfigParameterModel {
 
   factory ConfigParameterModel.fromJson(Map<String, dynamic> json) {
     return ConfigParameterModel(
-      parameterId: json['parameterId'] ?? json['ParameterId'] ?? json['id'] ?? json['Id'] ?? json['configParameterId'] ?? json['ConfigParameterID'] ?? 0,
-      categoryId: json['categoryId'] ?? json['CategoryId'] ?? json['configCategoryId'] ?? json['ConfigCategoryID'] ?? 0,
-      paramCode: json['paramCode'] ?? json['ParamCode'] ?? json['code'] ?? json['Code'] ?? '',
-      paramName: json['paramName'] ?? json['ParamName'] ?? json['name'] ?? json['Name'] ?? '',
+      parameterId: json['parameterId'] ?? json['ParameterId'] ?? json['parameterID'] ?? json['ParameterID'] ?? json['id'] ?? json['Id'] ?? json['configParameterId'] ?? json['ConfigParameterID'] ?? 0,
+      categoryId: json['categoryId'] ?? json['CategoryId'] ?? json['categoryID'] ?? json['CategoryID'] ?? json['configCategoryId'] ?? json['ConfigCategoryID'] ?? 0,
+      paramCode: json['paramCode'] ?? json['ParamCode'] ?? json['parameterCode'] ?? json['ParameterCode'] ?? json['code'] ?? json['Code'] ?? '',
+      paramName: json['paramName'] ?? json['ParamName'] ?? json['parameterName'] ?? json['ParameterName'] ?? json['name'] ?? json['Name'] ?? '',
       isDefault: json['isDefault'] ?? json['IsDefault'] ?? false,
       priority: json['priority'] ?? json['Priority'] ?? 1,
       isActive: json['isActive'] ?? json['IsActive'] ?? json['active'] ?? json['Active'] ?? true,
@@ -227,7 +227,7 @@ class ConfigParameterModel {
       parameterExternalCode: json['parameterExternalCode'] ?? json['ParameterExternalCode'],
       parameterColor: json['parameterColor'] ?? json['ParameterColor'] ?? '#2F81F7',
       parameterIcon: json['parameterIcon'] ?? json['ParameterIcon'] ?? 'code',
-      parameterImage: json['parameterImage'] ?? json['ParameterImage'],
+      parameterImage: json['parameterImage'] ?? json['CategoryImage'] ?? json['parameterImage'],
     );
   }
 
@@ -328,16 +328,39 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
         final List items = catRes.data['data'];
         if (items.isNotEmpty) {
           final fetched = items.map((json) => ConfigCategoryModel.fromJson(json)).toList();
-          setState(() => _categories = fetched);
+          setState(() {
+            _categories = fetched;
+            if (_selectedCategory == null || !_categories.any((c) => c.categoryId == _selectedCategory?.categoryId)) {
+              _selectedCategory = _categories.first;
+            }
+          });
         }
       }
 
-      final paramRes = await dio.get('${AppConfig.adminApiBase}/config-parameters');
-      if (paramRes.statusCode == 200 && paramRes.data != null && paramRes.data['data'] != null) {
-        final List items = paramRes.data['data'];
-        if (items.isNotEmpty) {
-          final fetched = items.map((json) => ConfigParameterModel.fromJson(json)).toList();
-          setState(() => _parameters = fetched);
+      // Fetch parameters for all loaded categories using GET /api/v1/Configuration/categories/{categoryId}/parameters
+      final List<ConfigParameterModel> allCategoryParams = [];
+      for (final cat in _categories) {
+        try {
+          final res = await dio.get('${AppConfig.apiBaseUrl}/api/v1/Configuration/categories/${cat.categoryId}/parameters');
+          if (res.statusCode == 200 && res.data != null && res.data['data'] != null) {
+            final List items = res.data['data'];
+            if (items.isNotEmpty) {
+              allCategoryParams.addAll(items.map((j) => ConfigParameterModel.fromJson(j)));
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (allCategoryParams.isNotEmpty) {
+        setState(() => _parameters = allCategoryParams);
+      } else {
+        final paramRes = await dio.get('${AppConfig.adminApiBase}/config-parameters');
+        if (paramRes.statusCode == 200 && paramRes.data != null && paramRes.data['data'] != null) {
+          final List items = paramRes.data['data'];
+          if (items.isNotEmpty) {
+            final fetched = items.map((json) => ConfigParameterModel.fromJson(json)).toList();
+            setState(() => _parameters = fetched);
+          }
         }
       }
     } catch (_) {
@@ -354,13 +377,11 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
       final res = await dio.get('${AppConfig.apiBaseUrl}/api/v1/Configuration/categories/$categoryId/parameters');
       if (res.statusCode == 200 && res.data != null && res.data['data'] != null) {
         final List items = res.data['data'];
-        if (items.isNotEmpty) {
-          final fetched = items.map((j) => ConfigParameterModel.fromJson(j)).toList();
-          setState(() {
-            _parameters.removeWhere((p) => p.categoryId == categoryId);
-            _parameters.addAll(fetched);
-          });
-        }
+        final fetched = items.map((j) => ConfigParameterModel.fromJson(j)).toList();
+        setState(() {
+          _parameters.removeWhere((p) => p.categoryId == categoryId);
+          _parameters.addAll(fetched);
+        });
       }
     } catch (_) {}
   }
