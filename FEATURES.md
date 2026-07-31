@@ -289,3 +289,19 @@ Tokens transition through explicit lifecycle states configured in `ConfigParamet
 * **Multi-Region Data Residency:** Multi-tenant deployment options supporting in-country data storage (e.g. AWS/Azure UAE North, EU Frankfurt, US East, Saudi Arabia Riyadh) to satisfy local data sovereignty regulations (GDPR, NESA, PDPL, SAMA).
 * **Field-Level Encryption at Rest (AES-256):** Encrypted customer PII (Phone, Name, National ID) using tenant-isolated KMS encryption keys.
 * **GDPR Right-To-Be-Forgotten:** Automated customer PII anonymization and configurable data retention purge schedules.
+
+---
+
+## 20. Application & Audit Logging Infrastructure & Caching Engine
+
+### 20.1 Client Application Logging API & Viewer Screen
+* **Client Logging API (`LogsController`)**: Exposes `POST /api/v1/Logs` and `POST /api/v1/Logs/batch` for ingesting client-side Flutter/Mobile errors, warnings, info, and debug trace events into NLog (`AppLogs` DB table & daily log files).
+* **Logs Query API**: Exposes `GET /api/v1/Logs` with support for Log Level filtering (`Error`, `Warning`, `Info`, `Debug`), keyword search, and optional Date filtering (`logDate`).
+* **Flutter ClientLogger Utility**: Centralized client logger (`ClientLogger.logInfo`, `logError`, `logDebug`, `logWarning`) to send frontend stack traces and diagnostic details to the API.
+* **Admin Workspace Log Inspection View (`app_logs_view.dart`)**: Master-Detail inspection screen featuring log level color badges, optional Date Picker filter, search bar, "Send Test Log" utility, and right inspector panel for full exception stack traces and thread info.
+
+### 20.2 Two-Tier System Configuration Caching Architecture
+* **Backend Caching Layer**: `.NET Core` `IMemoryCache` in `ConfigurationService.cs` providing sliding 10-minute expiration for configuration categories, parameters, and system keys.
+* **Frontend Caching Layer**: Riverpod `systemConfigCacheProvider` and `categoryParametersCacheProvider` in `config_cache_provider.dart`.
+* **Master Sync Cache Invalidation**: Real-time cache invalidation triggered on configuration updates and manual header sync.
+
