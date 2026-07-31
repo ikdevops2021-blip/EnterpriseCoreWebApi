@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import 'package:dqms_frontend/core/config/app_config.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
@@ -308,7 +309,7 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
   late List<ConfigParameterModel> _parameters;
 
   final _dio = Dio(BaseOptions(
-    baseUrl: 'http://localhost:5026/api/v1/admin',
+    baseUrl: AppConfig.adminApiBase,
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 5),
   ));
