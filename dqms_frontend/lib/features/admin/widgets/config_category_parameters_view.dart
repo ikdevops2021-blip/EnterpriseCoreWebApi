@@ -317,36 +317,42 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
     _fetchApiData();
   }
 
+  List _extractDataList(dynamic responseData) {
+    if (responseData == null) return [];
+    if (responseData is List) return responseData;
+    if (responseData is Map) {
+      final dataObj = responseData['data'] ?? responseData['Data'] ?? responseData['items'] ?? responseData['Items'];
+      if (dataObj is List) return dataObj;
+    }
+    return [];
+  }
+
   Future<void> _fetchApiData() async {
     try {
       setState(() => _isLoading = true);
       final dio = ref.read(dioProvider);
 
-      // Primary fetch using ConfigurationController endpoint with automatic Bearer & API Key headers
+      // 1. Fetch categories from /api/v1/Configuration/categories
       final catRes = await dio.get('${AppConfig.apiBaseUrl}/api/v1/Configuration/categories');
-      if (catRes.statusCode == 200 && catRes.data != null && catRes.data['data'] != null) {
-        final List items = catRes.data['data'];
-        if (items.isNotEmpty) {
-          final fetched = items.map((json) => ConfigCategoryModel.fromJson(json)).toList();
-          setState(() {
-            _categories = fetched;
-            if (_selectedCategory == null || !_categories.any((c) => c.categoryId == _selectedCategory?.categoryId)) {
-              _selectedCategory = _categories.first;
-            }
-          });
-        }
+      final catItems = _extractDataList(catRes.data);
+      if (catItems.isNotEmpty) {
+        final fetched = catItems.map((json) => ConfigCategoryModel.fromJson(Map<String, dynamic>.from(json))).toList();
+        setState(() {
+          _categories = fetched;
+          if (_selectedCategory == null || !_categories.any((c) => c.categoryId == _selectedCategory?.categoryId)) {
+            _selectedCategory = _categories.first;
+          }
+        });
       }
 
-      // Fetch parameters for all loaded categories using GET /api/v1/Configuration/categories/{categoryId}/parameters
+      // 2. Fetch parameters for all loaded categories using /api/v1/Configuration/categories/{categoryId}/parameters
       final List<ConfigParameterModel> allCategoryParams = [];
       for (final cat in _categories) {
         try {
           final res = await dio.get('${AppConfig.apiBaseUrl}/api/v1/Configuration/categories/${cat.categoryId}/parameters');
-          if (res.statusCode == 200 && res.data != null && res.data['data'] != null) {
-            final List items = res.data['data'];
-            if (items.isNotEmpty) {
-              allCategoryParams.addAll(items.map((j) => ConfigParameterModel.fromJson(j)));
-            }
+          final paramItems = _extractDataList(res.data);
+          if (paramItems.isNotEmpty) {
+            allCategoryParams.addAll(paramItems.map((j) => ConfigParameterModel.fromJson(Map<String, dynamic>.from(j))));
           }
         } catch (_) {}
       }
@@ -355,16 +361,14 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
         setState(() => _parameters = allCategoryParams);
       } else {
         final paramRes = await dio.get('${AppConfig.adminApiBase}/config-parameters');
-        if (paramRes.statusCode == 200 && paramRes.data != null && paramRes.data['data'] != null) {
-          final List items = paramRes.data['data'];
-          if (items.isNotEmpty) {
-            final fetched = items.map((json) => ConfigParameterModel.fromJson(json)).toList();
-            setState(() => _parameters = fetched);
-          }
+        final paramItems = _extractDataList(paramRes.data);
+        if (paramItems.isNotEmpty) {
+          final fetched = paramItems.map((json) => ConfigParameterModel.fromJson(Map<String, dynamic>.from(json))).toList();
+          setState(() => _parameters = fetched);
         }
       }
-    } catch (_) {
-      // Seamless fallback to defaults if offline
+    } catch (e) {
+      debugPrint('Error in _fetchApiData: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -375,15 +379,17 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
     try {
       final dio = ref.read(dioProvider);
       final res = await dio.get('${AppConfig.apiBaseUrl}/api/v1/Configuration/categories/$categoryId/parameters');
-      if (res.statusCode == 200 && res.data != null && res.data['data'] != null) {
-        final List items = res.data['data'];
-        final fetched = items.map((j) => ConfigParameterModel.fromJson(j)).toList();
+      final paramItems = _extractDataList(res.data);
+      if (paramItems.isNotEmpty) {
+        final fetched = paramItems.map((j) => ConfigParameterModel.fromJson(Map<String, dynamic>.from(j))).toList();
         setState(() {
           _parameters.removeWhere((p) => p.categoryId == categoryId);
           _parameters.addAll(fetched);
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Error fetching category parameters for $categoryId: $e');
+    }
   }
 
   void _initDefaults() {
