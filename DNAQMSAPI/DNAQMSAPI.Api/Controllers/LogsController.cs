@@ -69,18 +69,21 @@ public class LogsController : ApiControllerBase
         [FromQuery] string? level = null,
         [FromQuery] string? logger = null,
         [FromQuery] string? search = null,
+        [FromQuery] DateTime? logDate = null,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 50)
+        [FromQuery] int pageSize = 100)
     {
-        pageSize = Math.Clamp(pageSize, 1, 200);
+        pageSize = Math.Clamp(pageSize, 1, 500);
         int offset = Math.Max(0, (page - 1) * pageSize);
+        string? formattedDate = logDate?.ToString("yyyy-MM-dd");
 
         string sql = @"
             SELECT Id, MachineName, Logged, Level, Message, Logger, Callsite, Exception, VerboseInfo, Url, Action 
             FROM AppLogs
-            WHERE (@Level IS NULL OR Level = @Level)
-              AND (@Logger IS NULL OR Logger LIKE CONCAT('%', @Logger, '%'))
-              AND (@Search IS NULL OR Message LIKE CONCAT('%', @Search, '%') OR Exception LIKE CONCAT('%', @Search, '%'))
+            WHERE (@Level IS NULL OR @Level = '' OR Level = @Level)
+              AND (@Logger IS NULL OR @Logger = '' OR Logger LIKE CONCAT('%', @Logger, '%'))
+              AND (@Search IS NULL OR @Search = '' OR Message LIKE CONCAT('%', @Search, '%') OR Exception LIKE CONCAT('%', @Search, '%'))
+              AND (@FormattedDate IS NULL OR DATE(Logged) = @FormattedDate)
             ORDER BY Logged DESC
             LIMIT @PageSize OFFSET @Offset;";
 
@@ -88,7 +91,7 @@ public class LogsController : ApiControllerBase
         {
             var logs = await _dbFactory.QueryAsync<AppLogItemDto>(
                 sql,
-                new { Level = level, Logger = logger, Search = search, PageSize = pageSize, Offset = offset },
+                new { Level = level, Logger = logger, Search = search, FormattedDate = formattedDate, PageSize = pageSize, Offset = offset },
                 commandType: CommandType.Text);
 
             return ApiResponse(AntiGravity.Enterprise.Shared.Core.Models.ApiResponse<object>.Ok(logs));
@@ -99,15 +102,16 @@ public class LogsController : ApiControllerBase
             string sqlServer = @"
                 SELECT Id, MachineName, Logged, Level, Message, Logger, Callsite, Exception, VerboseInfo, Url, Action 
                 FROM dbo.AppLogs
-                WHERE (@Level IS NULL OR Level = @Level)
-                  AND (@Logger IS NULL OR Logger LIKE '%' + @Logger + '%')
-                  AND (@Search IS NULL OR Message LIKE '%' + @Search + '%' OR Exception LIKE '%' + @Search + '%')
+                WHERE (@Level IS NULL OR @Level = '' OR Level = @Level)
+                  AND (@Logger IS NULL OR @Logger = '' OR Logger LIKE '%' + @Logger + '%')
+                  AND (@Search IS NULL OR @Search = '' OR Message LIKE '%' + @Search + '%' OR Exception LIKE '%' + @Search + '%')
+                  AND (@FormattedDate IS NULL OR CAST(Logged AS DATE) = @FormattedDate)
                 ORDER BY Logged DESC
                 OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;";
 
             var logs = await _dbFactory.QueryAsync<AppLogItemDto>(
                 sqlServer,
-                new { Level = level, Logger = logger, Search = search, PageSize = pageSize, Offset = offset },
+                new { Level = level, Logger = logger, Search = search, FormattedDate = formattedDate, PageSize = pageSize, Offset = offset },
                 commandType: CommandType.Text);
 
             return ApiResponse(AntiGravity.Enterprise.Shared.Core.Models.ApiResponse<object>.Ok(logs));

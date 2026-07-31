@@ -15,6 +15,7 @@ import 'package:dqms_frontend/features/admin/widgets/system_config_view.dart';
 import 'package:dqms_frontend/features/admin/widgets/notification_config_view.dart';
 import 'package:dqms_frontend/features/admin/widgets/email_config_view.dart';
 import 'package:dqms_frontend/features/admin/widgets/analytics_entry_view.dart';
+import 'package:dqms_frontend/features/admin/widgets/app_logs_view.dart';
 
 import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart';
@@ -71,6 +72,7 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
     _AdminNavItem(title: 'Notification Channels', icon: Icons.notifications_active_rounded, view: NotificationConfigView()),
     _AdminNavItem(title: 'Email Gateway Setup', icon: Icons.mark_email_read_rounded, view: EmailConfigView()),
     _AdminNavItem(title: 'Analytics Hub', icon: Icons.analytics_rounded, view: AnalyticsEntryView()),
+    _AdminNavItem(title: 'Application & Audit Logs', icon: Icons.terminal_rounded, view: AppLogsView()),
   ];
 
   @override
