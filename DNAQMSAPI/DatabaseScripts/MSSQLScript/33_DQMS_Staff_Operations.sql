@@ -84,7 +84,7 @@ BEGIN
         CustomerName, CustomerPhone, IssuedTime, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted
     ) VALUES (
         @v_tokenNum, @p_OrganizationId, @p_LocationId, @p_AreaId, @p_ProcessId, ISNULL(@p_PriorityTier, 19001), 18001,
-        TRIM(@p_CustomerName), TRIM(@p_CustomerPhone), GETDATE(), @p_UID, GETDATE(), @p_UID, GETDATE(), 0
+        LTRIM(RTRIM(@p_CustomerName)), LTRIM(RTRIM(@p_CustomerPhone)), GETDATE(), @p_UID, GETDATE(), @p_UID, GETDATE(), 0
     );
 
     SELECT SCOPE_IDENTITY() AS ID, 0 AS ErrNo, 1 AS RowsCount, 'Token issued successfully' AS ErrMsg, @v_tokenNum AS TokenNumber;

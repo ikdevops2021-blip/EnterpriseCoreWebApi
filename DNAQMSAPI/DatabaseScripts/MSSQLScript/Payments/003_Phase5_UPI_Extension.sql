@@ -22,7 +22,7 @@ BEGIN
         [PaymentMethod] [nvarchar](50) NOT NULL,
         [IsActive] [bit] NOT NULL DEFAULT(1),
         CONSTRAINT [PK_ProviderPaymentMethods] PRIMARY KEY CLUSTERED ([Id] ASC),
-        CONSTRAINT [FK_ProviderPaymentMethods_Providers] FOREIGN KEY([PaymentProviderId]) REFERENCES [dbo].[PaymentProviders] ([Id])
+        CONSTRAINT [FK_ProviderPaymentMethods_Providers] FOREIGN KEY([PaymentProviderId]) REFERENCES [dbo].[OrganizationPaymentProvider] ([Id])
     )
 END
 GO

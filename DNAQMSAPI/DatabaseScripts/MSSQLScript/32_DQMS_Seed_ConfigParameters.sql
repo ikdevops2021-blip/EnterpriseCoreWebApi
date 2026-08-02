@@ -6,6 +6,8 @@
 -- ============================================================================================
 
 -- 1. Ensure Categories Exist in ConfigCategory
+SET IDENTITY_INSERT [dbo].[ConfigCategory] ON;
+
 IF NOT EXISTS (SELECT 1 FROM [dbo].[ConfigCategory] WHERE CategoryID = 18)
     INSERT INTO [dbo].[ConfigCategory] (CategoryID, CategoryCode, CategoryName, Description, Priority, Active, AllowModify, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted)
     VALUES (18, 'TOKEN_STATUS', 'C_TOKEN_STATUS', 'Master token lifecycle status states.', 18, 1, 1, 0, GETDATE(), 0, GETDATE(), 0);
@@ -22,7 +24,10 @@ IF NOT EXISTS (SELECT 1 FROM [dbo].[ConfigCategory] WHERE CategoryID = 21)
     INSERT INTO [dbo].[ConfigCategory] (CategoryID, CategoryCode, CategoryName, Description, Priority, Active, AllowModify, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted)
     VALUES (21, 'DISPLAY_TYPE', 'C_DISPLAY_TEMPLATE_TYPE', 'Waiting area TV display template layout types.', 21, 1, 1, 0, GETDATE(), 0, GETDATE(), 0);
 
+SET IDENTITY_INSERT [dbo].[ConfigCategory] OFF;
+
 -- 2. Insert ConfigParameters (1,000-Item Incremental Ranges)
+SET IDENTITY_INSERT [dbo].[ConfigParameters] ON;
 
 -- Category 18: C_TOKEN_STATUS (Range: 18001 - 18999)
 IF NOT EXISTS (SELECT 1 FROM [dbo].[ConfigParameters] WHERE ParameterID = 18001)
@@ -60,3 +65,5 @@ IF NOT EXISTS (SELECT 1 FROM [dbo].[ConfigParameters] WHERE ParameterID = 21001)
     (21002, 21, 'SPLIT', 'Split-Screen Video/Token', 2, 0, 1, 0, GETDATE(), 0, GETDATE(), 0),
     (21003, 21, 'LIST', 'High-Density List', 3, 0, 1, 0, GETDATE(), 0, GETDATE(), 0),
     (21004, 21, 'BANNER', 'Audio-Visual Banner', 4, 0, 1, 0, GETDATE(), 0, GETDATE(), 0);
+
+SET IDENTITY_INSERT [dbo].[ConfigParameters] OFF;

@@ -8,14 +8,15 @@ try {
     $conn.Open()
     $cmd = $conn.CreateCommand()
     
-    Write-Host "Dropping and recreating database $dbName..."
-    $cmd.CommandText = "IF EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = N'$dbName') DROP DATABASE [$dbName]; CREATE DATABASE [$dbName];"
+    Write-Host "Dropping and recreating database dnaqms and DNAQMSDB..."
+    $cmd.CommandText = "IF EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = N'dnaqms') DROP DATABASE [dnaqms]; CREATE DATABASE [dnaqms]; IF EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = N'DNAQMSDB') DROP DATABASE [DNAQMSDB]; CREATE DATABASE [DNAQMSDB];"
     $cmd.ExecuteNonQuery() | Out-Null
     
-    $cmd.CommandText = "USE [$dbName];"
+    $cmd.CommandText = "USE [dnaqms];"
     $cmd.ExecuteNonQuery() | Out-Null
 
     $scripts = @(
+        "17_NexusCore_Config.sql",
         "01_Organization.sql",
         "02_User.sql",
         "03_Role.sql",
@@ -26,13 +27,29 @@ try {
         "08_UserSession.sql",
         "09_UserDevice.sql",
         "10_OrganizationStorageConfig.sql",
-        "11_OrganizationPaymentProvider.sql",
         "12_StoredFile.sql",
-        "13_PaymentTransaction.sql",
+        "Integration\001_ThirdPartyApiConfig.sql",
+        "Integration\002_Integration_StoredProcedures.sql",
         "14_Integration_Tables.sql",
         "15_Integration_Indexes.sql",
+        "18_NexusCore_Config_StoredProcs.sql",
+        "19_NexusCore_ID_Generator.sql",
+        "21_NexusCore_SeedData.sql",
+        "22_UserContactAndAddress.sql",
+        "27_Location_And_UserProfile_StoredProcs.sql",
+        "28_Alter_User_Add_UserCode.sql",
+        "31_DQMS_Admin_Masters.sql",
+        "32_DQMS_Seed_ConfigParameters.sql",
+        "29_Notification_Tables.sql",
+        "30_Notification_StoredProcs.sql",
+        "33_DQMS_Staff_Operations.sql",
+        "34_DQMS_Customer_Display.sql",
+        "Payments\001_OrganizationPaymentProvider.sql",
+        "Payments\002_PaymentTransaction.sql",
         "99_DummyData.sql",
         "100_Integration_SeedData.sql",
+        "101_CreateUserAuthAndPermissions.sql",
+        "102_ProvisionApiKeysAllUsers.sql",
         "Email\001_EmailSettings.sql",
         "Email\002_EmailQueue.sql",
         "Email\003_EmailSignatures.sql",

@@ -4,16 +4,20 @@ using DNAQMSAPI.Application.DTOs;
 using DNAQMSAPI.Application.Interfaces;
 using DNAQMSAPI.Domain.Entities;
 using DNAQMSAPI.Infrastructure.Models;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace DNAQMSAPI.Infrastructure.Services;
 
 public class LocationAndUserProfileService : ILocationAndUserProfileService
 {
     private readonly IDapperDBFactory _dbFactory;
+    private readonly IMemoryCache _cache;
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(30);
 
-    public LocationAndUserProfileService(IDapperDBFactory dbFactory)
+    public LocationAndUserProfileService(IDapperDBFactory dbFactory, IMemoryCache cache)
     {
         _dbFactory = dbFactory;
+        _cache = cache;
     }
 
     #region Location Masters (Country, State, City)
@@ -21,6 +25,12 @@ public class LocationAndUserProfileService : ILocationAndUserProfileService
     {
         try
         {
+            string cacheKey = $"loc_countries_s_{search}_act_{activeOnly}";
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<CountryDto>? cached) && cached != null)
+            {
+                return ApiResponse<IEnumerable<CountryDto>>.Ok(cached);
+            }
+
             var countries = await _dbFactory.QueryAsync<Country>(
                 "PR_S_Country",
                 new { p_CountryId = -1, p_Search = search ?? "", p_IsActive = activeOnly ? 1 : -1 },
@@ -36,8 +46,9 @@ public class LocationAndUserProfileService : ILocationAndUserProfileService
                 Attribute2 = c.Attribute2,
                 Attribute3 = c.Attribute3,
                 IsActive = c.IsActive
-            });
+            }).ToList();
 
+            _cache.Set(cacheKey, dtos.AsEnumerable(), CacheDuration);
             return ApiResponse<IEnumerable<CountryDto>>.Ok(dtos);
         }
         catch (Exception ex)
@@ -148,6 +159,12 @@ public class LocationAndUserProfileService : ILocationAndUserProfileService
     {
         try
         {
+            string cacheKey = $"loc_states_c_{countryId}_s_{search}_act_{activeOnly}";
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<StateDto>? cached) && cached != null)
+            {
+                return ApiResponse<IEnumerable<StateDto>>.Ok(cached);
+            }
+
             var states = await _dbFactory.QueryAsync<State>(
                 "PR_S_State",
                 new { p_StateId = -1, p_CountryId = countryId, p_Search = search ?? "", p_IsActive = activeOnly ? 1 : -1 },
@@ -165,8 +182,9 @@ public class LocationAndUserProfileService : ILocationAndUserProfileService
                 Attribute2 = s.Attribute2,
                 Attribute3 = s.Attribute3,
                 IsActive = s.IsActive
-            });
+            }).ToList();
 
+            _cache.Set(cacheKey, dtos.AsEnumerable(), CacheDuration);
             return ApiResponse<IEnumerable<StateDto>>.Ok(dtos);
         }
         catch (Exception ex)
@@ -278,6 +296,12 @@ public class LocationAndUserProfileService : ILocationAndUserProfileService
     {
         try
         {
+            string cacheKey = $"loc_cities_st_{stateId}_co_{countryId}_s_{search}_act_{activeOnly}";
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<CityDto>? cached) && cached != null)
+            {
+                return ApiResponse<IEnumerable<CityDto>>.Ok(cached);
+            }
+
             var cities = await _dbFactory.QueryAsync<City>(
                 "PR_S_City",
                 new { p_CityId = -1, p_StateId = stateId, p_CountryId = countryId, p_Search = search ?? "", p_IsActive = activeOnly ? 1 : -1 },
@@ -298,8 +322,9 @@ public class LocationAndUserProfileService : ILocationAndUserProfileService
                 Attribute2 = c.Attribute2,
                 Attribute3 = c.Attribute3,
                 IsActive = c.IsActive
-            });
+            }).ToList();
 
+            _cache.Set(cacheKey, dtos.AsEnumerable(), CacheDuration);
             return ApiResponse<IEnumerable<CityDto>>.Ok(dtos);
         }
         catch (Exception ex)

@@ -112,6 +112,24 @@ END
 GO
 
 -- Starter Seed Data
+IF NOT EXISTS (SELECT 1 FROM [dbo].[ConfigCategory] WHERE CategoryID = 17)
+BEGIN
+    SET IDENTITY_INSERT [dbo].[ConfigCategory] ON;
+    INSERT INTO [dbo].[ConfigCategory] (CategoryID, CategoryCode, CategoryName, Description, Priority, Active, AllowModify, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted)
+    VALUES (17, 'NOTIFICATION_EVENT', 'C_NOTIFICATION_EVENT', 'Notification Event Types', 17, 1, 1, 0, GETDATE(), 0, GETDATE(), 0);
+    SET IDENTITY_INSERT [dbo].[ConfigCategory] OFF;
+END
+
+IF NOT EXISTS (SELECT 1 FROM [dbo].[ConfigParameters] WHERE ParameterID = 17001)
+BEGIN
+    SET IDENTITY_INSERT [dbo].[ConfigParameters] ON;
+    INSERT INTO [dbo].[ConfigParameters] (ParameterID, CategoryID, ParameterCode, ParameterName, Priority, IsDefault, IsActive, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted) VALUES
+    (17001, 17, 'PAYMENT_RECEIVED', 'Payment Received', 1, 1, 1, 0, GETDATE(), 0, GETDATE(), 0),
+    (17002, 17, 'INTERNAL_ANNOUNCEMENT', 'Internal Announcement', 2, 0, 1, 0, GETDATE(), 0, GETDATE(), 0),
+    (17003, 17, 'SYSTEM_ALERT', 'System Alert', 3, 0, 1, 0, GETDATE(), 0, GETDATE(), 0);
+    SET IDENTITY_INSERT [dbo].[ConfigParameters] OFF;
+END
+
 IF NOT EXISTS (SELECT 1 FROM [dbo].[NotificationTemplate] WHERE [EventCode] = N'PAYMENT_RECEIVED' AND [OrganizationId] IS NULL)
 BEGIN
     INSERT INTO [dbo].[NotificationTemplate] 

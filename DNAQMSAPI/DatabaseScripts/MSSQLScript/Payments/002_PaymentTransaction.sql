@@ -1,4 +1,4 @@
-CREATE TABLE [PaymentTransaction] (
+CREATE TABLE [dbo].[PaymentTransactions] (
     [Id] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     [UserId] INT NOT NULL,
     [TargetOrganizationId] INT NOT NULL,
