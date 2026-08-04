@@ -364,8 +364,8 @@ class _StaffRolesViewState extends ConsumerState<StaffRolesView> {
                         SizedBox(width: 80, child: Text('STAFF ID', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
                         Expanded(flex: 3, child: Text('FULL NAME & EMAIL', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
                         Expanded(flex: 2, child: Text('ROLE PERMISSION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 110, child: Text('ASSIGNED STATION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                        SizedBox(width: 130, child: Text('ASSIGNED STATION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                        SizedBox(width: 80, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
                       ],
                     ),
                   ),
@@ -422,14 +422,14 @@ class _StaffRolesViewState extends ConsumerState<StaffRolesView> {
                                   child: _buildRoleBadge(stf.roleName),
                                 ),
                                 SizedBox(
-                                  width: 110,
+                                  width: 130,
                                   child: Text(
                                     stf.assignedCounterNumber,
                                     style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w700, fontFamily: 'monospace'),
                                   ),
                                 ),
                                 SizedBox(
-                                  width: 90,
+                                  width: 80,
                                   child: DqmsStatusBadge.activeState(stf.status == 'Active'),
                                 ),
                               ],
@@ -476,30 +476,129 @@ class _StaffRolesViewState extends ConsumerState<StaffRolesView> {
   }
 
   Widget _buildDetailInspector(StaffRoleModel stf) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        DqmsTextField(label: 'Staff Identification Code', initialValue: stf.staffCode),
-        const SizedBox(height: 14),
-        DqmsTextField(label: 'Full Name', initialValue: stf.fullName),
-        const SizedBox(height: 14),
-        DqmsTextField(label: 'Official Email', initialValue: stf.email),
-        const SizedBox(height: 14),
-        DqmsTextField(label: 'Role Permission Level', initialValue: stf.roleName),
-        const SizedBox(height: 14),
-        DqmsTextField(label: 'Assigned Counter Station', initialValue: stf.assignedCounterNumber),
-        const SizedBox(height: 24),
-        DqmsButton(
-          label: 'Save Staff Profile',
-          icon: Icons.save_rounded,
-          isFullWidth: true,
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Staff Profile for ${stf.fullName} updated.'), backgroundColor: AppColors.statusActive),
-            );
-          },
-        ),
-      ],
+    String currentRole = stf.roleName;
+    String currentStation = stf.assignedCounterNumber;
+    String currentStatus = stf.status;
+
+    return StatefulBuilder(
+      builder: (context, setLocalState) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DqmsTextField(label: 'Staff Identification Code', initialValue: stf.staffCode),
+            const SizedBox(height: 14),
+            DqmsTextField(label: 'Full Name', initialValue: stf.fullName),
+            const SizedBox(height: 14),
+            DqmsTextField(label: 'Official Email', initialValue: stf.email),
+            const SizedBox(height: 14),
+
+            // Role Dropdown
+            const Text('Role Permission Level', style: TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 6),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.bgCard,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: AppColors.borderSubtle),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: ['SuperAdmin', 'BranchManager', 'CounterOperator', 'Receptionist', 'QualityAuditor'].contains(currentRole) ? currentRole : 'CounterOperator',
+                  dropdownColor: AppColors.bgSurface,
+                  style: const TextStyle(color: AppColors.brandPrimary, fontSize: 12, fontWeight: FontWeight.w700),
+                  items: const [
+                    DropdownMenuItem(value: 'SuperAdmin', child: Text('SuperAdmin (Full Control)')),
+                    DropdownMenuItem(value: 'BranchManager', child: Text('BranchManager (Branch Admin)')),
+                    DropdownMenuItem(value: 'CounterOperator', child: Text('CounterOperator (Queue Operator)')),
+                    DropdownMenuItem(value: 'Receptionist', child: Text('Receptionist (Token Kiosk)')),
+                    DropdownMenuItem(value: 'QualityAuditor', child: Text('QualityAuditor (Read-only Compliance)')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setLocalState(() => currentRole = val);
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Station Dropdown
+            const Text('Assigned Counter Station', style: TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 6),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.bgCard,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: AppColors.borderSubtle),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: ['C-01', 'C-02', 'C-03', 'C-04', 'C-05', 'N/A'].contains(currentStation) ? currentStation : 'N/A',
+                  dropdownColor: AppColors.bgSurface,
+                  style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w700, fontFamily: 'monospace'),
+                  items: const [
+                    DropdownMenuItem(value: 'N/A', child: Text('N/A (Unassigned)')),
+                    DropdownMenuItem(value: 'C-01', child: Text('Station C-01 (General Service)')),
+                    DropdownMenuItem(value: 'C-02', child: Text('Station C-02 (Express Window)')),
+                    DropdownMenuItem(value: 'C-03', child: Text('Station C-03 (Consultation)')),
+                    DropdownMenuItem(value: 'C-04', child: Text('Station C-04 (VIP / Priority)')),
+                    DropdownMenuItem(value: 'C-05', child: Text('Station C-05 (Returns & Claims)')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setLocalState(() => currentStation = val);
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Status Dropdown
+            const Text('Account Status', style: TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 6),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.bgCard,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: AppColors.borderSubtle),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: currentStatus,
+                  dropdownColor: AppColors.bgSurface,
+                  style: TextStyle(color: currentStatus == 'Active' ? AppColors.statusActive : AppColors.statusDeactive, fontSize: 12, fontWeight: FontWeight.w800),
+                  items: const [
+                    DropdownMenuItem(value: 'Active', child: Text('🟢 Active')),
+                    DropdownMenuItem(value: 'Deactive', child: Text('🔴 Deactive')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setLocalState(() => currentStatus = val);
+                  },
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+            DqmsButton(
+              label: 'Save Staff Profile',
+              icon: Icons.save_rounded,
+              isFullWidth: true,
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Staff Profile updated: Role -> $currentRole, Station -> $currentStation, Status -> $currentStatus'),
+                    backgroundColor: AppColors.statusActive,
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
