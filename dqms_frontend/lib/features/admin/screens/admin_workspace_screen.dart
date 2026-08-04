@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
 import 'package:dqms_frontend/features/dashboard/screens/dashboard_screen.dart';
@@ -22,33 +23,23 @@ import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart
 import 'package:dqms_frontend/features/auth/providers/auth_provider.dart';
 import 'package:dqms_frontend/features/auth/screens/login_screen.dart';
 import 'package:dqms_frontend/features/admin/providers/config_cache_provider.dart';
-
-/// Navigation Item Model
-class _AdminNavItem {
-  final String title;
-  final IconData icon;
-  final Widget view;
-
-  const _AdminNavItem({
-    required this.title,
-    required this.icon,
-    required this.view,
-  });
-}
+import 'package:dqms_frontend/features/admin/providers/navigation_menu_provider.dart';
+import 'package:dqms_frontend/core/utils/icon_resolver.dart';
 
 /// ============================================================================
 /// MASTER ADMINISTRATIVE WORKSPACE SCREEN
-/// Master container unifying all administrative domain views
+/// Master container unifying all administrative domain views.
+/// Navigation sidebar is dynamically driven from the NavigationMenu database table.
 /// ============================================================================
 class AdminWorkspaceScreen extends ConsumerStatefulWidget {
-  const AdminWorkspaceScreen({super.key});
+  final Widget child;
+  const AdminWorkspaceScreen({super.key, required this.child});
 
   @override
   ConsumerState<AdminWorkspaceScreen> createState() => _AdminWorkspaceScreenState();
 }
 
 class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
-  int _selectedDomainIndex = 0;
 
   @override
   void initState() {
@@ -59,26 +50,17 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
     });
   }
 
-  static const List<_AdminNavItem> _navItems = [
-    _AdminNavItem(title: 'Areas & Zones', icon: Icons.grid_view_rounded, view: AreasZonesView()),
-    _AdminNavItem(title: 'Process Pipelines', icon: Icons.account_tree_rounded, view: ProcessesView()),
-    _AdminNavItem(title: 'Counter Stations', icon: Icons.desk_rounded, view: CountersView()),
-    _AdminNavItem(title: 'Display Templates', icon: Icons.tv_rounded, view: DisplayTemplatesView()),
-    _AdminNavItem(title: 'Staff & Roles', icon: Icons.badge_rounded, view: StaffRolesView()),
-    _AdminNavItem(title: 'User Profiles & Add/Edit', icon: Icons.person_search_rounded, view: UserProfilesView()),
-    _AdminNavItem(title: 'Tenant / Organization Master', icon: Icons.business_rounded, view: TenantMasterView()),
-    _AdminNavItem(title: 'Config Categories & Params', icon: Icons.category_rounded, view: ConfigCategoryParametersView()),
-    _AdminNavItem(title: 'System Config Keys', icon: Icons.settings_suggest_rounded, view: SystemConfigView()),
-    _AdminNavItem(title: 'Notification Channels', icon: Icons.notifications_active_rounded, view: NotificationConfigView()),
-    _AdminNavItem(title: 'Email Gateway Setup', icon: Icons.mark_email_read_rounded, view: EmailConfigView()),
-    _AdminNavItem(title: 'Analytics Hub', icon: Icons.analytics_rounded, view: AnalyticsEntryView()),
-    _AdminNavItem(title: 'Application & Audit Logs', icon: Icons.terminal_rounded, view: AppLogsView()),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final isDesktop = AppBreakpoints.isDesktop(context);
-    final currentDomain = _navItems[_selectedDomainIndex];
+    final location = GoRouterState.of(context).uri.path;
+
+    // Dynamically load the navigation menu from the provider
+    final menuAsync = ref.watch(navigationMenuProvider);
+    final navItems = menuAsync.valueOrNull ?? [];
+
+    final activeIndex = navItems.indexWhere((item) => item.routePath == location);
+    final currentTitle = activeIndex >= 0 ? navItems[activeIndex].title : 'Admin Workspace';
 
     return Scaffold(
       backgroundColor: AppColors.bgCanvas,
@@ -86,24 +68,21 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
         child: Column(
           children: [
             // Top Workspace Command Header
-            _buildTopCommandHeader(context, currentDomain.title),
+            _buildTopCommandHeader(context, currentTitle),
 
             // Workspace Body Layout
             Expanded(
               child: Row(
                 children: [
-                  // Sidebar Navigation (Desktop)
-                  if (isDesktop) _buildSidebarNav(),
+                  // Sidebar Navigation (Desktop) — Driven by DB
+                  if (isDesktop) _buildSidebarNav(navItems, activeIndex),
 
                   // Main Content View
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       color: AppColors.bgCanvas,
-                      child: IndexedStack(
-                        index: _selectedDomainIndex,
-                        children: _navItems.map((item) => item.view).toList(),
-                      ),
+                      child: widget.child,
                     ),
                   ),
                 ],
@@ -203,7 +182,7 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               ),
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
+                context.push('/dashboard');
               },
             ),
             const SizedBox(width: 20),
@@ -241,10 +220,7 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
               onSelected: (value) {
                 if (value == 'logout') {
                   ref.read(authStateProvider.notifier).logout();
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    (route) => false,
-                  );
+                  context.go('/login');
                 }
               },
               tooltip: 'Account Session Options',
@@ -331,10 +307,7 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
               tooltip: 'Sign Out of Account',
               onPressed: () {
                 ref.read(authStateProvider.notifier).logout();
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
+                context.go('/login');
               },
             ),
           ],
@@ -464,8 +437,8 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
   }
 
 
-  /// Left Sidebar Navigation Bar
-  Widget _buildSidebarNav() {
+  /// Left Sidebar Navigation Bar — Dynamic from database
+  Widget _buildSidebarNav(List<NavigationMenuModel> navItems, int activeIndex) {
     return Container(
       width: 240,
       decoration: const BoxDecoration(
@@ -488,56 +461,63 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
             ),
           ),
 
-          // Domain Navigation Items
+          // Dynamic Navigation Items from DB
           Expanded(
-            child: ListView.builder(
-              itemCount: _navItems.length,
-              itemBuilder: (ctx, i) {
-                final item = _navItems[i];
-                final isSelected = _selectedDomainIndex == i;
-
-                return InkWell(
-                  onTap: () {
-                    setState(() {
-                      _selectedDomainIndex = i;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.15) : Colors.transparent,
-                      border: Border(
-                        left: BorderSide(
-                          color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-                          width: 3,
-                        ),
-                      ),
+            child: navItems.isEmpty
+                ? const Center(
+                    child: SizedBox(
+                      width: 18, height: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppColors.brandPrimary),
                     ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          item.icon,
-                          color: isSelected ? AppColors.brandPrimary : AppColors.textMuted,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            item.title,
-                            style: TextStyle(
-                              color: isSelected ? AppColors.textMain : AppColors.textMuted,
-                              fontSize: 13,
-                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  )
+                : ListView.builder(
+                    itemCount: navItems.length,
+                    itemBuilder: (ctx, i) {
+                      final item = navItems[i];
+                      final isSelected = activeIndex == i;
+                      final iconData = IconResolver.resolve(item.iconName);
+
+                      return InkWell(
+                        onTap: () => context.go(item.routePath),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.brandPrimary.withValues(alpha: 0.15)
+                                : Colors.transparent,
+                            border: Border(
+                              left: BorderSide(
+                                color: isSelected ? AppColors.brandPrimary : Colors.transparent,
+                                width: 3,
+                              ),
                             ),
-                            overflow: TextOverflow.ellipsis,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                iconData,
+                                color: isSelected ? AppColors.brandPrimary : AppColors.textMuted,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  item.title,
+                                  style: TextStyle(
+                                    color: isSelected ? AppColors.textMain : AppColors.textMuted,
+                                    fontSize: 13,
+                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
 
           // Footer Org Info

@@ -42,6 +42,8 @@ To properly create the relational layout, execute the scripts in the numerical o
 34. **`Email/003_EmailSignatures.sql`**: Table to store reusable HTML signature templates.
 35. **`Email/004_EmailViews.sql`**: View to provide daily mail health reports.
 36. **`Email/005_EmailDummyData.sql`**: Seed data for EmailSettings, EmailSignatures, and EmailQueue testing.
+37. **`35_NavigationMenu.sql`**: NavigationMenu table, stored procedures `PR_S_NavigationMenu` and `PR_IU_NavigationMenu`, and plug-and-play module seed dataset.
+38. **`35b_NavigationMenu_SP_Fix.sql`**: Explicit charset/collation fix (`utf8mb4_general_ci`) for stored procedures to resolve Ampps server collation mismatches.
 
 ## Table Details and Purpose
 

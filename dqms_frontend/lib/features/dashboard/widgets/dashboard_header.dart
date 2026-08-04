@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/features/dashboard/providers/dashboard_provider.dart';
 import 'package:dqms_frontend/features/customer/kiosk/screens/kiosk_screen.dart';
@@ -60,6 +61,20 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
+            // Adaptive Back Button
+            IconButton(
+              icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textMain),
+              tooltip: 'Back to Workspace',
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/admin/areas');
+                }
+              },
+            ),
+            const SizedBox(width: 8),
+
             // Command Center Title Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -199,15 +214,7 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader> {
               tooltip: 'Open Customer Experience Interfaces',
               color: AppColors.bgSurface,
               onSelected: (val) {
-                if (val == 'kiosk') {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const KioskScreen()));
-                } else if (val == 'mobile') {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const MobileTrackerScreen()));
-                } else if (val == 'appointment') {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AppointmentBookingScreen()));
-                } else if (val == 'tv') {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const WaitingRoomTvScreen()));
-                }
+                context.push('/$val');
               },
               itemBuilder: (ctx) => const [
                 PopupMenuItem(value: 'kiosk', child: Row(children: [Icon(Icons.touch_app_rounded, color: AppColors.brandPrimary, size: 16), SizedBox(width: 8), Text('Self-Service Kiosk')])),

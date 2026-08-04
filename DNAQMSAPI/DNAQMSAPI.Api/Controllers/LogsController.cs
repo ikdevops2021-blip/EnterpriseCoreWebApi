@@ -127,7 +127,7 @@ public class LogsController : ApiControllerBase
                     Level = "Info",
                     Logger = "ClientApp.QAAudit",
                     Message = "Application & Audit Logs System active and monitoring.",
-                    Url = "http://localhost:10940/#/admin/logs",
+                    Url = "/admin/logs",
                     Action = "SystemCheck"
                 });
             }
@@ -154,7 +154,7 @@ public class LogsController : ApiControllerBase
                         Action VARCHAR(250)
                     );
                     INSERT INTO AppLogs (MachineName, Logged, Level, Message, Logger, Callsite, Url, Action)
-                    VALUES ('QA-SERVER-01', NOW(), 'Info', 'Application Audit Logs Engine initialized successfully.', 'ClientApp.QAAudit', 'ApplicationAuditLogsScreen', 'http://localhost:10940/#/admin/logs', 'SystemInit');";
+                    VALUES ('QA-SERVER-01', NOW(), 'Info', 'Application Audit Logs Engine initialized successfully.', 'ClientApp.QAAudit', 'ApplicationAuditLogsScreen', '/admin/logs', 'SystemInit');";
 
                 await _dbFactory.ExecuteAsync(createTableSql, commandType: CommandType.Text);
                 var logs = (await _dbFactory.QueryAsync<AppLogItemDto>(selectSql, parameters, commandType: CommandType.Text)).ToList();
@@ -171,7 +171,7 @@ public class LogsController : ApiControllerBase
                         Level = "Info",
                         Logger = "ClientApp.QAAudit",
                         Message = "Application & Audit Logs Engine operational.",
-                        Url = "http://localhost:10940/#/admin/logs",
+                        Url = "/admin/logs",
                         Action = "SystemCheck"
                     }
                 };
@@ -233,7 +233,7 @@ public class LogsController : ApiControllerBase
         {
             string insertSql = @"
                 INSERT INTO AppLogs (MachineName, Logged, Level, Message, Logger, Callsite, Exception, Url, Action)
-                VALUES (@MachineName, GETUTCDATE(), @Level, @Message, @Logger, @Callsite, @Exception, @Url, @Action);";
+                VALUES (@MachineName, UTC_TIMESTAMP(), @Level, @Message, @Logger, @Callsite, @Exception, @Url, @Action);";
 
             var paramsObj = new
             {
@@ -249,9 +249,9 @@ public class LogsController : ApiControllerBase
 
             _dbFactory.ExecuteAsync(insertSql, paramsObj, commandType: CommandType.Text).ConfigureAwait(false);
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore background log write exceptions
+            _loggerFactory.CreateLogger<LogsController>().LogError(ex, "Failed to save client log to database.");
         }
     }
 

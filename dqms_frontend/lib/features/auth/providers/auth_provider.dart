@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dqms_frontend/core/config/app_config.dart';
 
 /// Authenticated User Session Model
@@ -73,7 +74,43 @@ class AuthState {
 
 /// Riverpod Auth Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(AuthState.initial());
+  AuthNotifier() : super(AuthState.initial()) {
+    tryAutoLogin();
+  }
+
+  Future<void> tryAutoLogin() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token != null && token.isNotEmpty) {
+        final userId = prefs.getInt('auth_userId') ?? 1;
+        final userCode = prefs.getString('auth_userCode') ?? '';
+        final fullName = prefs.getString('auth_fullName') ?? '';
+        final email = prefs.getString('auth_email') ?? '';
+        final roleName = prefs.getString('auth_roleName') ?? '';
+        final organizationId = prefs.getInt('auth_organizationId') ?? 1;
+        final organizationApiKey = prefs.getString('auth_organizationApiKey');
+
+        if (organizationApiKey != null) {
+          AppConfig.updateEndpoints(organizationApiKey: organizationApiKey, organizationId: organizationId);
+        }
+
+        state = AuthState(
+          isAuthenticated: true,
+          isLoading: false,
+          currentUser: AuthUserModel(
+            userId: userId,
+            userCode: userCode,
+            fullName: fullName,
+            email: email,
+            roleName: roleName,
+            organizationId: organizationId,
+            token: token,
+          ),
+        );
+      }
+    } catch (_) {}
+  }
 
   /// Log in with Username/Email & Password using POST /api/v1/auth/login
   Future<bool> login(String identifier, String password, Dio dio) async {
@@ -100,6 +137,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
           token: data['token'] ?? 'bearer-token-${DateTime.now().millisecondsSinceEpoch}',
         );
 
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', user.token);
+        await prefs.setInt('auth_userId', user.userId);
+        await prefs.setString('auth_userCode', user.userCode);
+        await prefs.setString('auth_fullName', user.fullName);
+        await prefs.setString('auth_email', user.email);
+        await prefs.setString('auth_roleName', user.roleName);
+        await prefs.setInt('auth_organizationId', user.organizationId);
+        await prefs.setString('auth_organizationApiKey', AppConfig.organizationApiKey);
+
         state = AuthState(
           isAuthenticated: true,
           isLoading: false,
@@ -123,6 +170,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
         token: 'demo-jwt-bearer-token-${DateTime.now().millisecondsSinceEpoch}',
       );
 
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', demoUser.token);
+      await prefs.setInt('auth_userId', demoUser.userId);
+      await prefs.setString('auth_userCode', demoUser.userCode);
+      await prefs.setString('auth_fullName', demoUser.fullName);
+      await prefs.setString('auth_email', demoUser.email);
+      await prefs.setString('auth_roleName', demoUser.roleName);
+      await prefs.setInt('auth_organizationId', demoUser.organizationId);
+      await prefs.setString('auth_organizationApiKey', AppConfig.organizationApiKey);
+
       state = AuthState(
         isAuthenticated: true,
         isLoading: false,
@@ -138,7 +195,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return false;
   }
 
-  void logout() {
+  Future<void> logout() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+    } catch (_) {}
     state = AuthState.initial();
   }
 }

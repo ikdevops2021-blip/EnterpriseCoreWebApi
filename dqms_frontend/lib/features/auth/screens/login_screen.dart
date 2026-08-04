@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dqms_frontend/core/config/app_config.dart';
 import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
@@ -9,6 +10,18 @@ import 'package:dqms_frontend/features/auth/providers/auth_provider.dart';
 import 'package:dqms_frontend/features/admin/screens/admin_workspace_screen.dart';
 
 /// ENTERPRISE LOGIN SCREEN (Application Entry Point)
+class OrganizationOption {
+  final String name;
+  final String apiKey;
+  final int organizationId;
+
+  const OrganizationOption({
+    required this.name,
+    required this.apiKey,
+    required this.organizationId,
+  });
+}
+
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -19,6 +32,52 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController _usernameCtrl = TextEditingController(text: 'admin@dqms.org');
   final TextEditingController _passwordCtrl = TextEditingController(text: 'Welc0me@555');
+
+  final List<OrganizationOption> _orgOptions = const [
+    OrganizationOption(
+      name: 'Acme Enterprise Corp (Main HQ)',
+      apiKey: 'dnaqms_live_alex_mercer_key_998877',
+      organizationId: 3,
+    ),
+    OrganizationOption(
+      name: 'West Wing Regional Medical Center',
+      apiKey: 'dnaqms_live_john_doe_key_445566',
+      organizationId: 2,
+    ),
+    OrganizationOption(
+      name: 'Downtown Express Clinic',
+      apiKey: 'dnaqms_live_icqfweN6llup9Umrp5J3SDR58fA1mGRbxBUDENjiNNw',
+      organizationId: 1,
+    ),
+  ];
+
+  late OrganizationOption _selectedOrg;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedOrg = _orgOptions.firstWhere(
+      (opt) => opt.apiKey == AppConfig.organizationApiKey,
+      orElse: () => _orgOptions.first,
+    );
+    // Sync active config on load
+    AppConfig.updateEndpoints(
+      organizationApiKey: _selectedOrg.apiKey,
+      organizationId: _selectedOrg.organizationId,
+    );
+  }
+
+  void _onOrgChanged(OrganizationOption? newOrg) {
+    if (newOrg != null) {
+      setState(() {
+        _selectedOrg = newOrg;
+        AppConfig.updateEndpoints(
+          organizationApiKey: newOrg.apiKey,
+          organizationId: newOrg.organizationId,
+        );
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -36,9 +95,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
 
     if (success && mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AdminWorkspaceScreen()),
-      );
+      context.go('/admin/areas');
     }
   }
 
@@ -145,29 +202,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Organization API Key Config Info Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.bgCanvas,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.borderSubtle),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.vpn_key_rounded, color: AppColors.brandAccent, size: 14),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Org Key: ${AppConfig.organizationApiKey}',
-                          style: const TextStyle(color: AppColors.brandAccent, fontSize: 10, fontFamily: 'monospace', fontWeight: FontWeight.w700),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+                // Organization Dropdown Field
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Organization / Tenant',
+                      style: TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    DropdownButtonFormField<OrganizationOption>(
+                      value: _selectedOrg,
+                      dropdownColor: AppColors.bgSurface,
+                      icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.textSubtle),
+                      style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.bgCanvas,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        prefixIcon: const Icon(Icons.business_rounded, size: 18, color: AppColors.textSubtle),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(6),
+                          borderSide: const BorderSide(color: AppColors.borderSubtle),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(6),
+                          borderSide: const BorderSide(color: AppColors.borderSubtle),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(6),
+                          borderSide: const BorderSide(color: AppColors.borderFocus, width: 1.5),
                         ),
                       ),
-                    ],
-                  ),
+                      items: _orgOptions.map((OrganizationOption opt) {
+                        return DropdownMenuItem<OrganizationOption>(
+                          value: opt,
+                          child: Text(
+                            opt.name,
+                            style: const TextStyle(color: AppColors.textMain, fontSize: 13),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: _onOrgChanged,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 24),
 

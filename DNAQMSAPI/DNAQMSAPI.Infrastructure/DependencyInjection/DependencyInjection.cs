@@ -63,6 +63,9 @@ public static class DependencyInjection
         services.AddScoped<IDqmsDashboardService, DqmsDashboardService>();
         services.AddScoped<IDqmsReportsService, DqmsReportsService>();
 
+        // --- DQMS Core : Dynamic Navigation Menu (Plug-and-Play) ---
+        services.AddScoped<INavigationMenuService, NavigationMenuService>();
+
         return services;
     }
 }
