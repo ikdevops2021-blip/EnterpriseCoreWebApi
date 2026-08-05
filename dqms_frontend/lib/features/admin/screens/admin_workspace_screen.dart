@@ -3,25 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
-import 'package:dqms_frontend/features/dashboard/screens/dashboard_screen.dart';
 import 'package:dqms_frontend/features/admin/widgets/areas_zones_view.dart';
-import 'package:dqms_frontend/features/admin/widgets/processes_view.dart';
-import 'package:dqms_frontend/features/admin/widgets/counters_view.dart';
-import 'package:dqms_frontend/features/admin/widgets/display_templates_view.dart';
-import 'package:dqms_frontend/features/admin/widgets/staff_roles_view.dart';
-import 'package:dqms_frontend/features/admin/widgets/user_profiles_view.dart';
-import 'package:dqms_frontend/features/admin/widgets/tenant_master_view.dart';
-import 'package:dqms_frontend/features/admin/widgets/config_category_parameters_view.dart';
-import 'package:dqms_frontend/features/admin/widgets/system_config_view.dart';
-import 'package:dqms_frontend/features/admin/widgets/notification_config_view.dart';
-import 'package:dqms_frontend/features/admin/widgets/email_config_view.dart';
-import 'package:dqms_frontend/features/admin/widgets/analytics_entry_view.dart';
-import 'package:dqms_frontend/features/admin/widgets/app_logs_view.dart';
 
 import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart';
 import 'package:dqms_frontend/features/auth/providers/auth_provider.dart';
-import 'package:dqms_frontend/features/auth/screens/login_screen.dart';
 import 'package:dqms_frontend/features/admin/providers/config_cache_provider.dart';
 import 'package:dqms_frontend/features/admin/providers/navigation_menu_provider.dart';
 import 'package:dqms_frontend/core/utils/icon_resolver.dart';
@@ -32,8 +18,8 @@ import 'package:dqms_frontend/core/utils/icon_resolver.dart';
 /// Navigation sidebar is dynamically driven from the NavigationMenu database table.
 /// ============================================================================
 class AdminWorkspaceScreen extends ConsumerStatefulWidget {
-  final Widget child;
-  const AdminWorkspaceScreen({super.key, required this.child});
+  final Widget? child;
+  const AdminWorkspaceScreen({super.key, this.child});
 
   @override
   ConsumerState<AdminWorkspaceScreen> createState() => _AdminWorkspaceScreenState();
@@ -82,7 +68,7 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       color: AppColors.bgCanvas,
-                      child: widget.child,
+                      child: widget.child ?? const AreasZonesView(),
                     ),
                   ),
                 ],

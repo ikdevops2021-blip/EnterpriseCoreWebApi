@@ -4,10 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/features/dashboard/providers/dashboard_provider.dart';
-import 'package:dqms_frontend/features/customer/kiosk/screens/kiosk_screen.dart';
-import 'package:dqms_frontend/features/customer/mobile/screens/mobile_tracker_screen.dart';
-import 'package:dqms_frontend/features/customer/appointment/screens/appointment_booking_screen.dart';
-import 'package:dqms_frontend/features/customer/tv/screens/waiting_room_tv_screen.dart';
 
 /// ============================================================================
 /// COMMAND CENTER DASHBOARD HEADER

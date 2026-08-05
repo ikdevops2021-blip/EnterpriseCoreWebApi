@@ -191,7 +191,8 @@ class _NavigationMenuViewState extends ConsumerState<NavigationMenuView> {
             Switch.adaptive(
               value: _showInactive,
               onChanged: (val) => setState(() => _showInactive = val),
-              activeColor: AppColors.brandPrimary,
+              activeTrackColor: AppColors.brandPrimary,
+              activeThumbColor: Colors.white,
             ),
           ],
         ),
@@ -268,7 +269,7 @@ class _NavigationMenuViewState extends ConsumerState<NavigationMenuView> {
                         style: TextStyle(color: AppColors.textSubtle, fontSize: 13)))
                 : ListView.separated(
                     itemCount: menus.length,
-                    separatorBuilder: (_, __) =>
+                    separatorBuilder: (_, _) =>
                         const Divider(height: 1, color: AppColors.borderSubtle),
                     itemBuilder: (ctx, i) => _buildMenuRow(ctx, menus[i], i),
                   ),
@@ -632,7 +633,8 @@ class _MenuEditorDialogState extends State<_MenuEditorDialog> {
                     Switch.adaptive(
                       value: _isActive,
                       onChanged: (v) => setState(() => _isActive = v),
-                      activeColor: AppColors.brandPrimary,
+                      activeTrackColor: AppColors.brandPrimary,
+                      activeThumbColor: Colors.white,
                     ),
                     const SizedBox(width: 8),
                     Text(_isActive ? 'Visible in sidebar' : 'Hidden from sidebar',

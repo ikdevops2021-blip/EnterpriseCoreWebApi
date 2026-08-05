@@ -7,7 +7,6 @@ import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
 import 'package:dqms_frontend/features/auth/providers/auth_provider.dart';
-import 'package:dqms_frontend/features/admin/screens/admin_workspace_screen.dart';
 
 /// ENTERPRISE LOGIN SCREEN (Application Entry Point)
 class OrganizationOption {
@@ -217,7 +216,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<OrganizationOption>(
-                      value: _selectedOrg,
+                      initialValue: _selectedOrg,
                       dropdownColor: AppColors.bgSurface,
                       icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.textSubtle),
                       style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
