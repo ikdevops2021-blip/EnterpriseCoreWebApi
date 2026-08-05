@@ -4,13 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
 import 'package:dqms_frontend/features/admin/widgets/areas_zones_view.dart';
+import 'package:dqms_frontend/features/admin/widgets/side_menu.dart';
 
 import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart';
 import 'package:dqms_frontend/features/auth/providers/auth_provider.dart';
 import 'package:dqms_frontend/features/admin/providers/config_cache_provider.dart';
 import 'package:dqms_frontend/features/admin/providers/navigation_menu_provider.dart';
-import 'package:dqms_frontend/core/utils/icon_resolver.dart';
 
 /// ============================================================================
 /// MASTER ADMINISTRATIVE WORKSPACE SCREEN
@@ -50,20 +50,34 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.bgCanvas,
+      drawer: !isDesktop
+          ? Drawer(
+              child: SideMenu(
+                navItems: navItems,
+                activeIndex: activeIndex,
+                isDrawer: true,
+              ),
+            )
+          : null,
       body: SafeArea(
-        child: Column(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Workspace Command Header
-            _buildTopCommandHeader(context, currentTitle),
+            // Full Height Left Sidebar Navigation (Desktop) — Responsive Abu Anwar Pattern
+            if (isDesktop)
+              SideMenu(
+                navItems: navItems,
+                activeIndex: activeIndex,
+              ),
 
-            // Workspace Body Layout
+            // Main Workspace Right Column (Top Header + Dynamic View Content)
             Expanded(
-              child: Row(
+              child: Column(
                 children: [
-                  // Sidebar Navigation (Desktop) — Driven by DB
-                  if (isDesktop) _buildSidebarNav(navItems, activeIndex),
+                  // Top Command Header Bar
+                  _buildTopCommandHeader(context, currentTitle, isDesktop),
 
-                  // Main Content View
+                  // Dynamic View Content
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.all(16),
@@ -81,7 +95,7 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
   }
 
   /// Top Operational Command Header
-  Widget _buildTopCommandHeader(BuildContext context, String currentTitle) {
+  Widget _buildTopCommandHeader(BuildContext context, String currentTitle, bool isDesktop) {
     return Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -93,6 +107,17 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
+            // Mobile / Tablet Drawer Toggle Button
+            if (!isDesktop) ...[
+              Builder(
+                builder: (ctx) => IconButton(
+                  icon: const Icon(Icons.menu_rounded, color: AppColors.textMain),
+                  tooltip: 'Open Navigation Menu',
+                  onPressed: () => Scaffold.of(ctx).openDrawer(),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
             // Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -414,114 +439,6 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
                 Text(message, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
                 const SizedBox(height: 4),
                 Text('Channels: $channel', style: const TextStyle(color: AppColors.brandAccent, fontSize: 10, fontWeight: FontWeight.w600)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  /// Left Sidebar Navigation Bar — Dynamic from database
-  Widget _buildSidebarNav(List<NavigationMenuModel> navItems, int activeIndex) {
-    return Container(
-      width: 240,
-      decoration: const BoxDecoration(
-        color: AppColors.bgSurface,
-        border: Border(right: BorderSide(color: AppColors.borderSubtle, width: 1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
-            child: Text(
-              'ADMIN DOMAINS',
-              style: TextStyle(
-                color: AppColors.textSubtle,
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.0,
-              ),
-            ),
-          ),
-
-          // Dynamic Navigation Items from DB
-          Expanded(
-            child: navItems.isEmpty
-                ? const Center(
-                    child: SizedBox(
-                      width: 18, height: 18,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: AppColors.brandPrimary),
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: navItems.length,
-                    itemBuilder: (ctx, i) {
-                      final item = navItems[i];
-                      final isSelected = activeIndex == i;
-                      final iconData = IconResolver.resolve(item.iconName);
-
-                      return InkWell(
-                        onTap: () => context.go(item.routePath),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.brandPrimary.withValues(alpha: 0.15)
-                                : Colors.transparent,
-                            border: Border(
-                              left: BorderSide(
-                                color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-                                width: 3,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                iconData,
-                                color: isSelected ? AppColors.brandPrimary : AppColors.textMuted,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  item.title,
-                                  style: TextStyle(
-                                    color: isSelected ? AppColors.textMain : AppColors.textMuted,
-                                    fontSize: 13,
-                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-
-          // Footer Org Info
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: AppColors.borderSubtle)),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.business_rounded, color: AppColors.textSubtle, size: 16),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'DQMS Enterprise v1.0',
-                    style: TextStyle(color: AppColors.textSubtle, fontSize: 11),
-                  ),
-                ),
               ],
             ),
           ),
