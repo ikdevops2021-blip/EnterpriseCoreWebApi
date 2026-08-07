@@ -48,6 +48,17 @@ namespace AntiGravity.Enterprise.Shared.Core.Models.DQMS
         public DateTime CreatedDate { get; set; }
         public int ModifiedBy { get; set; }
         public DateTime ModifiedDate { get; set; }
+        public List<ProcessStepModel> Steps { get; set; } = new();
+    }
+
+    public class ProcessStepModel
+    {
+        public int Id { get; set; }
+        public int ProcessId { get; set; }
+        public int StepOrder { get; set; }
+        public string StepName { get; set; } = string.Empty;
+        public int TargetTATMinutes { get; set; } = 10;
+        public bool IsActive { get; set; } = true;
     }
 
     public class DisplayTemplateModel

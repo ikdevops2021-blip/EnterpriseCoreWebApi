@@ -23,7 +23,10 @@ class SideMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).uri.path;
+    String location = '/admin/areas-zones';
+    try {
+      location = GoRouterState.of(context).uri.path;
+    } catch (_) {}
 
     return Container(
       width: 250,
@@ -56,6 +59,15 @@ class SideMenu extends StatelessWidget {
                     press: () {
                       if (isDrawer) Navigator.pop(context);
                       context.go('/dashboard');
+                    },
+                  ),
+                  DrawerListTile(
+                    title: 'Appointments Calendar',
+                    icon: Icons.calendar_month_rounded,
+                    isActive: location == '/appointments-calendar',
+                    press: () {
+                      if (isDrawer) Navigator.pop(context);
+                      context.go('/appointments-calendar');
                     },
                   ),
                   const SizedBox(height: 12),

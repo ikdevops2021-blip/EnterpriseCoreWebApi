@@ -37,6 +37,43 @@ class AreaZoneModel {
   }
 }
 
+/// 2a. Process Step Multi-Level Workflow Model
+class ProcessStepModel {
+  final int stepId;
+  final int processId;
+  final int stepOrder;
+  final String stepName;
+  final int targetSlaMins;
+  final bool isActive;
+
+  const ProcessStepModel({
+    required this.stepId,
+    required this.processId,
+    required this.stepOrder,
+    required this.stepName,
+    required this.targetSlaMins,
+    required this.isActive,
+  });
+
+  ProcessStepModel copyWith({
+    int? stepId,
+    int? processId,
+    int? stepOrder,
+    String? stepName,
+    int? targetSlaMins,
+    bool? isActive,
+  }) {
+    return ProcessStepModel(
+      stepId: stepId ?? this.stepId,
+      processId: processId ?? this.processId,
+      stepOrder: stepOrder ?? this.stepOrder,
+      stepName: stepName ?? this.stepName,
+      targetSlaMins: targetSlaMins ?? this.targetSlaMins,
+      isActive: isActive ?? this.isActive,
+    );
+  }
+}
+
 /// 2. Process Pipelines Model
 class ProcessModel {
   final int processId;
@@ -48,6 +85,7 @@ class ProcessModel {
   final bool allowSubTokens;
   final String priorityLevel; // 'High', 'Standard', 'VIP'
   final bool isActive;
+  final List<ProcessStepModel> steps;
 
   const ProcessModel({
     required this.processId,
@@ -59,6 +97,7 @@ class ProcessModel {
     required this.allowSubTokens,
     required this.priorityLevel,
     required this.isActive,
+    this.steps = const [],
   });
 
   factory ProcessModel.fromJson(Map<String, dynamic> json) {
@@ -72,6 +111,42 @@ class ProcessModel {
       allowSubTokens: json['allowSubTokens'] ?? json['AllowSubTokens'] ?? false,
       priorityLevel: json['priorityLevel'] ?? json['PriorityLevel'] ?? 'Standard',
       isActive: json['isActive'] ?? json['IsActive'] ?? true,
+      steps: json['steps'] is List
+          ? (json['steps'] as List).map((s) => ProcessStepModel(
+              stepId: s['id'] ?? 0,
+              processId: s['processId'] ?? 0,
+              stepOrder: s['stepOrder'] ?? 1,
+              stepName: s['stepName'] ?? '',
+              targetSlaMins: s['targetTATMinutes'] ?? 10,
+              isActive: s['isActive'] ?? true,
+            )).toList()
+          : const [],
+    );
+  }
+
+  ProcessModel copyWith({
+    int? processId,
+    int? areaId,
+    String? areaName,
+    String? processCode,
+    String? processName,
+    int? targetSlaMins,
+    bool? allowSubTokens,
+    String? priorityLevel,
+    bool? isActive,
+    List<ProcessStepModel>? steps,
+  }) {
+    return ProcessModel(
+      processId: processId ?? this.processId,
+      areaId: areaId ?? this.areaId,
+      areaName: areaName ?? this.areaName,
+      processCode: processCode ?? this.processCode,
+      processName: processName ?? this.processName,
+      targetSlaMins: targetSlaMins ?? this.targetSlaMins,
+      allowSubTokens: allowSubTokens ?? this.allowSubTokens,
+      priorityLevel: priorityLevel ?? this.priorityLevel,
+      isActive: isActive ?? this.isActive,
+      steps: steps ?? this.steps,
     );
   }
 }
@@ -375,3 +450,254 @@ class AdminWorkspaceNotifier extends StateNotifier<AdminWorkspaceState> {
 final adminWorkspaceStateProvider = StateNotifierProvider<AdminWorkspaceNotifier, AdminWorkspaceState>((ref) {
   return AdminWorkspaceNotifier();
 });
+
+// ---------------------------------------------------------------------------
+// 9. TOKEN TRANSACTIONS & AUDIT HISTORY DOMAIN MODELS & PROVIDERS
+// ---------------------------------------------------------------------------
+class TokenTransactionModel {
+  final int tokenId;
+  final String tokenNumber;
+  final int processId;
+  final String processName;
+  final int counterId;
+  final String counterName;
+  final String visitorName;
+  final String status; // 'Issued', 'Called', 'Serving', 'Completed', 'NoShow', 'Transferred', 'Canceled'
+  final DateTime issuedTime;
+  final DateTime? calledTime;
+  final DateTime? completedTime;
+  final int waitTimeMins;
+  final int serviceTimeMins;
+  final bool isSlaCompliant;
+  final String? subTokenNumber;
+
+  const TokenTransactionModel({
+    required this.tokenId,
+    required this.tokenNumber,
+    required this.processId,
+    required this.processName,
+    required this.counterId,
+    required this.counterName,
+    required this.visitorName,
+    required this.status,
+    required this.issuedTime,
+    this.calledTime,
+    this.completedTime,
+    required this.waitTimeMins,
+    required this.serviceTimeMins,
+    required this.isSlaCompliant,
+    this.subTokenNumber,
+  });
+}
+
+class TokenAuditHistoryModel {
+  final int auditId;
+  final int tokenId;
+  final String tokenNumber;
+  final String actionName;
+  final String previousStatus;
+  final String newStatus;
+  final String performedByStaff;
+  final String counterName;
+  final DateTime timestamp;
+  final String notes;
+
+  const TokenAuditHistoryModel({
+    required this.auditId,
+    required this.tokenId,
+    required this.tokenNumber,
+    required this.actionName,
+    required this.previousStatus,
+    required this.newStatus,
+    required this.performedByStaff,
+    required this.counterName,
+    required this.timestamp,
+    required this.notes,
+  });
+}
+
+class TokenTransactionsNotifier extends StateNotifier<List<TokenTransactionModel>> {
+  TokenTransactionsNotifier() : super(_generateDemoTokens());
+
+  static List<TokenTransactionModel> _generateDemoTokens() {
+    final now = DateTime.now();
+
+    return [
+      TokenTransactionModel(
+        tokenId: 101,
+        tokenNumber: 'A-108',
+        processId: 1,
+        processName: 'Comprehensive Patient Registration & Triage',
+        counterId: 1,
+        counterName: 'Registration Counter 01 (C-01)',
+        visitorName: 'Marcus Vance',
+        status: 'Serving',
+        issuedTime: now.subtract(const Duration(minutes: 25)),
+        calledTime: now.subtract(const Duration(minutes: 5)),
+        completedTime: null,
+        waitTimeMins: 20,
+        serviceTimeMins: 5,
+        isSlaCompliant: true,
+        subTokenNumber: 'A-108-1',
+      ),
+      TokenTransactionModel(
+        tokenId: 102,
+        tokenNumber: 'B-204',
+        processId: 2,
+        processName: 'Executive Health Screening Workflow',
+        counterId: 2,
+        counterName: 'Registration Counter 02 (C-02)',
+        visitorName: 'Elena Rostova',
+        status: 'Completed',
+        issuedTime: now.subtract(const Duration(hours: 1, minutes: 30)),
+        calledTime: now.subtract(const Duration(hours: 1)),
+        completedTime: now.subtract(const Duration(minutes: 15)),
+        waitTimeMins: 30,
+        serviceTimeMins: 45,
+        isSlaCompliant: true,
+        subTokenNumber: 'B-204-2',
+      ),
+      TokenTransactionModel(
+        tokenId: 103,
+        tokenNumber: 'C-301',
+        processId: 3,
+        processName: 'Express Fast-Track Billing & Cashier',
+        counterId: 4,
+        counterName: 'Express Cashier Desk (C-04)',
+        visitorName: 'Johnathan Smith',
+        status: 'Completed',
+        issuedTime: now.subtract(const Duration(minutes: 40)),
+        calledTime: now.subtract(const Duration(minutes: 32)),
+        completedTime: now.subtract(const Duration(minutes: 24)),
+        waitTimeMins: 8,
+        serviceTimeMins: 8,
+        isSlaCompliant: true,
+      ),
+      TokenTransactionModel(
+        tokenId: 104,
+        tokenNumber: 'A-109',
+        processId: 1,
+        processName: 'Comprehensive Patient Registration & Triage',
+        counterId: 1,
+        counterName: 'Registration Counter 01 (C-01)',
+        visitorName: 'Sarah Jenkins',
+        status: 'Called',
+        issuedTime: now.subtract(const Duration(minutes: 18)),
+        calledTime: now.subtract(const Duration(minutes: 1)),
+        completedTime: null,
+        waitTimeMins: 17,
+        serviceTimeMins: 0,
+        isSlaCompliant: true,
+      ),
+      TokenTransactionModel(
+        tokenId: 105,
+        tokenNumber: 'V-402',
+        processId: 4,
+        processName: 'VIP Specialist Consultation',
+        counterId: 3,
+        counterName: 'Triage Station 01 (C-03)',
+        visitorName: 'David Kim',
+        status: 'Issued',
+        issuedTime: now.subtract(const Duration(minutes: 12)),
+        calledTime: null,
+        completedTime: null,
+        waitTimeMins: 12,
+        serviceTimeMins: 0,
+        isSlaCompliant: true,
+      ),
+      TokenTransactionModel(
+        tokenId: 106,
+        tokenNumber: 'E-501',
+        processId: 5,
+        processName: 'Prescription Dispensing & Advisory',
+        counterId: 4,
+        counterName: 'Express Cashier Desk (C-04)',
+        visitorName: 'Maria Chen',
+        status: 'NoShow',
+        issuedTime: now.subtract(const Duration(hours: 2)),
+        calledTime: now.subtract(const Duration(hours: 1, minutes: 40)),
+        completedTime: null,
+        waitTimeMins: 20,
+        serviceTimeMins: 0,
+        isSlaCompliant: false,
+      ),
+      TokenTransactionModel(
+        tokenId: 107,
+        tokenNumber: 'B-205',
+        processId: 2,
+        processName: 'Executive Health Screening Workflow',
+        counterId: 2,
+        counterName: 'Registration Counter 02 (C-02)',
+        visitorName: 'Alex Rivera',
+        status: 'Transferred',
+        issuedTime: now.subtract(const Duration(minutes: 50)),
+        calledTime: now.subtract(const Duration(minutes: 30)),
+        completedTime: null,
+        waitTimeMins: 20,
+        serviceTimeMins: 10,
+        isSlaCompliant: true,
+        subTokenNumber: 'B-205-1',
+      ),
+    ];
+  }
+}
+
+final tokenTransactionsProvider =
+    StateNotifierProvider<TokenTransactionsNotifier, List<TokenTransactionModel>>((ref) {
+  return TokenTransactionsNotifier();
+});
+
+final tokenAuditHistoryProvider = Provider.family<List<TokenAuditHistoryModel>, int>((ref, tokenId) {
+  final now = DateTime.now();
+  return [
+    TokenAuditHistoryModel(
+      auditId: 1001,
+      tokenId: tokenId,
+      tokenNumber: 'A-108',
+      actionName: 'Token Kiosk Issuance',
+      previousStatus: 'None',
+      newStatus: 'Issued',
+      performedByStaff: 'Self-Service Kiosk #01',
+      counterName: 'Main Entrance Hall A',
+      timestamp: now.subtract(const Duration(minutes: 25)),
+      notes: 'Token issued to visitor Marcus Vance for Patient Registration.',
+    ),
+    TokenAuditHistoryModel(
+      auditId: 1002,
+      tokenId: tokenId,
+      tokenNumber: 'A-108',
+      actionName: 'Counter Call Announcement',
+      previousStatus: 'Issued',
+      newStatus: 'Called',
+      performedByStaff: 'Dr. System Admin (ID: 1)',
+      counterName: 'Registration Counter 01 (C-01)',
+      timestamp: now.subtract(const Duration(minutes: 5)),
+      notes: 'Audio chime & 4K TV announcement dispatched to Counter C-01.',
+    ),
+    TokenAuditHistoryModel(
+      auditId: 1003,
+      tokenId: tokenId,
+      tokenNumber: 'A-108',
+      actionName: 'Service Consultation Started',
+      previousStatus: 'Called',
+      newStatus: 'Serving',
+      performedByStaff: 'Dr. System Admin (ID: 1)',
+      counterName: 'Registration Counter 01 (C-01)',
+      timestamp: now.subtract(const Duration(minutes: 4)),
+      notes: 'Visitor checked in at counter. Service timer active.',
+    ),
+    TokenAuditHistoryModel(
+      auditId: 1004,
+      tokenId: tokenId,
+      tokenNumber: 'A-108-1',
+      actionName: 'Sub-Token Multi-Step Route Generated',
+      previousStatus: 'Serving',
+      newStatus: 'Sub-Token Active',
+      performedByStaff: 'Dr. System Admin (ID: 1)',
+      counterName: 'Registration Counter 01 (C-01)',
+      timestamp: now.subtract(const Duration(minutes: 2)),
+      notes: 'Sub-Token A-108-1 routed to Step 2: Clinical Vital Signs & Triage.',
+    ),
+  ];
+});
+

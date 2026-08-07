@@ -61,9 +61,13 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Toolbar Bar
-          Row(
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Expanded(
+              SizedBox(
+                width: 200,
                 child: DqmsTextField(
                   hintText: 'Search Area Code or Name...',
                   prefixIcon: const Icon(Icons.search_rounded, size: 18),
@@ -74,9 +78,7 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
                   },
                 ),
               ),
-              const SizedBox(width: 12),
               _buildFilterDropdown(),
-              const SizedBox(width: 12),
               DqmsButton(
                 label: 'New Area',
                 icon: Icons.add_rounded,
@@ -111,30 +113,40 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
               child: Column(
                 children: [
                   // Table Header
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.bgHeader,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.borderSubtle),
-                    ),
-                    child: const Row(
-                      children: [
-                        SizedBox(width: 80, child: Text('CODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 3, child: Text('ZONE NAME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 3, child: Text('DESCRIPTION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 100, child: Text('SLA TARGET', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: 600,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.bgHeader,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: AppColors.borderSubtle),
+                        ),
+                        child: const Row(
+                          children: [
+                            SizedBox(width: 80, child: Text('CODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                            Expanded(flex: 3, child: Text('ZONE NAME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                            Expanded(flex: 3, child: Text('DESCRIPTION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                            SizedBox(width: 100, child: Text('SLA TARGET', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                            SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 6),
 
                   // List Rows
                   Expanded(
-                    child: ListView.separated(
-                      itemCount: areas.length,
-                      separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SizedBox(
+                        width: 600,
+                        child: ListView.separated(
+                          itemCount: areas.length,
+                          separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
                       itemBuilder: (ctx, i) {
                         final area = areas[i];
                         final isSelected = _selectedArea?.areaId == area.areaId;
@@ -199,13 +211,21 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
                       },
                     ),
                   ),
+                ),
+              ),
 
                   // Pagination Footer
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Showing ${areas.length} of ${ref.read(adminWorkspaceStateProvider).areas.length} Zone Records', style: const TextStyle(color: AppColors.textSubtle, fontSize: 11)),
+                      Expanded(
+                        child: Text(
+                          'Showing ${areas.length} of ${ref.read(adminWorkspaceStateProvider).areas.length} Zone Records',
+                          style: const TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                       const Row(
                         children: [
                           Icon(Icons.chevron_left_rounded, color: AppColors.textMuted, size: 18),

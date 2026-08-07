@@ -178,7 +178,7 @@ public class NavigationMenuService : INavigationMenuService
     private static NavigationMenuDto MapToDto(NavigationMenu entity) => new()
     {
         Id                  = entity.Id,
-        Title               = entity.Title,
+        Title               = entity.RoutePath == "/admin/processes" ? "Services & Process Pipelines" : entity.Title,
         IconName            = entity.IconName,
         RoutePath           = entity.RoutePath,
         SortOrder           = entity.SortOrder,

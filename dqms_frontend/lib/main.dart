@@ -23,10 +23,12 @@ import 'features/admin/widgets/email_config_view.dart';
 import 'features/admin/widgets/analytics_entry_view.dart';
 import 'features/admin/widgets/app_logs_view.dart';
 import 'features/admin/widgets/navigation_menu_view.dart';
+import 'features/admin/widgets/token_transactions_view.dart';
 
 import 'features/customer/kiosk/screens/kiosk_screen.dart';
 import 'features/customer/mobile/screens/mobile_tracker_screen.dart';
 import 'features/customer/appointment/screens/appointment_booking_screen.dart';
+import 'features/customer/appointment/screens/appointments_calendar_screen.dart';
 import 'features/customer/tv/screens/waiting_room_tv_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -51,6 +53,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin/processes',
             builder: (context, state) => const ProcessesView(),
+          ),
+          GoRoute(
+            path: '/admin/token-transactions',
+            builder: (context, state) => const TokenTransactionsView(),
           ),
           GoRoute(
             path: '/admin/counters',
@@ -117,6 +123,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/appointment',
         builder: (context, state) => const AppointmentBookingScreen(),
+      ),
+      GoRoute(
+        path: '/appointments-calendar',
+        builder: (context, state) => const AppointmentsCalendarScreen(),
       ),
       GoRoute(
         path: '/tv',

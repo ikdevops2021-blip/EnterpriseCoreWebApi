@@ -85,7 +85,7 @@ void main() {
 
     expect(find.text('ADMIN WORKSPACE'), findsOneWidget);
     expect(find.text('Areas & Zones'), findsWidgets);
-    expect(find.text('Process Pipelines'), findsWidgets);
+    expect(find.text('Services & Process Pipelines'), findsWidgets);
     expect(find.text('Counter Stations'), findsWidgets);
   });
 

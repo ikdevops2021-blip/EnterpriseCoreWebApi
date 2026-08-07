@@ -20,6 +20,7 @@ class DqmsTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final bool enabled;
 
   const DqmsTextField({
     super.key,
@@ -35,6 +36,7 @@ class DqmsTextField extends StatefulWidget {
     this.onChanged,
     this.prefixIcon,
     this.suffixIcon,
+    this.enabled = true,
   });
 
   @override
@@ -53,8 +55,16 @@ class _DqmsTextFieldState extends State<DqmsTextField> {
   @override
   void didUpdateWidget(DqmsTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.controller != oldWidget.controller && widget.controller != null) {
-      _effectiveController = widget.controller!;
+    if (widget.controller != oldWidget.controller) {
+      if (widget.controller != null) {
+        _effectiveController = widget.controller!;
+      } else {
+        _effectiveController = TextEditingController(text: widget.initialValue);
+      }
+    } else if (widget.controller == null && 
+               widget.initialValue != oldWidget.initialValue && 
+               widget.initialValue != _effectiveController.text) {
+      _effectiveController.text = widget.initialValue ?? '';
     }
   }
 
@@ -86,13 +96,16 @@ class _DqmsTextFieldState extends State<DqmsTextField> {
             maxLines: widget.maxLines,
             keyboardType: widget.keyboardType,
             onChanged: widget.onChanged,
-            style: AppTypography.bodyMedium.copyWith(color: AppColors.textMain),
+            enabled: widget.enabled,
+            style: AppTypography.bodyMedium.copyWith(
+              color: widget.enabled ? AppColors.textMain : AppColors.textDisabled,
+            ),
             decoration: InputDecoration(
               hintText: effectiveHint,
               errorText: widget.errorText,
               hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSubtle),
               filled: true,
-              fillColor: AppColors.bgCanvas,
+              fillColor: widget.enabled ? AppColors.bgCanvas : AppColors.bgCanvas.withValues(alpha: 0.5),
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               prefixIcon: widget.prefixIcon,
               suffixIcon: widget.suffixIcon,
@@ -101,6 +114,10 @@ class _DqmsTextFieldState extends State<DqmsTextField> {
                 borderSide: const BorderSide(color: AppColors.borderSubtle),
               ),
               enabledBorder: OutlineInputBorder(
+                borderRadius: AppRadius.borderSm,
+                borderSide: const BorderSide(color: AppColors.borderSubtle),
+              ),
+              disabledBorder: OutlineInputBorder(
                 borderRadius: AppRadius.borderSm,
                 borderSide: const BorderSide(color: AppColors.borderSubtle),
               ),

@@ -110,7 +110,31 @@ namespace DNAQMSAPI.Infrastructure.Services
                     commandType: CommandType.StoredProcedure
                 );
 
-                return ApiResponse<IEnumerable<ProcessModel>>.Ok(processes.Where(p => p != null).Select(p => p!).ToList());
+                var processList = processes.Where(p => p != null).Select(p => p!).ToList();
+                if (processList.Count > 0)
+                {
+                    var processIds = processList.Select(p => p.Id).ToList();
+                    var steps = await _dbFactory.QueryAsync<ProcessStepModel>(
+                        "SELECT Id, ProcessId, StepOrder, StepName, TargetTATMinutes, IsActive FROM ProcessStep WHERE IsDeleted = 0 AND ProcessId IN @Ids ORDER BY StepOrder ASC",
+                        new { Ids = processIds },
+                        commandType: CommandType.Text
+                    );
+
+                    var stepsLookup = steps.Where(s => s != null).GroupBy(s => s.ProcessId).ToDictionary(g => g.Key, g => g.ToList());
+                    foreach (var proc in processList)
+                    {
+                        if (stepsLookup.TryGetValue(proc.Id, out var procSteps))
+                        {
+                            proc.Steps = procSteps;
+                        }
+                        else
+                        {
+                            proc.Steps = new List<ProcessStepModel>();
+                        }
+                    }
+                }
+
+                return ApiResponse<IEnumerable<ProcessModel>>.Ok(processList);
             }
             catch (Exception ex)
             {
@@ -143,7 +167,37 @@ namespace DNAQMSAPI.Infrastructure.Services
 
                 if (result != null && result.ErrNo == 0)
                 {
-                    return ApiResponse<object>.Ok(new { processId = result.ID }, "Process saved successfully");
+                    int processId = Convert.ToInt32(result.ID);
+
+                    // Soft-delete existing steps for this process
+                    await _dbFactory.ExecuteAsync(
+                        "UPDATE ProcessStep SET IsDeleted = 1, IsActive = 0, ModifiedBy = @UID, ModifiedDate = CURRENT_TIMESTAMP WHERE ProcessId = @ProcessId",
+                        new { ProcessId = processId, UID = userId },
+                        commandType: CommandType.Text
+                    );
+
+                    // Insert new steps
+                    if (model.Steps != null && model.Steps.Count > 0)
+                    {
+                        foreach (var step in model.Steps)
+                        {
+                            var stepParams = new
+                            {
+                                ProcessId = processId,
+                                StepOrder = step.StepOrder,
+                                StepName = step.StepName,
+                                TargetTATMinutes = step.TargetTATMinutes,
+                                IsActive = step.IsActive ? 1 : 0,
+                                UID = userId
+                            };
+
+                            var insertSql = @"INSERT INTO ProcessStep (ProcessId, StepOrder, StepName, TargetTATMinutes, IsActive, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted) 
+                                              VALUES (@ProcessId, @StepOrder, @StepName, @TargetTATMinutes, @IsActive, @UID, CURRENT_TIMESTAMP, @UID, CURRENT_TIMESTAMP, 0)";
+                            await _dbFactory.ExecuteAsync(insertSql, stepParams, commandType: CommandType.Text);
+                        }
+                    }
+
+                    return ApiResponse<object>.Ok(new { processId = processId }, "Process and steps saved successfully");
                 }
 
                 return ApiResponse<object>.Fail(result?.ErrMsg ?? "Failed to save Process.");

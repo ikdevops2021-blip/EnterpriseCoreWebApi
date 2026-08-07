@@ -160,8 +160,9 @@ class NavigationMenuNotifier extends AsyncNotifier<List<NavigationMenuModel>> {
 /// ============================================================================
 const List<NavigationMenuModel> _fallbackMenus = [
   NavigationMenuModel(id: 1,  title: 'Areas & Zones',                iconName: 'grid_view_rounded',            routePath: '/admin/areas',             sortOrder: 1,  isActive: true),
-  NavigationMenuModel(id: 2,  title: 'Process Pipelines',            iconName: 'account_tree_rounded',         routePath: '/admin/processes',          sortOrder: 2,  isActive: true),
-  NavigationMenuModel(id: 3,  title: 'Counter Stations',             iconName: 'desk_rounded',                 routePath: '/admin/counters',           sortOrder: 3,  isActive: true),
+  NavigationMenuModel(id: 2,  title: 'Services & Process Pipelines', iconName: 'account_tree_rounded', routePath: '/admin/processes', sortOrder: 2, isActive: true),
+  NavigationMenuModel(id: 15, title: 'Token Transactions & Audit Logs', iconName: 'confirmation_number_rounded', routePath: '/admin/token-transactions', sortOrder: 3, isActive: true),
+  NavigationMenuModel(id: 3,  title: 'Counter Stations',             iconName: 'desk_rounded',                 routePath: '/admin/counters',           sortOrder: 4,  isActive: true),
   NavigationMenuModel(id: 4,  title: 'Display Templates',            iconName: 'tv_rounded',                   routePath: '/admin/display-templates',  sortOrder: 4,  isActive: true),
   NavigationMenuModel(id: 5,  title: 'Staff & Roles',                iconName: 'badge_rounded',                routePath: '/admin/staff',              sortOrder: 5,  isActive: true),
   NavigationMenuModel(id: 6,  title: 'User Profiles & Add/Edit',     iconName: 'person_search_rounded',        routePath: '/admin/user-profiles',      sortOrder: 6,  isActive: true),

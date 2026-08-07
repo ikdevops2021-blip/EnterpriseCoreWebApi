@@ -46,6 +46,7 @@ class AppColors {
   // ---------------------------------------------------------------------------
   static const Color statusActive = Color(0xFF238636);     // Active, Success, Live
   static const Color statusDeactive = Color(0xFFDA3633);   // Canceled, Offline, Error
+  static const Color statusError = Color(0xFFDA3633);      // Error, Failed, Breach
   static const Color statusWarning = Color(0xFFD29922);    // SLA Alert, Waiting, Hold
   static const Color statusSpecial = Color(0xFF8957E5);    // Priority Tiers, VIP, Prefixes
   static const Color statusInfo = Color(0xFF388BFD);       // Informational, Calling

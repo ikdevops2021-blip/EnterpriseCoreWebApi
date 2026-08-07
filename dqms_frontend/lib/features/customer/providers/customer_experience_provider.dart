@@ -298,3 +298,199 @@ class WaitingRoomTvState {
 final waitingRoomTvStateProvider = StateProvider<WaitingRoomTvState>((ref) {
   return WaitingRoomTvState.demo();
 });
+
+// ---------------------------------------------------------------------------
+// 5. SCHEDULED APPOINTMENTS CALENDAR DOMAIN-AGNOSTIC STATE
+// ---------------------------------------------------------------------------
+class ScheduledAppointmentModel {
+  final String appointmentId;
+  final String visitorName;
+  final String contactPhone;
+  final String email;
+  final String serviceName;
+  final String locationName;
+  final DateTime scheduledDateTime;
+  final String timeSlot;
+  final String status; // 'Confirmed', 'Checked-In', 'Completed', 'Canceled', 'Pending'
+  final String qrPassCode;
+
+  const ScheduledAppointmentModel({
+    required this.appointmentId,
+    required this.visitorName,
+    required this.contactPhone,
+    required this.email,
+    required this.serviceName,
+    required this.locationName,
+    required this.scheduledDateTime,
+    required this.timeSlot,
+    required this.status,
+    required this.qrPassCode,
+  });
+
+  ScheduledAppointmentModel copyWith({
+    String? appointmentId,
+    String? visitorName,
+    String? contactPhone,
+    String? email,
+    String? serviceName,
+    String? locationName,
+    DateTime? scheduledDateTime,
+    String? timeSlot,
+    String? status,
+    String? qrPassCode,
+  }) {
+    return ScheduledAppointmentModel(
+      appointmentId: appointmentId ?? this.appointmentId,
+      visitorName: visitorName ?? this.visitorName,
+      contactPhone: contactPhone ?? this.contactPhone,
+      email: email ?? this.email,
+      serviceName: serviceName ?? this.serviceName,
+      locationName: locationName ?? this.locationName,
+      scheduledDateTime: scheduledDateTime ?? this.scheduledDateTime,
+      timeSlot: timeSlot ?? this.timeSlot,
+      status: status ?? this.status,
+      qrPassCode: qrPassCode ?? this.qrPassCode,
+    );
+  }
+}
+
+class ScheduledAppointmentsNotifier extends StateNotifier<List<ScheduledAppointmentModel>> {
+  ScheduledAppointmentsNotifier() : super(_generateDemoAppointments());
+
+  static List<ScheduledAppointmentModel> _generateDemoAppointments() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    return [
+      ScheduledAppointmentModel(
+        appointmentId: 'APT-9011',
+        visitorName: 'Marcus Vance',
+        contactPhone: '+1 (555) 234-5678',
+        email: 'marcus.vance@dqms.org',
+        serviceName: 'Patient Registration & Check-in',
+        locationName: 'HQ Main Medical Center',
+        scheduledDateTime: today.add(const Duration(hours: 9, minutes: 30)),
+        timeSlot: '09:30 AM - 10:00 AM',
+        status: 'Checked-In',
+        qrPassCode: 'PASS-9011-DQMS',
+      ),
+      ScheduledAppointmentModel(
+        appointmentId: 'APT-9012',
+        visitorName: 'Elena Rostova',
+        contactPhone: '+1 (555) 876-5432',
+        email: 'elena.rostova@dqms.org',
+        serviceName: 'Fast-Track Billing & Cashier',
+        locationName: 'HQ Main Medical Center',
+        scheduledDateTime: today.add(const Duration(hours: 10, minutes: 15)),
+        timeSlot: '10:15 AM - 10:45 AM',
+        status: 'Confirmed',
+        qrPassCode: 'PASS-9012-DQMS',
+      ),
+      ScheduledAppointmentModel(
+        appointmentId: 'APT-9013',
+        visitorName: 'Johnathan Smith',
+        contactPhone: '+1 (555) 432-1098',
+        email: 'john.smith@enterprise.org',
+        serviceName: 'Executive VIP Consultation',
+        locationName: 'West Wing Regional Center',
+        scheduledDateTime: today.add(const Duration(hours: 11, minutes: 0)),
+        timeSlot: '11:00 AM - 11:30 AM',
+        status: 'Confirmed',
+        qrPassCode: 'PASS-9013-DQMS',
+      ),
+      ScheduledAppointmentModel(
+        appointmentId: 'APT-9014',
+        visitorName: 'Sarah Jenkins',
+        contactPhone: '+1 (555) 654-3210',
+        email: 'sarah.j@dqms.org',
+        serviceName: 'Priority Screening & Advisory',
+        locationName: 'HQ Main Medical Center',
+        scheduledDateTime: today.add(const Duration(hours: 14, minutes: 0)),
+        timeSlot: '02:00 PM - 02:30 PM',
+        status: 'Pending',
+        qrPassCode: 'PASS-9014-DQMS',
+      ),
+      ScheduledAppointmentModel(
+        appointmentId: 'APT-9015',
+        visitorName: 'David Kim',
+        contactPhone: '+1 (555) 987-6543',
+        email: 'david.kim@dqms.org',
+        serviceName: 'Prescription Dispensing',
+        locationName: 'HQ Main Medical Center',
+        scheduledDateTime: today.add(const Duration(hours: 15, minutes: 30)),
+        timeSlot: '03:30 PM - 04:00 PM',
+        status: 'Confirmed',
+        qrPassCode: 'PASS-9015-DQMS',
+      ),
+      // Future Day Appointments
+      ScheduledAppointmentModel(
+        appointmentId: 'APT-9021',
+        visitorName: 'Maria Chen',
+        contactPhone: '+1 (555) 345-6789',
+        email: 'maria.chen@dqms.org',
+        serviceName: 'Patient Registration & Check-in',
+        locationName: 'HQ Main Medical Center',
+        scheduledDateTime: today.add(const Duration(days: 1, hours: 10, minutes: 0)),
+        timeSlot: '10:00 AM - 10:30 AM',
+        status: 'Confirmed',
+        qrPassCode: 'PASS-9021-DQMS',
+      ),
+      ScheduledAppointmentModel(
+        appointmentId: 'APT-9022',
+        visitorName: 'Alex Rivera',
+        contactPhone: '+1 (555) 567-8901',
+        email: 'alex.rivera@dqms.org',
+        serviceName: 'Fast-Track Billing & Cashier',
+        locationName: 'West Wing Regional Center',
+        scheduledDateTime: today.add(const Duration(days: 2, hours: 11, minutes: 30)),
+        timeSlot: '11:30 AM - 12:00 PM',
+        status: 'Confirmed',
+        qrPassCode: 'PASS-9022-DQMS',
+      ),
+      ScheduledAppointmentModel(
+        appointmentId: 'APT-9023',
+        visitorName: 'Priya Patel',
+        contactPhone: '+1 (555) 789-0123',
+        email: 'priya.patel@dqms.org',
+        serviceName: 'Prescription Dispensing',
+        locationName: 'HQ Main Medical Center',
+        scheduledDateTime: today.add(const Duration(days: 3, hours: 14, minutes: 30)),
+        timeSlot: '02:30 PM - 03:00 PM',
+        status: 'Pending',
+        qrPassCode: 'PASS-9023-DQMS',
+      ),
+      ScheduledAppointmentModel(
+        appointmentId: 'APT-9024',
+        visitorName: 'Robert Vance',
+        contactPhone: '+1 (555) 901-2345',
+        email: 'robert.vance@dqms.org',
+        serviceName: 'Executive VIP Consultation',
+        locationName: 'HQ Main Medical Center',
+        scheduledDateTime: today.subtract(const Duration(days: 1, hours: 9, minutes: 0)),
+        timeSlot: '09:00 AM - 09:30 AM',
+        status: 'Completed',
+        qrPassCode: 'PASS-9024-DQMS',
+      ),
+    ];
+  }
+
+  void updateStatus(String appointmentId, String newStatus) {
+    state = [
+      for (final item in state)
+        if (item.appointmentId == appointmentId)
+          item.copyWith(status: newStatus)
+        else
+          item,
+    ];
+  }
+
+  void addAppointment(ScheduledAppointmentModel appointment) {
+    state = [...state, appointment];
+  }
+}
+
+final scheduledAppointmentsProvider =
+    StateNotifierProvider<ScheduledAppointmentsNotifier, List<ScheduledAppointmentModel>>((ref) {
+  return ScheduledAppointmentsNotifier();
+});
+

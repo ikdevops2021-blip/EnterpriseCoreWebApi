@@ -1,53 +1,118 @@
-# MySQL Database Scripts
+# MySQL Database Scripts & Complete Database Table Dictionary
 
-This folder contains the table schema creations and dummy data seeding scripts for MySQL.
+This folder contains the complete table schema creation scripts, stored procedures, and sample data scripts for MySQL.
 
-## Execution Sequence
+---
 
-To properly create the relational layout, execute the scripts in the numerical order corresponding to their prefix. The logical sequence respects hierarchical constraints and domain dependencies.
+## 📋 Comprehensive Database Table Dictionary
 
-1. **`01_Organization.sql`**: Root multi-tenant organizational unit. Other tables rely on `OrganizationId`.
-2. **`02_User.sql`**: Main authenticated identity table. Includes `UserCode` (custom user handle, unique among active users) and `DisplayName` columns.
-3. **`03_Role.sql`**: RBAC role definitions (can be global or tied to a `Organization`).
-4. **`04_Permission.sql`**: Extensible list of permissions (e.g. `users.read`).
-5. **`05_UserOrganization.sql`**: Joining logic mapping which `User` belongs to which `Organization`.
-6. **`06_UserRole.sql`**: Maps a `User` to a `Role`, optionally scoped to a `Organization`.
-7. **`07_ApiKey.sql`**: Server-to-server API access keys tied to users.
-8. **`08_UserSession.sql`**: Refresh tokens and session control for authentication.
-9. **`09_UserDevice.sql`**: Trusted devices for users (useful for MFA, notifications).
-10. **`10_OrganizationStorageConfig.sql`**: Cloud file storage configurations specific to a `Organization`.
-11. **`11_OrganizationPaymentProvider.sql`**: Payment gateway credentials configured per `Organization`.
-12. **`12_StoredFile.sql`**: Cloud metadata for uploaded documents (receipts, avatars, docs).
-13. **`13_PaymentTransaction.sql`**: Payment records associated with users and target organizations.
-14. **`14_Integration_Tables.sql`**: Core configuration definition and robust logging specifically for third-party API integration.
-15. **`15_Integration_Indexes.sql`**: High-performance tracking indexes mapped over Base URLs and API configurations.
-16. **`16_AppLogs.sql`**: NLog database logging target table for application-level log capture.
-17. **`17_NexusCore_Config.sql`**: NexusCore configuration tables for category hierarchy, parameter catalog, and system configuration keys. `SystemConfigurationKeys.DataTypeID` maps to `ConfigParameters.ParameterID`.
-18. **`18_NexusCore_Config_StoredProcs.sql`**: Stored procedures for reading and updating system configuration values.
-19. **`19_NexusCore_ID_Generator.sql`**: Key-based ID generator support table and stored procedure.
-20. **`21_NexusCore_SeedData.sql`**: Starter NexusCore seed data for categories, data types, and system configuration keys.
-21. **`99_DummyData.sql`**: Starter seed file containing initial System Admin, Roles, and initial configuration mockups.
-22. **`100_Integration_SeedData.sql`**: Base starter mocks ensuring the integration environment launches completely seamlessly.
-23. **`101_CreateUserAuthAndPermissions.sql`**: Complete script to create user, organization, role, permissions, and API key.
-24. **`102_ProvisionApiKeysAllUsers.sql`**: Provisions API keys and resets passwords to `Welc0me@555` for existing users without API keys.
-25. **`22_UserContactAndAddress.sql`**: Location master tables (`Country`, `State`, `City`), `UserAddresses`, and `UserContacts` tables with `StateCode`, `CityCode`, and `IsEmergency` flags.
-26. **`23_WorldLocationSeedData.sql`**: Consolidated world dataset seeding script (250 Countries, 5,308 States with `StateCode`, and 152,970 Cities with official IATA `CityCode`).
-27. **`27_Location_And_UserProfile_StoredProcs.sql`**: Stored procedures for Location (Country, State, City) and User Profile (Address, Contact) CRUD operations.
-28. **`28_Alter_User_Add_UserCode.sql`**: Non-destructive migration to add `UserCode` and `DisplayName` columns to existing `User` tables. Populates existing rows with Email as UserCode and FirstName+LastName as DisplayName. Creates unique index `UX_Users_UserCode`.
-29. **`18_User_StoredProcs.sql`**: Stored procedures for User CRUD, lookup, and UserCode/DisplayName operations.
-30. **`29_Notification_Tables.sql`**: Tables for `NotificationTemplate` (with `EventId` referencing `ConfigParameters` Category 17 `C_NOTIFICATION_EVENT`), `UserNotification` (In-App Bell Feed), and `SmsQueue`.
-31. **`30_Notification_StoredProcs.sql`**: Stored procedures for notification dispatching, template resolution, In-App bell feed, and read status management.
-32. **`Email/001_EmailSettings.sql`**: Table to store SMTP configuration per Organization.
-33. **`Email/002_EmailQueue.sql`**: Table for high-performance mail dispatch queue.
-34. **`Email/003_EmailSignatures.sql`**: Table to store reusable HTML signature templates.
-35. **`Email/004_EmailViews.sql`**: View to provide daily mail health reports.
-36. **`Email/005_EmailDummyData.sql`**: Seed data for EmailSettings, EmailSignatures, and EmailQueue testing.
-37. **`35_NavigationMenu.sql`**: NavigationMenu table, stored procedures `PR_S_NavigationMenu` and `PR_IU_NavigationMenu`, and plug-and-play module seed dataset.
-38. **`35b_NavigationMenu_SP_Fix.sql`**: Explicit charset/collation fix (`utf8mb4_general_ci`) for stored procedures to resolve Ampps server collation mismatches.
+Below is the complete list of all **36 Database Tables** in the DQMS Enterprise solution, organized by functional domain:
 
-## Table Details and Purpose
+### 🏢 1. Core System & Multi-Tenant Security Domain
+| Table Name | Purpose & Business Function |
+| :--- | :--- |
+| **`Organization`** | Root multi-tenant enterprise company/branch entity (`OrganizationId`). Scopes all child data. |
+| **`User`** | Main user identity table storing authentication credentials (`UserCode`, `Email`, `PasswordHash`, `DisplayName`). |
+| **`Role`** | Security RBAC role definitions (`SuperAdmin`, `Enterprise Admin`, `CounterOperator`, `Auditor`). |
+| **`Permission`** | Granular security permissions catalog (e.g., `areas.read`, `processes.write`, `counters.call`). |
+| **`UserOrganization`** | Cross-tenant membership joining users to enterprise organizations. |
+| **`UserRole`** | Security mapping assigning RBAC roles to users within specific tenant organizations. |
+| **`ApiKey`** | Server-to-server security API keys (`X-Api-Key`) for mobile apps, kiosks, and external integrations. |
+| **`UserSession`** | Authentication state management, JWT refresh tokens, and active session revocation control. |
+| **`UserDevice`** | Mobile tracker device registration and push notification token mapping (`FCM/APNS`). |
 
-- **Audit Columns**: Every table universally contains standardized audit columns: `CreatedBy`, `CreatedDate`, `ModifiedBy`, `ModifiedDate`, `IsDeleted`, `DeletedBy`, `DeletedDate`. This enforces soft-delete operations and strict tracking for QMS (Quality Management Systems) compliance.
-- **Guid Primary Keys**: Most tables use `CHAR(36)` (`Guid`) for the primary key. This is useful for distributed systems and API uniqueness, preventing primary key enumeration attacks in MySQL without relying on auto-increment IDs.
-- **IsActive vs IsDeleted**: `IsActive` (`TINYINT(1)`) acts as a configurable toggle for the entity, while `IsDeleted` marks the record as soft-deleted to preserve history without breaking foreign keys in reporting datasets.
-- **NexusCore Usage**: `ConfigCategory`, `ConfigParameters`, and `SystemConfigurationKeys` are now consumed by `ConfigurationController` for catalog lookup and system configuration updates.
+---
+
+### 📍 2. User Profile & Geographical Location Domain
+| Table Name | Purpose & Business Function |
+| :--- | :--- |
+| **`Country`** | Global country master table (250 countries with ISO codes). |
+| **`State`** | Global state/province master table (5,308 states with `StateCode`). |
+| **`City`** | Global city master table (152,970 cities with IATA `CityCode`). |
+| **`UserAddress`** | User address entity records (`AddressLine1`, `City`, `State`, `PostalCode`, `Country`, `AddressType`). |
+| **`UserContact`** | User contact entity records (`MobileNumber`, `Relationship`, `IsEmergencyContact`, `IsVerified`). |
+
+---
+
+### 🎯 3. DQMS Queue Management & Administration Domain
+| Table Name | Purpose & Business Function |
+| :--- | :--- |
+| **`Area`** | Physical facility zones/wings (`AZ-01 Main Service Hall`, `AZ-02 Priority Wing`, `AZ-04 VIP Lounge`). |
+| **`Process`** | Services & Process Pipelines master table (`ProcessCode`, `ProcessName`, `TargetTATMinutes`, `AllowSubTokens`, `Prefix`). |
+| **`ProcessStep`** | Multi-step process workflow pipelines (`StepOrder`, `StepName`, `TargetTATMinutes`). |
+| **`ProcessBlackoutDay`** | Selective blackout days and holiday schedules per service. |
+| **`Counter`** | Physical counter stations & service desks (`CounterNumber`, `CounterName`, `AreaId`, `CurrentStatus`). |
+| **`UserCounterAssignment`** | Maps counter operators to specific counters and services (`UserId`, `CounterId`, `ProcessId`). |
+| **`DisplayTemplate`** | Waiting room 4K TV screen display templates (Grid, Split-Screen Video, High-Density List). |
+| **`ProcessDisplayMapping`** | Assigns display templates to specific facility areas and service processes. |
+| **`NotificationConfig`** | Service threshold lead configs (e.g. notify customer 3 numbers in advance via WhatsApp/SMS). |
+
+---
+
+### 🎫 4. Real-Time Token Operations & Queue Traffic Domain
+| Table Name | Purpose & Business Function |
+| :--- | :--- |
+| **`TokenTransaction`** | Primary token ticket record (`TokenNumber`, `ProcessId`, `CounterId`, `Status`, `IssuedTime`, `CalledTime`, `CompletedTime`). |
+| **`TokenAuditHistory`** | Complete audit log of every token status transition (`Issued` ➔ `Called` ➔ `Serving` ➔ `Completed` / `NoShow` / `Transferred`). |
+| **`TvDisplaySession`** | Live state management for waiting room TV screens and counter voice announcements. |
+
+---
+
+### ⚙️ 5. Enterprise NexusCore Configuration & System Parameters Domain
+| Table Name | Purpose & Business Function |
+| :--- | :--- |
+| **`ConfigCategory`** | System lookup category headers (`C_TITLE`, `C_GENDER`, `C_ADDRESSTYPE`, `C_NOTIFICATION_EVENT`). |
+| **`ConfigParameters`** | Dynamic dropdown options catalog (`ParameterCode`, `ParameterName`, `ParameterColor`, `ParameterIcon`, `ParameterImage`). |
+| **`SystemConfigurationKeys`** | Key-value system parameters (e.g., `MaxQueueCapacity`, `SlaWarningThreshold`). |
+
+---
+
+### 📧 6. Notifications, Messaging & Integration Domain
+| Table Name | Purpose & Business Function |
+| :--- | :--- |
+| **`NotificationTemplate`** | Notification templates for WhatsApp, SMS, and Email dispatches. |
+| **`UserNotification`** | In-App notification feed displayed in user notification bells. |
+| **`EmailSettings`** | SMTP email gateway configurations per organization. |
+| **`EmailQueue`** | Asynchronous email dispatch outbox queue. |
+| **`EmailSignatures`** | Reusable HTML signature templates for emails. |
+| **`NavigationMenu`** | Dynamic plug-and-play side menu items and route permissions. |
+| **`AppLogs`** | Application-level NLog database target logging table for audit compliance. |
+
+---
+
+## 🛠️ Execution Sequence
+
+Execute scripts in numerical order:
+
+1. **`01_Organization.sql`**: Root multi-tenant organizational unit.
+2. **`02_User.sql`**: Main authenticated identity table.
+3. **`03_Role.sql`**: RBAC role definitions.
+4. **`04_Permission.sql`**: Extensible list of permissions.
+5. **`05_UserOrganization.sql`**: Maps User to Organization.
+6. **`06_UserRole.sql`**: Maps User to Role.
+7. **`07_ApiKey.sql`**: API access keys tied to users.
+8. **`08_UserSession.sql`**: Refresh tokens and session control.
+9. **`09_UserDevice.sql`**: Trusted devices for users.
+10. **`10_OrganizationStorageConfig.sql`**: Cloud file storage configurations.
+11. **`11_OrganizationPaymentProvider.sql`**: Payment gateway credentials.
+12. **`12_StoredFile.sql`**: Cloud metadata for uploaded documents.
+13. **`13_PaymentTransaction.sql`**: Payment records.
+14. **`14_Integration_Tables.sql`**: Integration module configuration & logs.
+15. **`16_AppLogs.sql`**: NLog database logging table.
+16. **`17_NexusCore_Config.sql`**: Category hierarchy and config parameters.
+17. **`22_UserContactAndAddress.sql`**: Location tables and User Contact/Address entities.
+18. **`23_WorldLocationSeedData.sql`**: Consolidated 250 Countries, 5,308 States, 152,970 Cities seed.
+19. **`29_Notification_Tables.sql`**: Notification templates, in-app feed, and SMS outbox queue.
+20. **`31_DQMS_Admin_Masters.sql`**: DQMS Areas, Processes, ProcessSteps, Counters, and Display Templates.
+21. **`33_DQMS_Staff_Operations.sql`**: Token transactions and audit history tables.
+22. **`34_DQMS_Customer_Display.sql`**: TV sessions and customer notification queues.
+23. **`35_NavigationMenu.sql`**: Navigation menu tables and stored procedures.
+24. **`36_DQMS_MultiProcess_SampleData.sql`**: Sample data for multi-step processes, sub-tokens, and counter assignments.
+
+---
+
+## 📌 Enterprise Architecture Conventions
+
+- **Universal Audit Columns**: All tables contain standardized audit fields: `CreatedBy`, `CreatedDate`, `ModifiedBy`, `ModifiedDate`, `IsDeleted`, `DeletedBy`, `DeletedDate`.
+- **Soft Delete Compliance**: Deleting records sets `IsDeleted = 1` to ensure compliance with QMS audit standards.
+- **IsActive Flag**: `IsActive` (`TINYINT(1)`) controls active availability without removing historical data.

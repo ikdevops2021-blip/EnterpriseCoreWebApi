@@ -39,7 +39,10 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
   @override
   Widget build(BuildContext context) {
     final isDesktop = AppBreakpoints.isDesktop(context);
-    final location = GoRouterState.of(context).uri.path;
+    String location = '/admin/areas-zones';
+    try {
+      location = GoRouterState.of(context).uri.path;
+    } catch (_) {}
 
     // Dynamically load the navigation menu from the provider
     final menuAsync = ref.watch(navigationMenuProvider);
@@ -106,6 +109,7 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Mobile / Tablet Drawer Toggle Button
             if (!isDesktop) ...[

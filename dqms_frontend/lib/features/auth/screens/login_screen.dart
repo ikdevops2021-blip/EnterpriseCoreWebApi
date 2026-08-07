@@ -216,6 +216,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<OrganizationOption>(
+                      isExpanded: true,
                       initialValue: _selectedOrg,
                       dropdownColor: AppColors.bgSurface,
                       icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.textSubtle),
