@@ -7,6 +7,9 @@ import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
 import 'package:dqms_frontend/core/widgets/dqms_status_badge.dart';
+import 'package:dqms_frontend/core/widgets/dqms_color_picker.dart';
+import 'package:dqms_frontend/core/widgets/dqms_icon_picker.dart';
+import 'package:dqms_frontend/core/utils/icon_resolver.dart';
 import 'package:dqms_frontend/features/admin/widgets/master_detail_layout.dart';
 import 'package:dqms_frontend/features/admin/providers/config_cache_provider.dart';
 
@@ -252,47 +255,15 @@ class ConfigParameterModel {
   }
 }
 
-/// Helper function to resolve icon string to Flutter IconData
-IconData _getIconData(String? iconName) {
-  switch (iconName?.toLowerCase()) {
-    case 'bloodtype':
-      return Icons.bloodtype_rounded;
-    case 'people':
-      return Icons.people_rounded;
-    case 'home_work':
-      return Icons.home_work_rounded;
-    case 'phone_android':
-      return Icons.phone_android_rounded;
-    case 'notifications':
-      return Icons.notifications_rounded;
-    case 'male':
-      return Icons.male_rounded;
-    case 'female':
-      return Icons.female_rounded;
-    case 'payments':
-      return Icons.payments_rounded;
-    case 'campaign':
-      return Icons.campaign_rounded;
-    case 'warning':
-      return Icons.warning_rounded;
-    case 'badge':
-      return Icons.badge_rounded;
-    case 'category':
-      return Icons.category_rounded;
-    default:
-      return Icons.code_rounded;
-  }
+/// Builds a sized icon widget for any stored icon key.
+/// Handles both Material (Icon) and FontAwesome (FaIcon) transparently.
+Widget _buildResolvedIcon(String? iconName, {double size = 16, required Color color}) {
+  return IconResolver.resolve(iconName).build(size: size, color: color);
 }
 
 /// Helper function to parse Hex color safely
 Color _parseHexColor(String? hexString) {
-  if (hexString == null || hexString.isEmpty) return AppColors.brandPrimary;
-  try {
-    final hex = hexString.replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
-  } catch (_) {
-    return AppColors.brandPrimary;
-  }
+  return DqmsColorPicker.parseHex(hexString);
 }
 
 /// NEXUSCORE CONFIG CATEGORY & PARAMETERS MASTER VIEW
@@ -866,7 +837,7 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                                 flex: 3,
                                 child: Row(
                                   children: [
-                                    Icon(_getIconData(cat.categoryIcon), size: 16, color: _parseHexColor(cat.categoryColor)),
+                                    _buildResolvedIcon(cat.categoryIcon, size: 16, color: _parseHexColor(cat.categoryColor)),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
@@ -973,20 +944,24 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                   ),
                   const SizedBox(height: 12),
 
-                  // Category Color Picker with Live Hex Display Value
-                  _DqmsColorPicker(
+                  // Category Color Picker with Live Hex Display Value & Interactive Picker
+                  DqmsColorPicker(
                     label: 'Category Color',
                     initialHex: selectedCategoryColor,
                     onColorChanged: (hex) => setModalState(() => selectedCategoryColor = hex),
                   ),
                   const SizedBox(height: 12),
 
-                  Row(
-                    children: [
-                      Expanded(child: DqmsTextField(label: 'Category Icon Identifier', controller: iconCtrl)),
-                      const SizedBox(width: 8),
-                      Icon(_getIconData(iconCtrl.text), size: 24, color: _parseHexColor(selectedCategoryColor)),
-                    ],
+                  StatefulBuilder(
+                    builder: (ctx2, setIconState) => DqmsIconPicker(
+                      label: 'Category Icon',
+                      value: iconCtrl.text,
+                      accentColor: _parseHexColor(selectedCategoryColor),
+                      onIconChanged: (key) {
+                        setModalState(() => iconCtrl.text = key);
+                        setIconState(() {});
+                      },
+                    ),
                   ),
                   const SizedBox(height: 12),
                   DqmsTextField(label: 'Description & System Usage', controller: descCtrl, maxLines: 2),
@@ -1085,8 +1060,8 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                   ),
                   const SizedBox(height: 12),
 
-                  // Parameter Color Picker with Display Value
-                  _DqmsColorPicker(
+                  // Parameter Color Picker with Display Value & Interactive Picker
+                  DqmsColorPicker(
                     label: 'Parameter Color',
                     initialHex: selectedParameterColor,
                     onColorChanged: (hex) => setModalState(() => selectedParameterColor = hex),
@@ -1219,8 +1194,8 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                   ),
                   const SizedBox(height: 12),
 
-                  // Parameter Color Picker with Display Value
-                  _DqmsColorPicker(
+                  // Parameter Color Picker with Display Value & Interactive Picker
+                  DqmsColorPicker(
                     label: 'Parameter Color',
                     initialHex: selectedParameterColor,
                     onColorChanged: (hex) => setModalState(() => selectedParameterColor = hex),
@@ -1231,7 +1206,7 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                     children: [
                       Expanded(child: DqmsTextField(label: 'Icon Identifier', controller: iconCtrl)),
                       const SizedBox(width: 8),
-                      Icon(_getIconData(iconCtrl.text), size: 22, color: _parseHexColor(selectedParameterColor)),
+                      _buildResolvedIcon(iconCtrl.text, size: 22, color: _parseHexColor(selectedParameterColor)),
                       const SizedBox(width: 12),
                       Expanded(child: DqmsTextField(label: 'External Code', controller: extCodeCtrl)),
                     ],
@@ -1418,7 +1393,7 @@ class _CategoryInspectorPanelState extends State<_CategoryInspectorPanel> {
           const SizedBox(height: 14),
 
           // INTERACTIVE CATEGORY COLOR PICKER & DISPLAY VALUE
-          _DqmsColorPicker(
+          DqmsColorPicker(
             label: 'Category Color',
             initialHex: _categoryColor,
             onColorChanged: (hex) {
@@ -1429,15 +1404,14 @@ class _CategoryInspectorPanelState extends State<_CategoryInspectorPanel> {
           ),
           const SizedBox(height: 14),
 
-          Row(
-            children: [
-              Expanded(child: DqmsTextField(label: 'Icon Identifier', controller: _iconCtrl, onChanged: (_) => setState(() {}))),
-              const SizedBox(width: 8),
-              Icon(_getIconData(_iconCtrl.text), size: 24, color: _parseHexColor(_categoryColor)),
-              const SizedBox(width: 12),
-              Expanded(child: DqmsTextField(label: 'Category Image URL', controller: _imageCtrl)),
-            ],
+          DqmsIconPicker(
+            label: 'Category Icon',
+            value: _iconCtrl.text,
+            accentColor: _parseHexColor(_categoryColor),
+            onIconChanged: (key) => setState(() => _iconCtrl.text = key),
           ),
+          const SizedBox(height: 14),
+          DqmsTextField(label: 'Category Image URL', controller: _imageCtrl),
           const SizedBox(height: 14),
           DqmsTextField(label: 'Description & System Usage', controller: _descCtrl, maxLines: 2),
           const SizedBox(height: 16),
@@ -1529,7 +1503,7 @@ class _CategoryInspectorPanelState extends State<_CategoryInspectorPanel> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Icon(_getIconData(p.parameterIcon), size: 14, color: _parseHexColor(p.parameterColor)),
+                              _buildResolvedIcon(p.parameterIcon, size: 14, color: _parseHexColor(p.parameterColor)),
                               const SizedBox(width: 8),
 
                               Expanded(
@@ -1603,143 +1577,3 @@ class _CategoryInspectorPanelState extends State<_CategoryInspectorPanel> {
   }
 }
 
-/// CUSTOM INTERACTIVE COLOR PICKER & HEX DISPLAY VALUE COMPONENT
-class _DqmsColorPicker extends StatefulWidget {
-  final String label;
-  final String initialHex;
-  final ValueChanged<String> onColorChanged;
-
-  const _DqmsColorPicker({
-    required this.label,
-    required this.initialHex,
-    required this.onColorChanged,
-  });
-
-  @override
-  State<_DqmsColorPicker> createState() => _DqmsColorPickerState();
-}
-
-class _DqmsColorPickerState extends State<_DqmsColorPicker> {
-  late String _currentHex;
-  late TextEditingController _textCtrl;
-
-  static const List<String> _swatches = [
-    '#2F81F7', // Primary Blue
-    '#8957E5', // Special Purple
-    '#DA3633', // Alert Red
-    '#D29922', // Warning Amber
-    '#238636', // Success Green
-    '#0969DA', // Deep Ocean Cyan
-    '#BF3989', // Magenta Pink
-    '#6E7681', // Neutral Grey
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _currentHex = widget.initialHex;
-    _textCtrl = TextEditingController(text: _currentHex);
-  }
-
-  @override
-  void didUpdateWidget(_DqmsColorPicker oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialHex != widget.initialHex) {
-      _currentHex = widget.initialHex;
-      _textCtrl.text = _currentHex;
-    }
-  }
-
-  @override
-  void dispose() {
-    _textCtrl.dispose();
-    super.dispose();
-  }
-
-  Color _parseColor(String hex) {
-    try {
-      final clean = hex.replaceAll('#', '');
-      return Color(int.parse('FF$clean', radix: 16));
-    } catch (_) {
-      return AppColors.brandPrimary;
-    }
-  }
-
-  void _selectColor(String hex) {
-    setState(() {
-      _currentHex = hex;
-      _textCtrl.text = hex;
-    });
-    widget.onColorChanged(hex);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(widget.label, style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            // Live Color Preview Box with Display Value
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: _parseColor(_currentHex),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.white38, width: 1.5),
-                boxShadow: [
-                  BoxShadow(color: _parseColor(_currentHex).withValues(alpha: 0.4), blurRadius: 6, spreadRadius: 1),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: DqmsTextField(
-                controller: _textCtrl,
-                prefixIcon: const Icon(Icons.palette_rounded, size: 16, color: AppColors.brandPrimary),
-                onChanged: (val) {
-                  setState(() => _currentHex = val);
-                  widget.onColorChanged(val);
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-
-        // Interactive Color Swatches Palette
-        Row(
-          children: _swatches.map((hex) {
-            final isSelected = _currentHex.toUpperCase() == hex.toUpperCase();
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: InkWell(
-                onTap: () => _selectColor(hex),
-                borderRadius: BorderRadius.circular(20),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  width: isSelected ? 26 : 22,
-                  height: isSelected ? 26 : 22,
-                  decoration: BoxDecoration(
-                    color: _parseColor(hex),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isSelected ? Colors.white : AppColors.borderSubtle,
-                      width: isSelected ? 2.5 : 1.0,
-                    ),
-                  ),
-                  child: isSelected
-                      ? const Icon(Icons.check, size: 14, color: Colors.white)
-                      : null,
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-}

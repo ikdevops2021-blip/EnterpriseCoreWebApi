@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/utils/icon_resolver.dart';
+import 'package:dqms_frontend/core/widgets/dqms_icon_picker.dart';
 import 'package:dqms_frontend/features/admin/providers/navigation_menu_provider.dart';
 
 /// ============================================================================
@@ -280,7 +281,7 @@ class _NavigationMenuViewState extends ConsumerState<NavigationMenuView> {
   }
 
   Widget _buildMenuRow(BuildContext context, NavigationMenuModel item, int index) {
-    final icon = IconResolver.resolve(item.iconName);
+    final iconWidget = IconResolver.resolve(item.iconName).build(size: 16, color: AppColors.brandPrimary);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       color: index.isEven
@@ -306,7 +307,7 @@ class _NavigationMenuViewState extends ConsumerState<NavigationMenuView> {
                 color: AppColors.brandPrimary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: Icon(icon, color: AppColors.brandPrimary, size: 16),
+              child: Center(child: iconWidget),
             ),
           ),
 
@@ -718,94 +719,15 @@ class _MenuEditorDialogState extends State<_MenuEditorDialog> {
   }
 
   Widget _buildIconPicker() {
-    final allIcons = IconResolver.allEntries;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Icon',
-            style: TextStyle(
-                color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.bgCanvas,
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: AppColors.borderSubtle),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Selected preview
-              Row(
-                children: [
-                  Container(
-                    width: 36, height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Icon(IconResolver.resolve(_selectedIcon),
-                        color: AppColors.brandPrimary, size: 18),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(_selectedIcon,
-                        style: const TextStyle(
-                            color: AppColors.textMain, fontSize: 12,
-                            fontFamily: 'monospace')),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              // Icon Grid
-              SizedBox(
-                height: 130,
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 12,
-                    mainAxisSpacing: 4,
-                    crossAxisSpacing: 4,
-                  ),
-                  itemCount: allIcons.length,
-                  itemBuilder: (ctx, i) {
-                    final entry = allIcons[i];
-                    final isSelected = entry.key == _selectedIcon;
-                    return InkWell(
-                      onTap: () => setState(() => _selectedIcon = entry.key),
-                      borderRadius: BorderRadius.circular(4),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.brandPrimary.withValues(alpha: 0.25)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color: isSelected
-                                ? AppColors.brandPrimary
-                                : Colors.transparent,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Tooltip(
-                          message: entry.key,
-                          child: Icon(entry.value,
-                              color: isSelected
-                                  ? AppColors.brandPrimary
-                                  : AppColors.textMuted,
-                              size: 16),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+    return DqmsIconPicker(
+      label: 'Icon',
+      value: _selectedIcon,
+      accentColor: AppColors.brandPrimary,
+      onIconChanged: (key) => setState(() => _selectedIcon = key),
     );
   }
+
+
 
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;

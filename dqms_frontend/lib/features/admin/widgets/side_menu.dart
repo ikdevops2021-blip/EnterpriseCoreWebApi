@@ -54,7 +54,7 @@ class SideMenu extends StatelessWidget {
                   const _SectionHeader(title: 'MAIN COMMAND'),
                   DrawerListTile(
                     title: 'Command Center',
-                    icon: Icons.dashboard_customize_rounded,
+                    iconName: 'dashboard_rounded',
                     isActive: location == '/dashboard',
                     press: () {
                       if (isDrawer) Navigator.pop(context);
@@ -63,7 +63,7 @@ class SideMenu extends StatelessWidget {
                   ),
                   DrawerListTile(
                     title: 'Appointments Calendar',
-                    icon: Icons.calendar_month_rounded,
+                    iconName: 'schedule_rounded',
                     isActive: location == '/appointments-calendar',
                     press: () {
                       if (isDrawer) Navigator.pop(context);
@@ -93,11 +93,10 @@ class SideMenu extends StatelessWidget {
                       final i = entry.key;
                       final item = entry.value;
                       final isSelected = activeIndex == i || location == item.routePath;
-                      final iconData = IconResolver.resolve(item.iconName);
 
                       return DrawerListTile(
                         title: item.title,
-                        icon: iconData,
+                        iconName: item.iconName,
                         isActive: isSelected,
                         press: () {
                           if (isDrawer) Navigator.pop(context);
@@ -242,20 +241,23 @@ class _SectionHeader extends StatelessWidget {
 /// Abu Anwar Pattern Drawer List Tile with Active Highlighting & Smooth Hover
 class DrawerListTile extends StatelessWidget {
   final String title;
-  final IconData icon;
+  final String? iconName;
   final bool isActive;
   final VoidCallback press;
 
   const DrawerListTile({
     super.key,
     required this.title,
-    required this.icon,
     required this.isActive,
     required this.press,
+    this.iconName,
   });
 
   @override
   Widget build(BuildContext context) {
+    final iconColor = isActive ? AppColors.brandPrimary : AppColors.textMuted;
+    final iconWidget = IconResolver.resolve(iconName).build(size: 18, color: iconColor);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
       child: Material(
@@ -282,11 +284,7 @@ class DrawerListTile extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  color: isActive ? AppColors.brandPrimary : AppColors.textMuted,
-                  size: 18,
-                ),
+                SizedBox(width: 20, child: Center(child: iconWidget)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
