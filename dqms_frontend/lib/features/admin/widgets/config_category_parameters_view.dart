@@ -119,19 +119,18 @@ class ConfigCategoryModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'categoryId': categoryId,
-      'categoryCode': categoryCode,
-      'categoryName': categoryName,
-      'description': description,
-      'priority': priority,
-      'active': active,
-      'allowModify': allowModify,
-      'rangeText': rangeText,
-      'categoryExternalId': categoryExternalId,
-      'categoryExternalCode': categoryExternalCode,
-      'categoryColor': categoryColor,
-      'categoryIcon': categoryIcon,
-      'categoryImage': categoryImage,
+      // PascalCase keys to match .NET DTO property names
+      'CategoryCode': categoryCode,
+      'CategoryName': categoryName,
+      'Description': description,
+      'Priority': priority,
+      'Active': active,
+      'AllowModify': allowModify,
+      'CategoryExternalID': categoryExternalId,
+      'CategoryExternalCode': categoryExternalCode,
+      'CategoryColor': categoryColor,
+      'CategoryIcon': categoryIcon,
+      'CategoryImage': categoryImage,
     };
   }
 }
@@ -238,19 +237,18 @@ class ConfigParameterModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'parameterId': parameterId,
-      'categoryId': categoryId,
-      'paramCode': paramCode,
-      'paramName': paramName,
-      'isDefault': isDefault,
-      'priority': priority,
-      'isActive': isActive,
-      'description': description,
-      'parameterExternalId': parameterExternalId,
-      'parameterExternalCode': parameterExternalCode,
-      'parameterColor': parameterColor,
-      'parameterIcon': parameterIcon,
-      'parameterImage': parameterImage,
+      // PascalCase keys to match .NET DTO property names
+      'CategoryID': categoryId,
+      'ParameterCode': paramCode,
+      'ParameterName': paramName,
+      'IsDefault': isDefault,
+      'Priority': priority,
+      'IsActive': isActive,
+      'ParameterExternalID': parameterExternalId,
+      'ParameterExternalCode': parameterExternalCode,
+      'ParameterColor': parameterColor,
+      'ParameterIcon': parameterIcon,
+      'ParameterImage': parameterImage,
     };
   }
 }
@@ -675,6 +673,7 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
   }
 
   Future<void> _saveCategory(ConfigCategoryModel updatedCategory) async {
+    // Optimistic local update
     setState(() {
       final index = _categories.indexWhere((c) => c.categoryId == updatedCategory.categoryId);
       if (index != -1) {
@@ -687,21 +686,37 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
 
     try {
       final dio = ref.read(dioProvider);
-      await dio.post('${AppConfig.adminApiBase}/config-category', data: updatedCategory.toJson());
-    } catch (_) {
-      // Local state updated
-    }
+      // Correct endpoint: PUT /api/v1/Configuration/categories/{categoryId}
+      final response = await dio.put(
+        '${AppConfig.apiBaseUrl}/api/v1/Configuration/categories/${updatedCategory.categoryId}',
+        data: updatedCategory.toJson(),
+      );
 
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Category "${updatedCategory.categoryName}" saved to API with Category Color (${updatedCategory.categoryColor}).'),
-        backgroundColor: AppColors.statusActive,
-      ),
-    );
+      if (!mounted) return;
+      final success = response.statusCode != null && response.statusCode! < 400;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Category "${updatedCategory.categoryName}" saved — Icon: ${updatedCategory.categoryIcon}, Color: ${updatedCategory.categoryColor}'
+                : 'API error (${response.statusCode}): category may not have been persisted.',
+          ),
+          backgroundColor: success ? AppColors.statusActive : AppColors.statusError,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save category: $e'),
+          backgroundColor: AppColors.statusError,
+        ),
+      );
+    }
   }
 
   Future<void> _saveParameter(ConfigParameterModel updatedParam) async {
+    // Optimistic local update
     setState(() {
       final index = _parameters.indexWhere((p) => p.parameterId == updatedParam.parameterId);
       if (index != -1) {
@@ -713,18 +728,33 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
 
     try {
       final dio = ref.read(dioProvider);
-      await dio.post('${AppConfig.adminApiBase}/config-parameter', data: updatedParam.toJson());
-    } catch (_) {
-      // Local state updated
-    }
+      // Correct endpoint: PUT /api/v1/Configuration/parameters/{parameterId}
+      final response = await dio.put(
+        '${AppConfig.apiBaseUrl}/api/v1/Configuration/parameters/${updatedParam.parameterId}',
+        data: updatedParam.toJson(),
+      );
 
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Parameter "${updatedParam.paramCode}" saved to API with Parameter Color (${updatedParam.parameterColor}).'),
-        backgroundColor: AppColors.statusActive,
-      ),
-    );
+      if (!mounted) return;
+      final success = response.statusCode != null && response.statusCode! < 400;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Parameter "${updatedParam.paramCode}" saved — Icon: ${updatedParam.parameterIcon}, Color: ${updatedParam.parameterColor}'
+                : 'API error (${response.statusCode}): parameter may not have been persisted.',
+          ),
+          backgroundColor: success ? AppColors.statusActive : AppColors.statusError,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save parameter: $e'),
+          backgroundColor: AppColors.statusError,
+        ),
+      );
+    }
   }
 
   @override
@@ -1068,10 +1098,22 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                   ),
                   const SizedBox(height: 12),
 
+                  // Icon Picker — full DqmsIconPicker widget
+                  StatefulBuilder(
+                    builder: (ctx2, setIconState) => DqmsIconPicker(
+                      label: 'Parameter Icon',
+                      value: iconCtrl.text,
+                      accentColor: _parseHexColor(selectedParameterColor),
+                      onIconChanged: (key) {
+                        setModalState(() => iconCtrl.text = key);
+                        setIconState(() {});
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
                   Row(
                     children: [
-                      Expanded(child: DqmsTextField(label: 'Icon Identifier', controller: iconCtrl)),
-                      const SizedBox(width: 12),
                       Expanded(child: DqmsTextField(label: 'External Code', controller: extCodeCtrl)),
                     ],
                   ),
@@ -1202,12 +1244,22 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
                   ),
                   const SizedBox(height: 12),
 
+                  // Icon Picker — full DqmsIconPicker widget
+                  StatefulBuilder(
+                    builder: (ctx2, setIconState) => DqmsIconPicker(
+                      label: 'Parameter Icon',
+                      value: iconCtrl.text,
+                      accentColor: _parseHexColor(selectedParameterColor),
+                      onIconChanged: (key) {
+                        setModalState(() => iconCtrl.text = key);
+                        setIconState(() {});
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
                   Row(
                     children: [
-                      Expanded(child: DqmsTextField(label: 'Icon Identifier', controller: iconCtrl)),
-                      const SizedBox(width: 8),
-                      _buildResolvedIcon(iconCtrl.text, size: 22, color: _parseHexColor(selectedParameterColor)),
-                      const SizedBox(width: 12),
                       Expanded(child: DqmsTextField(label: 'External Code', controller: extCodeCtrl)),
                     ],
                   ),
