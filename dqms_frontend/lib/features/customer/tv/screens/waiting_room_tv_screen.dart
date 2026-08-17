@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dqms_frontend/core/models/customer_models.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
-import 'package:dqms_frontend/features/customer/providers/customer_experience_provider.dart';
+import 'package:dqms_frontend/features/customer/providers/customer_providers.dart';
 
 /// ============================================================================
 /// WAITING ROOM 4K TV DISPLAY SCREEN (WaitingRoomTvScreen)
-/// High-visibility 4K TV monitor display prioritizing NOW CALLING & Previous Calls
+/// Real-time live TV monitor display prioritizing NOW CALLING & Previous Calls from DB
 /// ============================================================================
 class WaitingRoomTvScreen extends ConsumerWidget {
   const WaitingRoomTvScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tvState = ref.watch(waitingRoomTvStateProvider);
+    final boardAsync = ref.watch(displayBoardProvider);
     final isMobile = AppBreakpoints.isMobile(context);
+
+    final items = boardAsync.value ?? [];
+    final DisplayBoardItemDto? heroItem = items.isNotEmpty ? items.first : null;
+    final List<DisplayBoardItemDto> previousCalls = items.length > 1 ? items.sublist(1) : [];
 
     return Scaffold(
       backgroundColor: AppColors.bgCanvas,
@@ -32,11 +37,11 @@ class WaitingRoomTvScreen extends ConsumerWidget {
                     ? SingleChildScrollView(
                         child: Column(
                           children: [
-                            _buildNowCallingHero(tvState),
+                            _buildNowCallingHero(heroItem),
                             const SizedBox(height: 16),
                             SizedBox(
                               height: 300,
-                              child: _buildPreviousCallsPanel(tvState),
+                              child: _buildPreviousCallsPanel(previousCalls),
                             ),
                           ],
                         ),
@@ -47,14 +52,14 @@ class WaitingRoomTvScreen extends ConsumerWidget {
                           // NOW CALLING Hero Display Card (Left / Center Focus)
                           Expanded(
                             flex: 7,
-                            child: _buildNowCallingHero(tvState),
+                            child: _buildNowCallingHero(heroItem),
                           ),
                           const SizedBox(width: 24),
 
                           // Previous Calls Matrix Panel (Right Column)
                           Expanded(
                             flex: 5,
-                            child: _buildPreviousCallsPanel(tvState),
+                            child: _buildPreviousCallsPanel(previousCalls),
                           ),
                         ],
                       ),
@@ -62,7 +67,7 @@ class WaitingRoomTvScreen extends ConsumerWidget {
             ),
 
             // Bottom Ticker Bar
-            _buildBottomTickerBar(tvState.tickerText),
+            _buildBottomTickerBar('Welcome to DQMS Medical Center. Please keep your ticket until your number is announced on screen.'),
           ],
         ),
       ),
@@ -129,16 +134,24 @@ class WaitingRoomTvScreen extends ConsumerWidget {
   }
 
   /// NOW CALLING Hero Panel
-  Widget _buildNowCallingHero(WaitingRoomTvState tvState) {
+  Widget _buildNowCallingHero(DisplayBoardItemDto? item) {
+    final token = item?.tokenNumber ?? 'STANDBY';
+    final counter = item != null ? 'COUNTER ${item.counterNumber ?? "C-01"}' : 'ALL COUNTERS READY';
+    final service = item?.processName ?? 'Waiting for Next Operator Call';
+    final isCalling = item != null;
+
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: AppColors.bgSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.brandPrimary, width: 3),
+        border: Border.all(
+          color: isCalling ? AppColors.brandPrimary : AppColors.borderSubtle,
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.brandPrimary.withValues(alpha: 0.15),
+            color: (isCalling ? AppColors.brandPrimary : AppColors.statusActive).withValues(alpha: 0.15),
             blurRadius: 30,
             spreadRadius: 4,
           ),
@@ -148,96 +161,100 @@ class WaitingRoomTvScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-          // Audio Voice Announcement Pill
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.statusActive.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: AppColors.statusActive),
+            // Audio Voice Announcement Pill
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: (isCalling ? AppColors.statusActive : AppColors.brandAccent).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: isCalling ? AppColors.statusActive : AppColors.brandAccent),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isCalling ? Icons.campaign_rounded : Icons.radio_button_checked_rounded,
+                      color: isCalling ? AppColors.statusActive : AppColors.brandAccent,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      isCalling ? 'NOW CALLING' : 'QUEUE MONITOR LIVE',
+                      style: TextStyle(
+                        color: isCalling ? AppColors.statusActive : AppColors.brandAccent,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
+            ),
+            const SizedBox(height: 28),
+
+            // Giant Token Number
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                token,
+                style: const TextStyle(
+                  color: AppColors.brandPrimary,
+                  fontSize: 104,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'monospace',
+                  letterSpacing: 4.0,
+                  height: 1.0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Directional Arrow & Assigned Counter
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.campaign_rounded, color: AppColors.statusActive, size: 20),
-                  SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward_rounded, color: AppColors.brandAccent, size: 42),
+                  const SizedBox(width: 14),
                   Text(
-                    'NOW CALLING',
-                    style: TextStyle(
-                      color: AppColors.statusActive,
-                      fontSize: 18,
+                    counter,
+                    style: const TextStyle(
+                      color: AppColors.brandAccent,
+                      fontSize: 48,
                       fontWeight: FontWeight.w900,
+                      fontFamily: 'monospace',
                       letterSpacing: 2.0,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 28),
+            const SizedBox(height: 20),
 
-          // Giant Token Number
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              tvState.nowCallingToken,
-              style: const TextStyle(
-                color: AppColors.brandPrimary,
-                fontSize: 104,
-                fontWeight: FontWeight.w900,
-                fontFamily: 'monospace',
-                letterSpacing: 4.0,
-                height: 1.0,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Directional Arrow & Assigned Counter
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.arrow_forward_rounded, color: AppColors.brandAccent, size: 42),
-                const SizedBox(width: 14),
-                Text(
-                  tvState.nowCallingCounter,
-                  style: const TextStyle(
-                    color: AppColors.brandAccent,
-                    fontSize: 48,
-                    fontWeight: FontWeight.w900,
-                    fontFamily: 'monospace',
-                    letterSpacing: 2.0,
-                  ),
+            // Service Location Name
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                service,
+                style: const TextStyle(
+                  color: AppColors.textMain,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Service Location Name
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              tvState.nowCallingService,
-              style: const TextStyle(
-                color: AppColors.textMain,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 
   /// Previous Calls Matrix Panel
-  Widget _buildPreviousCallsPanel(WaitingRoomTvState tvState) {
+  Widget _buildPreviousCallsPanel(List<DisplayBoardItemDto> calls) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -254,7 +271,7 @@ class WaitingRoomTvScreen extends ConsumerWidget {
               SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'PREVIOUS CALLS',
+                  'RECENT & ACTIVE CALLS',
                   style: TextStyle(
                     color: AppColors.textMain,
                     fontSize: 18,
@@ -270,56 +287,70 @@ class WaitingRoomTvScreen extends ConsumerWidget {
 
           // Calls List Matrix
           Expanded(
-            child: ListView.separated(
-              itemCount: tvState.recentCalls.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (ctx, i) {
-                final call = tvState.recentCalls[i];
-
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.bgCard,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.borderSubtle),
-                  ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: calls.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Token
-                        Text(
-                          call.tokenNumber,
-                          style: const TextStyle(
-                            color: AppColors.textMain,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            fontFamily: 'monospace',
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-
-                        // Arrow
-                        const Icon(Icons.arrow_forward_rounded, color: AppColors.textSubtle, size: 20),
-                        const SizedBox(width: 16),
-
-                        // Counter
-                        Text(
-                          call.counterNumber,
-                          style: const TextStyle(
-                            color: AppColors.brandPrimary,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            fontFamily: 'monospace',
-                          ),
+                        Icon(Icons.queue_rounded, size: 36, color: AppColors.textSubtle.withValues(alpha: 0.5)),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'No prior calls yet this session',
+                          style: TextStyle(color: AppColors.textSubtle, fontSize: 13),
                         ),
                       ],
                     ),
+                  )
+                : ListView.separated(
+                    itemCount: calls.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (ctx, i) {
+                      final call = calls[i];
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: AppColors.bgCard,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.borderSubtle),
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Token
+                              Text(
+                                call.tokenNumber,
+                                style: const TextStyle(
+                                  color: AppColors.textMain,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w900,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+
+                              // Arrow
+                              const Icon(Icons.arrow_forward_rounded, color: AppColors.textSubtle, size: 20),
+                              const SizedBox(width: 16),
+
+                              // Counter
+                              Text(
+                                call.counterNumber ?? 'C-01',
+                                style: const TextStyle(
+                                  color: AppColors.brandPrimary,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),

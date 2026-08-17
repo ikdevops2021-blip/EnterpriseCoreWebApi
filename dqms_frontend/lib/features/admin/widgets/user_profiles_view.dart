@@ -637,11 +637,8 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
     return null;
   }
 
-  /// Creates [IconData] from a runtime codepoint — non-const by design.
-  // ignore: prefer_const_constructors, non_constant_identifier_names
   IconData _makeIconData(int code) {
-    // ignore: non_const_argument_for_const_parameter
-    return IconData(code, fontFamily: 'MaterialIcons');
+    return Icons.label_outline;
   }
 
   /// Maps a Material icon name string to an [IconData].

@@ -134,13 +134,13 @@ namespace DNAQMSAPI.Infrastructure.Services
                     p_CounterId = counterId
                 };
 
-                var tokens = await _dbFactory.QueryAsync<TokenTransactionModel>(
-                    "PR_S_TokenQueue",
-                    parameters,
-                    commandType: CommandType.StoredProcedure
-                );
+                using var grid = await _dbFactory.QueryMultipleAsync("PR_S_TokenQueue", parameters);
+                var activeTokens = (await grid.ReadAsync<TokenTransactionModel>()) ?? Enumerable.Empty<TokenTransactionModel>();
+                var waitingTokens = (await grid.ReadAsync<TokenTransactionModel>()) ?? Enumerable.Empty<TokenTransactionModel>();
 
-                return ApiResponse<IEnumerable<TokenTransactionModel>>.Ok(tokens.Where(t => t != null).Select(t => t!).ToList());
+                var allTokens = activeTokens.Concat(waitingTokens).Where(t => t != null).ToList();
+
+                return ApiResponse<IEnumerable<TokenTransactionModel>>.Ok(allTokens);
             }
             catch (Exception ex)
             {

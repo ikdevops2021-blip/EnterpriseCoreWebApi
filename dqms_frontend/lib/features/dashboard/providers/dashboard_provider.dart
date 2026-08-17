@@ -345,14 +345,25 @@ class DashboardState {
 /// Riverpod StateNotifier for Command Center Dashboard
 class DashboardNotifier extends StateNotifier<DashboardState> {
   final DashboardRepository repository;
+  dynamic _timer;
 
   DashboardNotifier(this.repository) : super(DashboardState.demo()) {
     loadDashboard();
+    _startAutoRefresh();
+  }
+
+  void _startAutoRefresh() {
+    _timer?.cancel();
+    _timer = Stream.periodic(const Duration(seconds: 4)).listen((_) {
+      loadDashboard(silent: true);
+    });
   }
 
   /// Load live dashboard metrics from GET /api/v1/dqms/dashboard
-  Future<void> loadDashboard({int organizationId = 1, int locationId = 1, int? areaId}) async {
-    state = DashboardState.loading();
+  Future<void> loadDashboard({int organizationId = 1, int locationId = 1, int? areaId, bool silent = false}) async {
+    if (!silent) {
+      state = DashboardState.loading();
+    }
     try {
       final dto = await repository.fetchDashboardSummary(
         organizationId: organizationId,
@@ -361,22 +372,31 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       );
       state = DashboardState.fromDto(dto);
     } on DioException catch (e) {
-      // Fallback gracefully to offline state
-      state = DashboardState.demo(
-        isOffline: true,
-        errorMessage: 'Network notice: ${e.message}. Displaying cached snapshot.',
-      );
+      if (!silent) {
+        state = DashboardState.demo(
+          isOffline: true,
+          errorMessage: 'Network notice: ${e.message}. Displaying cached snapshot.',
+        );
+      }
     } catch (e) {
-      state = DashboardState.demo(
-        isOffline: true,
-        errorMessage: 'Connection notice: $e. Displaying cached snapshot.',
-      );
+      if (!silent) {
+        state = DashboardState.demo(
+          isOffline: true,
+          errorMessage: 'Connection notice: $e. Displaying cached snapshot.',
+        );
+      }
     }
   }
 
   /// Refresh / simulate live tick updates
   void refreshState() {
     loadDashboard();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 }
 

@@ -55,6 +55,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
+      GoRoute(
+        path: '/logout',
+        builder: (context, state) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(authStateProvider.notifier).logout();
+          });
+          return const Scaffold(
+            backgroundColor: Color(0xFF0F172A),
+            body: Center(child: CircularProgressIndicator()),
+          );
+        },
+      ),
       ShellRoute(
         builder: (context, state, child) {
           return AdminWorkspaceScreen(child: child);

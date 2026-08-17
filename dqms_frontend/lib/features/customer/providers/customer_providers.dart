@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/customer_models.dart';
 import '../../../core/network/dio_provider.dart';
@@ -11,8 +12,19 @@ final displayBoardProvider =
         DisplayBoardNotifier.new);
 
 class DisplayBoardNotifier extends AsyncNotifier<List<DisplayBoardItemDto>> {
+  Timer? _timer;
+
   @override
-  Future<List<DisplayBoardItemDto>> build() async => _fetchDisplayBoard();
+  Future<List<DisplayBoardItemDto>> build() async {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
+      ref.invalidateSelf();
+    });
+    ref.onDispose(() {
+      _timer?.cancel();
+    });
+    return _fetchDisplayBoard();
+  }
 
   Future<List<DisplayBoardItemDto>> _fetchDisplayBoard() async {
     try {
