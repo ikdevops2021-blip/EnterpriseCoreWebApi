@@ -72,6 +72,17 @@ class ProcessStepModel {
       isActive: isActive ?? this.isActive,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': stepId < 2000000000 ? stepId : 0,
+      'processId': processId,
+      'stepOrder': stepOrder,
+      'stepName': stepName,
+      'targetTATMinutes': targetSlaMins,
+      'isActive': isActive,
+    };
+  }
 }
 
 /// 2. Process Pipelines Model
@@ -83,6 +94,11 @@ class ProcessModel {
   final String processName;
   final int targetSlaMins;
   final bool allowSubTokens;
+  final bool isSms;
+  final bool isWhatsApp;
+  final bool isEmail;
+  final bool isFeedback;
+  final int tokenLimitDaily;
   final String priorityLevel; // 'High', 'Standard', 'VIP'
   final bool isActive;
   final List<ProcessStepModel> steps;
@@ -95,6 +111,11 @@ class ProcessModel {
     required this.processName,
     required this.targetSlaMins,
     required this.allowSubTokens,
+    this.isSms = true,
+    this.isWhatsApp = true,
+    this.isEmail = true,
+    this.isFeedback = true,
+    this.tokenLimitDaily = 0,
     required this.priorityLevel,
     required this.isActive,
     this.steps = const [],
@@ -109,6 +130,11 @@ class ProcessModel {
       processName: json['processName'] ?? json['ProcessName'] ?? 'Process Pipeline',
       targetSlaMins: json['targetTATMinutes'] ?? json['targetSlaMins'] ?? 15,
       allowSubTokens: json['allowSubTokens'] ?? json['AllowSubTokens'] ?? false,
+      isSms: json['isSMS'] ?? json['IsSMS'] ?? json['isSms'] ?? json['BF_SMS'] ?? true,
+      isWhatsApp: json['isWhatsApp'] ?? json['IsWhatsApp'] ?? json['BF_WhatsApp'] ?? true,
+      isEmail: json['isEmail'] ?? json['IsEmail'] ?? json['BF_Email'] ?? true,
+      isFeedback: json['isFeedBack'] ?? json['IsFeedBack'] ?? json['isFeedback'] ?? json['BF_FeedBack'] ?? true,
+      tokenLimitDaily: json['tokenLimitDaily'] ?? json['TokenLimitDaily'] ?? 0,
       priorityLevel: json['priorityLevel'] ?? json['PriorityLevel'] ?? 'Standard',
       isActive: json['isActive'] ?? json['IsActive'] ?? true,
       steps: json['steps'] is List
@@ -124,6 +150,26 @@ class ProcessModel {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': processId,
+      'areaId': areaId,
+      'areaName': areaName,
+      'processCode': processCode,
+      'processName': processName,
+      'targetTATMinutes': targetSlaMins,
+      'allowSubTokens': allowSubTokens,
+      'isSMS': isSms,
+      'isWhatsApp': isWhatsApp,
+      'isEmail': isEmail,
+      'isFeedBack': isFeedback,
+      'tokenLimitDaily': tokenLimitDaily,
+      'priorityLevel': priorityLevel,
+      'isActive': isActive,
+      'steps': steps.map((s) => s.toJson()).toList(),
+    };
+  }
+
   ProcessModel copyWith({
     int? processId,
     int? areaId,
@@ -132,6 +178,11 @@ class ProcessModel {
     String? processName,
     int? targetSlaMins,
     bool? allowSubTokens,
+    bool? isSms,
+    bool? isWhatsApp,
+    bool? isEmail,
+    bool? isFeedback,
+    int? tokenLimitDaily,
     String? priorityLevel,
     bool? isActive,
     List<ProcessStepModel>? steps,
@@ -144,6 +195,11 @@ class ProcessModel {
       processName: processName ?? this.processName,
       targetSlaMins: targetSlaMins ?? this.targetSlaMins,
       allowSubTokens: allowSubTokens ?? this.allowSubTokens,
+      isSms: isSms ?? this.isSms,
+      isWhatsApp: isWhatsApp ?? this.isWhatsApp,
+      isEmail: isEmail ?? this.isEmail,
+      isFeedback: isFeedback ?? this.isFeedback,
+      tokenLimitDaily: tokenLimitDaily ?? this.tokenLimitDaily,
       priorityLevel: priorityLevel ?? this.priorityLevel,
       isActive: isActive ?? this.isActive,
       steps: steps ?? this.steps,

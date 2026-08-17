@@ -38,7 +38,7 @@ Below is the complete list of all **36 Database Tables** in the DQMS Enterprise 
 | Table Name | Purpose & Business Function |
 | :--- | :--- |
 | **`Area`** | Physical facility zones/wings (`AZ-01 Main Service Hall`, `AZ-02 Priority Wing`, `AZ-04 VIP Lounge`). |
-| **`Process`** | Services & Process Pipelines master table (`ProcessCode`, `ProcessName`, `TargetTATMinutes`, `AllowSubTokens`, `Prefix`). |
+| **`Process`** | Services & Process Pipelines master table (`ProcessCode`, `ProcessName`, `TargetTATMinutes`, `AllowSubTokens`, `Prefix`, `IsSMS`, `IsWhatsApp`, `IsEmail`, `IsFeedBack`, `TokenLimitDaily`). |
 | **`ProcessStep`** | Multi-step process workflow pipelines (`StepOrder`, `StepName`, `TargetTATMinutes`). |
 | **`ProcessBlackoutDay`** | Selective blackout days and holiday schedules per service. |
 | **`Counter`** | Physical counter stations & service desks (`CounterNumber`, `CounterName`, `AreaId`, `CurrentStatus`). |
@@ -104,10 +104,11 @@ Execute scripts in numerical order:
 18. **`23_WorldLocationSeedData.sql`**: Consolidated 250 Countries, 5,308 States, 152,970 Cities seed.
 19. **`29_Notification_Tables.sql`**: Notification templates, in-app feed, and SMS outbox queue.
 20. **`31_DQMS_Admin_Masters.sql`**: DQMS Areas, Processes, ProcessSteps, Counters, and Display Templates.
-21. **`33_DQMS_Staff_Operations.sql`**: Token transactions and audit history tables.
+21. **`33_DQMS_Staff_Operations.sql`**: Token transactions and audit history tables (with Daily Token Limit quota enforcement).
 22. **`34_DQMS_Customer_Display.sql`**: TV sessions and customer notification queues.
 23. **`35_NavigationMenu.sql`**: Navigation menu tables and stored procedures.
 24. **`36_DQMS_MultiProcess_SampleData.sql`**: Sample data for multi-step processes, sub-tokens, and counter assignments.
+25. **`37_Alter_Process_Add_Flags_And_TokenLimitDaily.sql`**: Standalone migration script adding IsSMS, IsWhatsApp, IsEmail, IsFeedBack flags and TokenLimitDaily column.
 
 ---
 

@@ -63,6 +63,11 @@ CREATE TABLE [dbo].[Process](
     [Prefix] [nvarchar](5) NOT NULL DEFAULT 'A',
     [TargetTATMinutes] [int] NOT NULL DEFAULT 15,
     [AllowSubTokens] [bit] NOT NULL DEFAULT 0,
+    [IsSMS] [bit] NOT NULL DEFAULT 1,
+    [IsWhatsApp] [bit] NOT NULL DEFAULT 1,
+    [IsEmail] [bit] NOT NULL DEFAULT 1,
+    [IsFeedBack] [bit] NOT NULL DEFAULT 1,
+    [TokenLimitDaily] [int] NULL DEFAULT 0,
     [IsActive] [bit] NOT NULL DEFAULT 1,
     [CreatedBy] [int] NOT NULL,
     [CreatedDate] [datetime] NOT NULL DEFAULT GETDATE(),
@@ -319,6 +324,11 @@ CREATE PROCEDURE [dbo].[PR_IU_Process]
     @p_Prefix NVARCHAR(5) = 'A',
     @p_TargetTATMinutes INT = 15,
     @p_AllowSubTokens BIT = 0,
+    @p_IsSMS BIT = 1,
+    @p_IsWhatsApp BIT = 1,
+    @p_IsEmail BIT = 1,
+    @p_IsFeedBack BIT = 1,
+    @p_TokenLimitDaily INT = 0,
     @p_IsActive BIT = 1,
     @p_UID INT
 AS
@@ -341,10 +351,12 @@ BEGIN
     IF ISNULL(@p_Id, 0) <= 0
     BEGIN
         INSERT INTO [dbo].[Process] (
-            ProcessCode, OrganizationId, ProcessName, Prefix, TargetTATMinutes, AllowSubTokens, IsActive,
+            ProcessCode, OrganizationId, ProcessName, Prefix, TargetTATMinutes, AllowSubTokens,
+            IsSMS, IsWhatsApp, IsEmail, IsFeedBack, TokenLimitDaily, IsActive,
             CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted
         ) VALUES (
-            LTRIM(RTRIM(@p_ProcessCode)), @p_OrganizationId, LTRIM(RTRIM(@p_ProcessName)), UPPER(LTRIM(RTRIM(@p_Prefix))), ISNULL(@p_TargetTATMinutes, 15), ISNULL(@p_AllowSubTokens, 0), ISNULL(@p_IsActive, 1),
+            LTRIM(RTRIM(@p_ProcessCode)), @p_OrganizationId, LTRIM(RTRIM(@p_ProcessName)), UPPER(LTRIM(RTRIM(@p_Prefix))), ISNULL(@p_TargetTATMinutes, 15), ISNULL(@p_AllowSubTokens, 0),
+            ISNULL(@p_IsSMS, 1), ISNULL(@p_IsWhatsApp, 1), ISNULL(@p_IsEmail, 1), ISNULL(@p_IsFeedBack, 1), ISNULL(@p_TokenLimitDaily, 0), ISNULL(@p_IsActive, 1),
             @p_UID, GETDATE(), @p_UID, GETDATE(), 0
         );
         SET @p_Id = SCOPE_IDENTITY();
@@ -358,6 +370,11 @@ BEGIN
             Prefix           = UPPER(LTRIM(RTRIM(@p_Prefix))),
             TargetTATMinutes = ISNULL(@p_TargetTATMinutes, TargetTATMinutes),
             AllowSubTokens   = ISNULL(@p_AllowSubTokens, AllowSubTokens),
+            IsSMS            = ISNULL(@p_IsSMS, IsSMS),
+            IsWhatsApp       = ISNULL(@p_IsWhatsApp, IsWhatsApp),
+            IsEmail          = ISNULL(@p_IsEmail, IsEmail),
+            IsFeedBack       = ISNULL(@p_IsFeedBack, IsFeedBack),
+            TokenLimitDaily  = ISNULL(@p_TokenLimitDaily, TokenLimitDaily),
             IsActive         = ISNULL(@p_IsActive, IsActive),
             ModifiedBy       = @p_UID,
             ModifiedDate     = GETDATE()

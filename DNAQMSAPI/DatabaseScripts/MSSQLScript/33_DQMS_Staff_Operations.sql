@@ -66,12 +66,43 @@ AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @v_prefix NVARCHAR(5) = 'A';
+    DECLARE @v_tokenLimitDaily INT = 0;
+    DECLARE @v_activeCount INT = 0;
     DECLARE @v_nextSeq INT = 1;
     DECLARE @v_tokenNum NVARCHAR(20);
 
-    SELECT TOP 1 @v_prefix = Prefix FROM dbo.Process WHERE Id = @p_ProcessId AND IsDeleted = 0;
+    -- 1. Fetch Process settings (Prefix and TokenLimitDaily)
+    SELECT TOP 1 
+        @v_prefix = ISNULL(Prefix, 'A'),
+        @v_tokenLimitDaily = ISNULL(TokenLimitDaily, 0)
+    FROM dbo.Process 
+    WHERE Id = @p_ProcessId AND IsDeleted = 0;
+
     IF @v_prefix IS NULL SET @v_prefix = 'A';
 
+    -- 2. Daily Token Limit Quota Enforcement (Excludes Canceled tokens 18006)
+    IF @v_tokenLimitDaily > 0
+    BEGIN
+        SELECT @v_activeCount = COUNT(1)
+        FROM dbo.TokenTransaction
+        WHERE ProcessId = @p_ProcessId
+          AND CAST(IssuedTime AS DATE) = CAST(GETDATE() AS DATE)
+          AND IsDeleted = 0
+          AND TokenStatus <> 18006; -- 18006: Canceled
+
+        IF @v_activeCount >= @v_tokenLimitDaily
+        BEGIN
+            SELECT 
+                0 AS ID, 
+                101 AS ErrNo, 
+                0 AS RowsCount, 
+                CONCAT('Daily token limit reached for this service (Maximum: ', @v_tokenLimitDaily, '). No more tokens can be issued today.') AS ErrMsg, 
+                '' AS TokenNumber;
+            RETURN;
+        END
+    END
+
+    -- 3. Calculate today's next sequence number
     SELECT @v_nextSeq = ISNULL(MAX(CAST(RIGHT(TokenNumber, 3) AS INT)), 0) + 1
     FROM dbo.TokenTransaction
     WHERE ProcessId = @p_ProcessId 
@@ -79,6 +110,7 @@ BEGIN
 
     SET @v_tokenNum = @v_prefix + '-' + RIGHT('000' + CAST(@v_nextSeq AS NVARCHAR(10)), 3);
 
+    -- 4. Insert Token Record
     INSERT INTO dbo.TokenTransaction (
         TokenNumber, OrganizationId, LocationId, AreaId, ProcessId, PriorityTier, TokenStatus,
         CustomerName, CustomerPhone, IssuedTime, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted

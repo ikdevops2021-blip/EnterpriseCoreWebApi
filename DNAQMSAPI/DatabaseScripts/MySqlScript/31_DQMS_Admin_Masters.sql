@@ -55,6 +55,11 @@ CREATE TABLE IF NOT EXISTS `Process` (
     `Prefix` VARCHAR(5) NOT NULL DEFAULT 'A',
     `TargetTATMinutes` INT NOT NULL DEFAULT 15,
     `AllowSubTokens` TINYINT(1) NOT NULL DEFAULT 0,
+    `IsSMS` TINYINT(1) NOT NULL DEFAULT 1,
+    `IsWhatsApp` TINYINT(1) NOT NULL DEFAULT 1,
+    `IsEmail` TINYINT(1) NOT NULL DEFAULT 1,
+    `IsFeedBack` TINYINT(1) NOT NULL DEFAULT 1,
+    `TokenLimitDaily` INT NULL DEFAULT 0,
     `IsActive` TINYINT(1) NOT NULL DEFAULT 1,
     `CreatedBy` INT NOT NULL,
     `CreatedDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -287,6 +292,11 @@ CREATE PROCEDURE PR_IU_Process (
     IN p_Prefix           VARCHAR(5),
     IN p_TargetTATMinutes INT,
     IN p_AllowSubTokens   TINYINT(1),
+    IN p_IsSMS            TINYINT(1),
+    IN p_IsWhatsApp       TINYINT(1),
+    IN p_IsEmail          TINYINT(1),
+    IN p_IsFeedBack       TINYINT(1),
+    IN p_TokenLimitDaily  INT,
     IN p_IsActive         TINYINT(1),
     IN p_UID              INT
 )
@@ -306,10 +316,12 @@ proc_body: BEGIN
 
     IF COALESCE(p_Id, 0) <= 0 THEN
         INSERT INTO Process (
-            ProcessCode, OrganizationId, ProcessName, Prefix, TargetTATMinutes, AllowSubTokens, IsActive,
+            ProcessCode, OrganizationId, ProcessName, Prefix, TargetTATMinutes, AllowSubTokens,
+            IsSMS, IsWhatsApp, IsEmail, IsFeedBack, TokenLimitDaily, IsActive,
             CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted
         ) VALUES (
-            TRIM(p_ProcessCode), p_OrganizationId, TRIM(p_ProcessName), UPPER(TRIM(p_Prefix)), COALESCE(p_TargetTATMinutes, 15), COALESCE(p_AllowSubTokens, 0), COALESCE(p_IsActive, 1),
+            TRIM(p_ProcessCode), p_OrganizationId, TRIM(p_ProcessName), UPPER(TRIM(p_Prefix)), COALESCE(p_TargetTATMinutes, 15), COALESCE(p_AllowSubTokens, 0),
+            COALESCE(p_IsSMS, 1), COALESCE(p_IsWhatsApp, 1), COALESCE(p_IsEmail, 1), COALESCE(p_IsFeedBack, 1), COALESCE(p_TokenLimitDaily, 0), COALESCE(p_IsActive, 1),
             p_UID, CURRENT_TIMESTAMP, p_UID, CURRENT_TIMESTAMP, 0
         );
         SET p_Id = LAST_INSERT_ID();
@@ -321,6 +333,11 @@ proc_body: BEGIN
             Prefix           = UPPER(TRIM(p_Prefix)),
             TargetTATMinutes = COALESCE(p_TargetTATMinutes, TargetTATMinutes),
             AllowSubTokens   = COALESCE(p_AllowSubTokens, AllowSubTokens),
+            IsSMS            = COALESCE(p_IsSMS, IsSMS),
+            IsWhatsApp       = COALESCE(p_IsWhatsApp, IsWhatsApp),
+            IsEmail          = COALESCE(p_IsEmail, IsEmail),
+            IsFeedBack       = COALESCE(p_IsFeedBack, IsFeedBack),
+            TokenLimitDaily  = COALESCE(p_TokenLimitDaily, TokenLimitDaily),
             IsActive         = COALESCE(p_IsActive, IsActive),
             ModifiedBy       = p_UID,
             ModifiedDate     = CURRENT_TIMESTAMP

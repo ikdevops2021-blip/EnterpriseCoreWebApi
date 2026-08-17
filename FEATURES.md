@@ -67,6 +67,17 @@ To ensure targeted, user-centric delivery, development is organized into 3 disti
 * **Real-Time TAT Variance:** Calculation of actual vs. expected processing duration at each counter.
 * **Bottleneck Detection:** Visual alerts on dashboards when tokens exceed target TAT thresholds.
 
+### 2.3 Multi-Channel Communication Flags & Daily Token Quota Engine
+* **Communication Channel Toggles:** Granular service-level enable/disable flags for communication workflows:
+  * `IsSMS` (`BF_SMS`): SMS token issuance and counter calling alerts.
+  * `IsWhatsApp` (`BF_WhatsApp`): Prior-to-calling WhatsApp notifications.
+  * `IsEmail` (`BF_Email`): Electronic receipt, booking summary, and document dispatch.
+  * `IsFeedBack` (`BF_FeedBack`): Automated CSAT feedback surveys upon service completion.
+* **Daily Token Limit Quota (`TokenLimitDaily`):**
+  * **Unlimited Mode:** Configured as `0` or `NULL` allows infinite tokens per operational day.
+  * **Capped Limit Mode:** Configured as a positive integer (e.g. `20`) enforces maximum active tokens per service day.
+  * **Exclusion of Cancelled Tokens:** Cancelled tickets (`TokenStatus = 18006`) are strictly excluded from the count, guaranteeing customers can receive replacement tokens up to the configured daily threshold.
+
 ---
 
 ## 3. Token Lifecycle & Status State Machine

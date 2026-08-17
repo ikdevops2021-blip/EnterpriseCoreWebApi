@@ -90,6 +90,11 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
                       processName: 'New Service Workflow',
                       targetSlaMins: 15,
                       allowSubTokens: true,
+                      isSms: true,
+                      isWhatsApp: true,
+                      isEmail: true,
+                      isFeedback: true,
+                      tokenLimitDaily: 0,
                       priorityLevel: 'Standard',
                       isActive: true,
                     );
@@ -126,9 +131,10 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
                         SizedBox(width: 90, child: Text('CODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
                         Expanded(flex: 3, child: Text('SERVICE / PROCESS PIPELINE NAME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
                         Expanded(flex: 2, child: Text('FACILITY ZONE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 90, child: Text('SLA TAT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 100, child: Text('SUB-TOKENS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                        SizedBox(width: 80, child: Text('SLA TAT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                        SizedBox(width: 95, child: Text('DAILY LIMIT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                        SizedBox(width: 105, child: Text('CHANNELS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                        SizedBox(width: 80, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
                       ],
                     ),
                   ),
@@ -186,25 +192,51 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
                                   ),
                                 ),
                                 SizedBox(
-                                  width: 90,
+                                  width: 80,
                                   child: Text(
-                                    '${proc.targetSlaMins}m Target',
+                                    '${proc.targetSlaMins}m',
                                     style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w700),
                                   ),
                                 ),
                                 SizedBox(
-                                  width: 100,
-                                  child: Text(
-                                    proc.allowSubTokens ? 'Allowed' : 'Disabled',
-                                    style: TextStyle(
-                                      color: proc.allowSubTokens ? AppColors.statusActive : AppColors.textDisabled,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
+                                  width: 95,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: proc.tokenLimitDaily > 0 ? AppColors.brandWarning.withValues(alpha: 0.15) : AppColors.brandPrimary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: proc.tokenLimitDaily > 0 ? AppColors.brandWarning.withValues(alpha: 0.3) : AppColors.brandPrimary.withValues(alpha: 0.2),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      proc.tokenLimitDaily > 0 ? '${proc.tokenLimitDaily} / day' : 'Unlimited',
+                                      style: TextStyle(
+                                        color: proc.tokenLimitDaily > 0 ? AppColors.brandWarning : AppColors.brandPrimary,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
                                   ),
                                 ),
                                 SizedBox(
-                                  width: 90,
+                                  width: 105,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      _buildChannelBadge('SMS', Icons.sms_outlined, proc.isSms),
+                                      const SizedBox(width: 3),
+                                      _buildChannelBadge('WA', Icons.chat_bubble_outline_rounded, proc.isWhatsApp),
+                                      const SizedBox(width: 3),
+                                      _buildChannelBadge('Mail', Icons.email_outlined, proc.isEmail),
+                                      const SizedBox(width: 3),
+                                      _buildChannelBadge('CSAT', Icons.star_outline_rounded, proc.isFeedback),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 80,
                                   child: DqmsStatusBadge.activeState(proc.isActive),
                                 ),
                               ],
@@ -470,6 +502,89 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
               ),
             ],
           ),
+          const SizedBox(height: 14),
+
+          // -------------------------------------------------------------------
+          // DAILY MAXIMUM TOKEN LIMIT (TokenLimitDaily)
+          // -------------------------------------------------------------------
+          DqmsTextField(
+            label: 'Daily Maximum Token Limit (0 or empty = Unlimited)',
+            hintText: 'e.g. 20 (0 = Unlimited)',
+            initialValue: proc.tokenLimitDaily == 0 ? '' : '${proc.tokenLimitDaily}',
+            keyboardType: TextInputType.number,
+            prefixIcon: const Icon(Icons.confirmation_number_outlined, size: 18),
+            onChanged: (val) {
+              final limit = int.tryParse(val.trim()) ?? 0;
+              setState(() {
+                _selectedProcess = proc.copyWith(tokenLimitDaily: limit);
+              });
+            },
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'ℹ️ Max active/completed tokens per day. Cancelled tokens do not count against this quota.',
+            style: TextStyle(color: AppColors.textMuted, fontSize: 10),
+          ),
+          const SizedBox(height: 16),
+
+          // -------------------------------------------------------------------
+          // NOTIFICATION & CUSTOMER FEEDBACK CHANNELS (IsSMS, IsWhatsApp, IsEmail, IsFeedBack)
+          // -------------------------------------------------------------------
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.bgCard,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: AppColors.borderSubtle),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.campaign_outlined, color: AppColors.brandPrimary, size: 16),
+                    SizedBox(width: 6),
+                    Text(
+                      'COMMUNICATION & FEEDBACK CHANNELS',
+                      style: TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _buildChannelToggle(
+                  title: 'SMS Notifications (IsSMS / BF_SMS)',
+                  subtitle: 'Send SMS queue ticket updates and calling alerts',
+                  icon: Icons.sms_outlined,
+                  value: proc.isSms,
+                  onChanged: (val) => setState(() => _selectedProcess = proc.copyWith(isSms: val)),
+                ),
+                const Divider(color: AppColors.borderSubtle, height: 14),
+                _buildChannelToggle(
+                  title: 'WhatsApp Alerts (IsWhatsApp / BF_WhatsApp)',
+                  subtitle: 'Send prior-to-calling WhatsApp notifications',
+                  icon: Icons.chat_bubble_outline_rounded,
+                  value: proc.isWhatsApp,
+                  onChanged: (val) => setState(() => _selectedProcess = proc.copyWith(isWhatsApp: val)),
+                ),
+                const Divider(color: AppColors.borderSubtle, height: 14),
+                _buildChannelToggle(
+                  title: 'Email Notifications (IsEmail / BF_Email)',
+                  subtitle: 'Dispatch email receipts and appointment tokens',
+                  icon: Icons.email_outlined,
+                  value: proc.isEmail,
+                  onChanged: (val) => setState(() => _selectedProcess = proc.copyWith(isEmail: val)),
+                ),
+                const Divider(color: AppColors.borderSubtle, height: 14),
+                _buildChannelToggle(
+                  title: 'Customer Feedback (IsFeedBack / BF_FeedBack)',
+                  subtitle: 'Trigger CSAT feedback collection upon completion',
+                  icon: Icons.star_outline_rounded,
+                  value: proc.isFeedback,
+                  onChanged: (val) => setState(() => _selectedProcess = proc.copyWith(isFeedback: val)),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 20),
           const Divider(color: AppColors.borderSubtle, height: 1),
           const SizedBox(height: 16),
@@ -590,6 +705,11 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
                   'processName': proc.processName,
                   'targetTATMinutes': proc.targetSlaMins,
                   'allowSubTokens': proc.allowSubTokens,
+                  'isSMS': proc.isSms,
+                  'isWhatsApp': proc.isWhatsApp,
+                  'isEmail': proc.isEmail,
+                  'isFeedBack': proc.isFeedback,
+                  'tokenLimitDaily': proc.tokenLimitDaily,
                   'priorityLevel': proc.priorityLevel,
                   'organizationId': 1,
                   'isActive': proc.isActive,
@@ -618,6 +738,66 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildChannelBadge(String label, IconData icon, bool isEnabled) {
+    return Tooltip(
+      message: '$label: ${isEnabled ? "Enabled" : "Disabled"}',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        decoration: BoxDecoration(
+          color: isEnabled ? AppColors.statusActive.withValues(alpha: 0.15) : AppColors.bgCanvas,
+          borderRadius: BorderRadius.circular(3),
+          border: Border.all(
+            color: isEnabled ? AppColors.statusActive.withValues(alpha: 0.4) : AppColors.borderSubtle,
+          ),
+        ),
+        child: Icon(
+          icon,
+          size: 11,
+          color: isEnabled ? AppColors.statusActive : AppColors.textDisabled,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChannelToggle({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: value ? AppColors.brandPrimary : AppColors.textMuted),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: value ? AppColors.textMain : AppColors.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: const TextStyle(color: AppColors.textSubtle, fontSize: 10),
+              ),
+            ],
+          ),
+        ),
+        Switch(
+          value: value,
+          activeTrackColor: AppColors.brandPrimary,
+          onChanged: onChanged,
+        ),
+      ],
     );
   }
 }

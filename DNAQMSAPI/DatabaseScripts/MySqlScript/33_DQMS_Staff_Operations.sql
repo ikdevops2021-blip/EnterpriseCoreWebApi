@@ -67,14 +67,38 @@ CREATE PROCEDURE PR_IU_IssueToken (
 )
 proc_body: BEGIN
     DECLARE v_prefix VARCHAR(5) DEFAULT 'A';
+    DECLARE v_tokenLimitDaily INT DEFAULT 0;
+    DECLARE v_activeCount INT DEFAULT 0;
     DECLARE v_nextSeq INT DEFAULT 1;
     DECLARE v_tokenNum VARCHAR(20);
 
-    -- Get Process Prefix
-    SELECT Prefix INTO v_prefix FROM Process WHERE Id = p_ProcessId AND IsDeleted = 0 LIMIT 1;
+    -- 1. Fetch Process Settings
+    SELECT COALESCE(Prefix, 'A'), COALESCE(TokenLimitDaily, 0) 
+    INTO v_prefix, v_tokenLimitDaily 
+    FROM Process 
+    WHERE Id = p_ProcessId AND IsDeleted = 0 
+    LIMIT 1;
+
     IF v_prefix IS NULL THEN SET v_prefix = 'A'; END IF;
 
-    -- Calculate today's next sequence for process
+    -- 2. Daily Token Limit Check (Excludes Canceled tokens 18006)
+    IF v_tokenLimitDaily > 0 THEN
+        SELECT COUNT(1) INTO v_activeCount
+        FROM TokenTransaction
+        WHERE ProcessId = p_ProcessId
+          AND DATE(IssuedTime) = CURRENT_DATE()
+          AND IsDeleted = 0
+          AND TokenStatus <> 18006; -- 18006: Canceled
+
+        IF v_activeCount >= v_tokenLimitDaily THEN
+            SELECT 0 AS ID, 101 AS ErrNo, 0 AS RowsCount, 
+                   CONCAT('Daily token limit reached for this service (Maximum: ', v_tokenLimitDaily, '). No more tokens can be issued today.') AS ErrMsg, 
+                   '' AS TokenNumber;
+            LEAVE proc_body;
+        END IF;
+    END IF;
+
+    -- 3. Calculate today's next sequence for process
     SELECT COALESCE(MAX(CAST(SUBSTRING_INDEX(TokenNumber, '-', -1) AS UNSIGNED)), 0) + 1 INTO v_nextSeq
     FROM TokenTransaction
     WHERE ProcessId = p_ProcessId 
@@ -82,7 +106,7 @@ proc_body: BEGIN
 
     SET v_tokenNum = CONCAT(v_prefix, '-', LPAD(v_nextSeq, 3, '0'));
 
-    -- Insert Token
+    -- 4. Insert Token
     INSERT INTO TokenTransaction (
         TokenNumber, OrganizationId, LocationId, AreaId, ProcessId, PriorityTier, TokenStatus,
         CustomerName, CustomerPhone, IssuedTime, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted

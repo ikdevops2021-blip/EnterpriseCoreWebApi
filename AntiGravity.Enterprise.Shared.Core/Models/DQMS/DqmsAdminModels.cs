@@ -43,6 +43,11 @@ namespace AntiGravity.Enterprise.Shared.Core.Models.DQMS
         public string Prefix { get; set; } = "A";
         public int TargetTATMinutes { get; set; } = 15;
         public bool AllowSubTokens { get; set; }
+        public bool IsSMS { get; set; } = true;
+        public bool IsWhatsApp { get; set; } = true;
+        public bool IsEmail { get; set; } = true;
+        public bool IsFeedBack { get; set; } = true;
+        public int? TokenLimitDaily { get; set; } = 0;
         public bool IsActive { get; set; } = true;
         public int CreatedBy { get; set; }
         public DateTime CreatedDate { get; set; }

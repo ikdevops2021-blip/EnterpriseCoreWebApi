@@ -155,6 +155,11 @@ namespace DNAQMSAPI.Infrastructure.Services
                     p_Prefix = model.Prefix,
                     p_TargetTATMinutes = model.TargetTATMinutes,
                     p_AllowSubTokens = model.AllowSubTokens ? 1 : 0,
+                    p_IsSMS = model.IsSMS ? 1 : 0,
+                    p_IsWhatsApp = model.IsWhatsApp ? 1 : 0,
+                    p_IsEmail = model.IsEmail ? 1 : 0,
+                    p_IsFeedBack = model.IsFeedBack ? 1 : 0,
+                    p_TokenLimitDaily = model.TokenLimitDaily ?? 0,
                     p_IsActive = model.IsActive ? 1 : 0,
                     p_UID = userId
                 };

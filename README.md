@@ -93,6 +93,18 @@ The template includes a comprehensive database schema designed for enterprise sy
 | | `PaymentStatusHistory` | Transaction state transition history (Pending -> Success/Failed). |
 | | `WebhookLogs` | Raw webhook payloads and processing logs from payment gateways. |
 | | `SubscriptionSaaS` | SaaS subscription plans, tiers, features, and billing cycles. |
+| **DQMS Queue Management** | `Area` | Physical facility zones and wings (`AZ-01 Main Service Hall`, `AZ-02 Priority Wing`). |
+| | `Process` | Services & Process Pipelines master table (`ProcessCode`, `ProcessName`, `TargetTATMinutes`, `AllowSubTokens`, `Prefix`, `IsSMS`, `IsWhatsApp`, `IsEmail`, `IsFeedBack`, `TokenLimitDaily`). |
+| | `ProcessStep` | Multi-step process workflow pipelines (`StepOrder`, `StepName`, `TargetTATMinutes`). |
+| | `ProcessBlackoutDay` | Selective blackout days and holiday schedules per service. |
+| | `Counter` | Physical counter stations & service desks (`CounterNumber`, `CounterName`, `AreaId`, `CurrentStatus`). |
+| | `UserCounterAssignment` | Maps counter operators to specific counters and services (`UserId`, `CounterId`, `ProcessId`). |
+| | `DisplayTemplate` | Waiting room 4K TV screen display templates (Grid, Split-Screen Video, High-Density List). |
+| | `ProcessDisplayMapping` | Assigns display templates to specific facility areas and service processes. |
+| | `NotificationConfig` | Service threshold lead configs (e.g. notify customer 3 numbers in advance via WhatsApp/SMS). |
+| | `TokenTransaction` | Primary token ticket records (`TokenNumber`, `ProcessId`, `CounterId`, `Status`, `IssuedTime`, `CalledTime`). |
+| | `TokenAuditLog` | Complete audit trail of token state transitions (`Issued` ➔ `Called` ➔ `Serving` ➔ `Completed` / `Canceled`). |
+| | `NavigationMenu` | Dynamic plug-and-play side navigation menu items and permissions. |
 | **Logging & Diagnostics** | `AppLogs` | Application logging table for audit trails and diagnostics. |
 
 ---
@@ -100,6 +112,12 @@ The template includes a comprehensive database schema designed for enterprise sy
 ### 2. Comprehensive Stored Procedures Reference
 | Module | Stored Procedure Name | Short Details & Functionality |
 | :--- | :--- | :--- |
+| **DQMS Queue & Admin** | `PR_S_Process` / `PR_IU_Process` | Search and Insert/Update operations for Services/Processes with Channel Flags & Daily Token Limits. |
+| | `PR_IU_IssueToken` | Issues queue tickets with Daily Maximum Token Quota validation (excluding cancelled tokens). |
+| | `PR_IU_CallNextToken` | Calls next priority token in waiting queue for a specific counter. |
+| | `PR_S_Area` / `PR_IU_Area` | Search and manage facility areas and waiting zones. |
+| | `PR_S_Counter` / `PR_IU_Counter` | Search and manage teller counter stations. |
+| | `PR_S_DisplayTemplate` / `PR_IU_DisplayTemplate` | Search and manage waiting room TV display templates. |
 | **Auth & User** | `sp_User_Authenticate` | Validates email/username and returns user authentication payload. |
 | | `sp_User_GetPermissions` | Fetches consolidated permissions for a specific user and role set. |
 | | `sp_User_Create` / `sp_User_Update` | Manages user registration, profile updates, and status changes. |
