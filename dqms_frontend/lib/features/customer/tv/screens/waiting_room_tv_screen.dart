@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:dqms_frontend/core/models/customer_models.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
@@ -161,7 +162,7 @@ class WaitingRoomTvScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Audio Voice Announcement Pill
+            // Audio Voice Announcement Pill (Pulsing Animation)
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Container(
@@ -191,11 +192,20 @@ class WaitingRoomTvScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-              ),
+              )
+                  .animate(
+                    onPlay: (controller) => controller.repeat(reverse: true),
+                  )
+                  .scale(
+                    begin: const Offset(1.0, 1.0),
+                    end: const Offset(1.04, 1.04),
+                    duration: 800.ms,
+                    curve: Curves.easeInOut,
+                  ),
             ),
             const SizedBox(height: 28),
 
-            // Giant Token Number
+            // Giant Token Number (Smooth Scale & Fade-In on change)
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
@@ -208,7 +218,15 @@ class WaitingRoomTvScreen extends ConsumerWidget {
                   letterSpacing: 4.0,
                   height: 1.0,
                 ),
-              ),
+              )
+                  .animate(key: ValueKey(token))
+                  .scale(
+                    begin: const Offset(0.85, 0.85),
+                    end: const Offset(1.0, 1.0),
+                    duration: 400.ms,
+                    curve: Curves.easeOutBack,
+                  )
+                  .fadeIn(),
             ),
             const SizedBox(height: 12),
 
@@ -231,7 +249,10 @@ class WaitingRoomTvScreen extends ConsumerWidget {
                     ),
                   ),
                 ],
-              ),
+              )
+                  .animate(key: ValueKey(counter))
+                  .slideX(begin: 0.1, end: 0, duration: 400.ms, curve: Curves.easeOutCubic)
+                  .fadeIn(),
             ),
             const SizedBox(height: 20),
 
@@ -348,7 +369,10 @@ class WaitingRoomTvScreen extends ConsumerWidget {
                             ],
                           ),
                         ),
-                      );
+                      )
+                          .animate()
+                          .fadeIn(duration: 300.ms, delay: (50 * i).ms)
+                          .slideX(begin: 0.05, end: 0, duration: 300.ms);
                     },
                   ),
           ),

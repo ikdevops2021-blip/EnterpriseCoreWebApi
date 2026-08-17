@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/features/dashboard/providers/dashboard_provider.dart';
 
 /// ============================================================================
 /// QUEUE TREND CHART — HOURLY TRAFFIC & CAPACITY ANALYTICS
-/// Visual chart illustrating hourly queue load vs served volume & capacity
+/// Interactive fl_chart illustrating hourly queue load vs served volume & capacity
 /// ============================================================================
 class QueueTrendChart extends StatelessWidget {
   final List<QueueTrendDataPoint> trendData;
@@ -16,12 +17,26 @@ class QueueTrendChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine max scale factor
-    int maxVal = 80;
-    for (final dp in trendData) {
-      if (dp.waitingCount > maxVal) maxVal = dp.waitingCount;
-      if (dp.servedCount > maxVal) maxVal = dp.servedCount;
+    if (trendData.isEmpty) {
+      return Container(
+        height: 220,
+        decoration: BoxDecoration(
+          color: AppColors.bgSurface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.borderSubtle),
+        ),
+        child: const Center(
+          child: Text('No trend data available for current shift', style: TextStyle(color: AppColors.textSubtle)),
+        ),
+      );
     }
+
+    double maxY = 40;
+    for (final dp in trendData) {
+      if (dp.waitingCount > maxY) maxY = dp.waitingCount.toDouble();
+      if (dp.servedCount > maxY) maxY = dp.servedCount.toDouble();
+    }
+    maxY = (maxY * 1.25).ceilToDouble();
 
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -88,101 +103,138 @@ class QueueTrendChart extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
-                // Custom Bar Chart Area
+                // Interactive FL Chart
                 SizedBox(
-                  height: 160,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: trendData.map((dp) {
-                      final waitingHeightPct = (dp.waitingCount / maxVal).clamp(0.05, 1.0);
-                      final servedHeightPct = (dp.servedCount / maxVal).clamp(0.05, 1.0);
-
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              // Stacked Dual Bars
-                              Expanded(
-                                child: Stack(
-                                  alignment: Alignment.bottomCenter,
-                                  children: [
-                                    // Reference Capacity Threshold Line
-                                    Positioned(
-                                      top: (1.0 - (dp.capacityLimit / maxVal).clamp(0.0, 1.0)) * 120,
-                                      left: 0,
-                                      right: 0,
-                                      child: Container(
-                                        height: 1,
-                                        color: AppColors.statusDeactive.withValues(alpha: 0.4),
-                                      ),
-                                    ),
-
-                                    // Bars Row
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        Expanded(
-                                          child: FractionallySizedBox(
-                                            heightFactor: waitingHeightPct,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  begin: Alignment.topCenter,
-                                                  end: Alignment.bottomCenter,
-                                                  colors: [
-                                                    AppColors.neonAmber,
-                                                    AppColors.neonAmber.withValues(alpha: 0.4),
-                                                  ],
-                                                ),
-                                                borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 2),
-                                        Expanded(
-                                          child: FractionallySizedBox(
-                                            heightFactor: servedHeightPct,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  begin: Alignment.topCenter,
-                                                  end: Alignment.bottomCenter,
-                                                  colors: [
-                                                    AppColors.neonEmerald,
-                                                    AppColors.neonEmerald.withValues(alpha: 0.4),
-                                                  ],
-                                                ),
-                                                borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                  height: 180,
+                  child: LineChart(
+                    LineChartData(
+                      minX: 0,
+                      maxX: (trendData.length - 1).toDouble().clamp(1.0, 24.0),
+                      minY: 0,
+                      maxY: maxY,
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        horizontalInterval: maxY > 60 ? 20 : 10,
+                        getDrawingHorizontalLine: (val) => FlLine(
+                          color: AppColors.borderSubtle.withValues(alpha: 0.4),
+                          strokeWidth: 1,
+                          dashArray: [4, 4],
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 32,
+                            interval: maxY > 60 ? 20 : 10,
+                            getTitlesWidget: (val, meta) => Text(
+                              val.toInt().toString(),
+                              style: const TextStyle(
+                                color: AppColors.textSubtle,
+                                fontSize: 10,
+                                fontFamily: 'monospace',
                               ),
-                        const SizedBox(height: 8),
-                        Text(
-                          dp.hour,
-                          style: const TextStyle(
-                            color: AppColors.textSubtle,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 24,
+                            interval: 1,
+                            getTitlesWidget: (val, meta) {
+                              final idx = val.toInt();
+                              if (idx >= 0 && idx < trendData.length) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: Text(
+                                    trendData[idx].hour,
+                                    style: const TextStyle(
+                                      color: AppColors.textSubtle,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      lineTouchData: LineTouchData(
+                        handleBuiltInTouches: true,
+                        touchTooltipData: LineTouchTooltipData(
+                          getTooltipItems: (touchedSpots) {
+                            return touchedSpots.map((spot) {
+                              final isWaiting = spot.barIndex == 0;
+                              final label = isWaiting ? 'Waiting' : 'Served';
+                              final color = isWaiting ? AppColors.neonAmber : AppColors.neonEmerald;
+                              return LineTooltipItem(
+                                '$label: ${spot.y.toInt()}',
+                                TextStyle(
+                                  color: color,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 11,
+                                ),
+                              );
+                            }).toList();
+                          },
+                        ),
+                      ),
+                      lineBarsData: [
+                        // Series 1: Waiting Load (Neon Amber with smooth gradient area)
+                        LineChartBarData(
+                          spots: trendData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.waitingCount.toDouble())).toList(),
+                          isCurved: true,
+                          curveSmoothness: 0.35,
+                          color: AppColors.neonAmber,
+                          barWidth: 3,
+                          isStrokeCapRound: true,
+                          dotData: const FlDotData(show: true),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                AppColors.neonAmber.withValues(alpha: 0.25),
+                                AppColors.neonAmber.withValues(alpha: 0.0),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Series 2: Served Count (Neon Emerald with subtle area fill)
+                        LineChartBarData(
+                          spots: trendData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.servedCount.toDouble())).toList(),
+                          isCurved: true,
+                          curveSmoothness: 0.35,
+                          color: AppColors.neonEmerald,
+                          barWidth: 3,
+                          isStrokeCapRound: true,
+                          dotData: const FlDotData(show: true),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                AppColors.neonEmerald.withValues(alpha: 0.2),
+                                AppColors.neonEmerald.withValues(alpha: 0.0),
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                );
-              }).toList(),
-            ),
-          ),
+                ),
               ],
             ),
           ),
