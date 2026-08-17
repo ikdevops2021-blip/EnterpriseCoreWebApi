@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/features/dashboard/providers/dashboard_provider.dart';
 
@@ -16,6 +18,10 @@ class DashboardKpiStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (state.isLoading) {
+      return _buildSkeletonKpiStrip();
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         // Adapt card layout based on container width
@@ -179,7 +185,10 @@ class DashboardKpiStrip extends StatelessWidget {
           ),
         ],
       ),
-    );
+    )
+        .animate()
+        .fadeIn(duration: 300.ms)
+        .slideY(begin: 0.05, end: 0, duration: 300.ms);
   }
 
   /// Alert / Incident Card
@@ -338,6 +347,29 @@ class DashboardKpiStrip extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  /// Skeleton Shimmer Loading Strip
+  Widget _buildSkeletonKpiStrip() {
+    return Shimmer.fromColors(
+      baseColor: AppColors.bgSurface,
+      highlightColor: AppColors.bgCard,
+      child: Row(
+        children: List.generate(
+          5,
+          (i) => Expanded(
+            child: Container(
+              height: 100,
+              margin: EdgeInsets.only(left: i == 0 ? 0 : 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

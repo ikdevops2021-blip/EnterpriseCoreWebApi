@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
@@ -231,7 +232,14 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
                   border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4), width: 2),
                 ),
                 child: const Icon(Icons.touch_app_rounded, color: AppColors.brandPrimary, size: 72),
-              ),
+              )
+                  .animate(onPlay: (controller) => controller.repeat(reverse: true))
+                  .scale(
+                    begin: const Offset(1.0, 1.0),
+                    end: const Offset(1.08, 1.08),
+                    duration: 1200.ms,
+                    curve: Curves.easeInOut,
+                  ),
               const SizedBox(height: 24),
               const Text(
                 'WELCOME TO DQMS ENTERPRISE',
@@ -261,7 +269,9 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
                     notifier.startCheckIn();
                   },
                 ),
-              ),
+              )
+                  .animate(onPlay: (controller) => controller.repeat(reverse: true))
+                  .shimmer(duration: 2.seconds, color: Colors.white24),
               const SizedBox(height: 48),
             ],
           ),
@@ -429,7 +439,10 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
                     itemCount: filteredProcesses.length,
                     itemBuilder: (ctx, i) {
                       final proc = filteredProcesses[i];
-                      return _buildServiceCard(proc, notifier);
+                      return _buildServiceCard(proc, notifier)
+                          .animate()
+                          .fadeIn(duration: 300.ms, delay: (35 * i).ms)
+                          .slideY(begin: 0.08, end: 0, duration: 300.ms, curve: Curves.easeOutCubic);
                     },
                   ),
           ),
@@ -667,7 +680,10 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
                       ],
                     ),
                   ),
-                );
+                )
+                    .animate()
+                    .fadeIn(duration: 300.ms, delay: (40 * i).ms)
+                    .slideX(begin: 0.05, end: 0, duration: 300.ms, curve: Curves.easeOutCubic);
               },
             ),
           ),
@@ -801,11 +817,25 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
             color: AppColors.bgSurface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.statusActive.withValues(alpha: 0.5), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.statusActive.withValues(alpha: 0.15),
+                blurRadius: 24,
+                spreadRadius: 2,
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.check_circle_rounded, color: AppColors.statusActive, size: 56),
+              const Icon(Icons.check_circle_rounded, color: AppColors.statusActive, size: 56)
+                  .animate()
+                  .scale(
+                    begin: const Offset(0.4, 0.4),
+                    end: const Offset(1.0, 1.0),
+                    duration: 600.ms,
+                    curve: Curves.elasticOut,
+                  ),
               const SizedBox(height: 10),
               const Text('TICKET GENERATED SUCCESSFULLY!', style: TextStyle(color: AppColors.statusActive, fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: 1.0)),
               const SizedBox(height: 16),
@@ -826,7 +856,9 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
                     Text(
                       state.generatedTokenNumber,
                       style: const TextStyle(color: AppColors.brandPrimary, fontSize: 52, fontWeight: FontWeight.w900, fontFamily: 'monospace', letterSpacing: 2.0),
-                    ),
+                    )
+                        .animate()
+                        .shimmer(duration: 1800.ms, color: Colors.white24),
                     const SizedBox(height: 6),
                     Text(
                       state.selectedService ?? 'General Registration',
@@ -888,7 +920,10 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
               ),
             ],
           ),
-        ),
+        )
+            .animate()
+            .slideY(begin: -0.1, end: 0, duration: 500.ms, curve: Curves.easeOutBack)
+            .fadeIn(),
       ),
     );
   }

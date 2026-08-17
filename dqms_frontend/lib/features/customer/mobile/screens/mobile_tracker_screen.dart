@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/features/customer/providers/customer_experience_provider.dart';
@@ -234,7 +235,14 @@ class MobileTrackerScreen extends ConsumerWidget {
           ),
         ],
       ),
-    );
+    )
+        .animate(onPlay: (controller) => controller.repeat(reverse: true))
+        .scale(
+          begin: const Offset(1.0, 1.0),
+          end: const Offset(1.025, 1.025),
+          duration: 800.ms,
+          curve: Curves.easeInOut,
+        );
   }
 
   Widget _buildMetricCard({

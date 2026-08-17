@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/enums/dqms_enums.dart';
 import '../../../core/models/staff_models.dart';
@@ -95,7 +97,7 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
             _buildOperatorHeader(session),
             Expanded(
               child: tokenQueueState.when(
-                loading: () => const Center(child: CircularProgressIndicator(color: OperatorTheme.borderHighlight)),
+                loading: () => _buildSkeletonQueueScreen(),
                 error: (err, _) => Center(child: Text('Queue Error: $err', style: const TextStyle(color: OperatorTheme.actionCancel))),
                 data: (tokens) {
                   final activeToken = tokens.where((t) => t.tokenStatus == e_TokenStatus.calling.value || t.tokenStatus == e_TokenStatus.active.value || t.tokenStatus == e_TokenStatus.hold.value).firstOrNull;
@@ -243,6 +245,56 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
     );
   }
 
+  /// Skeleton Shimmer Loading Screen for Operator
+  Widget _buildSkeletonQueueScreen() {
+    return Shimmer.fromColors(
+      baseColor: OperatorTheme.bgSurface,
+      highlightColor: OperatorTheme.bgCard,
+      child: Row(
+        children: [
+          Expanded(
+            flex: 65,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 240,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    height: 60,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 35,
+            child: Container(
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Prominent Current Active Token Display
   Widget _buildActiveTokenCard(TokenTransactionDto? token) {
     if (token == null) {
@@ -270,20 +322,43 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
     }
 
     final isHolding = token.tokenStatus == e_TokenStatus.hold.value;
+    final isCalling = token.tokenStatus == e_TokenStatus.calling.value;
 
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
         color: OperatorTheme.bgSurface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: isHolding ? OperatorTheme.actionHold : OperatorTheme.borderHighlight, width: 2),
+        border: Border.all(
+          color: isHolding
+              ? OperatorTheme.actionHold
+              : (isCalling ? OperatorTheme.actionRecall : OperatorTheme.borderHighlight),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isCalling ? OperatorTheme.actionRecall : OperatorTheme.borderHighlight).withValues(alpha: 0.15),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text('NOW SERVING', style: TextStyle(color: isHolding ? OperatorTheme.actionHold : OperatorTheme.borderHighlight, fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.5)),
+              Text(
+                isCalling ? 'NOW CALLING...' : (isHolding ? 'ON HOLD' : 'NOW SERVING'),
+                style: TextStyle(
+                  color: isHolding
+                      ? OperatorTheme.actionHold
+                      : (isCalling ? OperatorTheme.actionRecall : OperatorTheme.borderHighlight),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.5,
+                ),
+              ),
               const Spacer(),
               _buildPriorityBadge(token.priorityTier),
             ],
@@ -310,7 +385,10 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
           ),
         ],
       ),
-    );
+    )
+        .animate(key: ValueKey('${token.tokenNumber}_${token.tokenStatus}'))
+        .scale(begin: const Offset(0.96, 0.96), end: const Offset(1.0, 1.0), duration: 350.ms, curve: Curves.easeOutBack)
+        .fadeIn();
   }
 
   /// Low-Friction Hotkey Action Toolbar
@@ -418,7 +496,10 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
                         subtitle: Text(item.customerName ?? 'Walk-in Ticket', style: const TextStyle(color: OperatorTheme.textMuted, fontSize: 12)),
                         trailing: const Icon(Icons.arrow_forward_ios_rounded, color: OperatorTheme.textSubtle, size: 14),
                       ),
-                    );
+                    )
+                        .animate()
+                        .fadeIn(duration: 250.ms, delay: (25 * i).ms)
+                        .slideX(begin: 0.04, end: 0, duration: 250.ms);
                   },
                 ),
         ),
@@ -493,7 +574,10 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
                             ],
                         ],
                       ),
-                    );
+                    )
+                        .animate()
+                        .fadeIn(duration: 250.ms, delay: (20 * i).ms)
+                        .slideY(begin: 0.05, end: 0, duration: 250.ms);
                   },
                 ),
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart';
@@ -201,7 +202,10 @@ class _StaffLobbyScreenState extends ConsumerState<StaffLobbyScreen> {
                 childAspectRatio: 2.2,
               ),
               itemCount: processes.length,
-              itemBuilder: (ctx, i) => _buildProcessCard(processes[i], session),
+              itemBuilder: (ctx, i) => _buildProcessCard(processes[i], session)
+                  .animate()
+                  .fadeIn(duration: 250.ms, delay: (30 * i).ms)
+                  .slideY(begin: 0.05, end: 0, duration: 250.ms),
             ),
         ],
       ),
@@ -368,7 +372,10 @@ class _StaffLobbyScreenState extends ConsumerState<StaffLobbyScreen> {
               childAspectRatio: 1.8,
             ),
             itemCount: permittedCounters.length,
-            itemBuilder: (ctx, i) => _buildCounterCard(permittedCounters[i], session),
+            itemBuilder: (ctx, i) => _buildCounterCard(permittedCounters[i], session)
+                .animate()
+                .fadeIn(duration: 250.ms, delay: (25 * i).ms)
+                .scale(begin: const Offset(0.96, 0.96), end: const Offset(1, 1), duration: 250.ms),
           ),
           const SizedBox(height: 32),
 
@@ -393,7 +400,9 @@ class _StaffLobbyScreenState extends ConsumerState<StaffLobbyScreen> {
                   context.go('/staff/counter');
                 },
               ),
-            ),
+            )
+                .animate(onPlay: (controller) => controller.repeat(reverse: true))
+                .shimmer(duration: 2.seconds, color: Colors.white.withValues(alpha: 0.2)),
         ],
       ),
     );

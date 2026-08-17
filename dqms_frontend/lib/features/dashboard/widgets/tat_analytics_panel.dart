@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/features/dashboard/providers/dashboard_provider.dart';
 
@@ -63,7 +64,9 @@ class TatAnalyticsPanel extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Process SLA List
-          ...tatItems.map((item) {
+          ...tatItems.asMap().entries.map((entry) {
+            final i = entry.key;
+            final item = entry.value;
             final isSlaBreached = item.actualAvgMins > item.targetSlaMins;
             final statusColor = isSlaBreached ? AppColors.statusDeactive : AppColors.statusActive;
 
@@ -117,7 +120,7 @@ class TatAnalyticsPanel extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
 
-                  // Progress Bar
+                  // Progress Bar with smooth animated fill
                   Stack(
                     children: [
                       Container(
@@ -136,12 +139,23 @@ class TatAnalyticsPanel extends StatelessWidget {
                             borderRadius: BorderRadius.circular(3),
                           ),
                         ),
-                      ),
+                      )
+                          .animate()
+                          .scaleX(
+                            begin: 0,
+                            end: 1,
+                            alignment: Alignment.centerLeft,
+                            duration: 600.ms,
+                            delay: (60 * i).ms,
+                            curve: Curves.easeOutCubic,
+                          ),
                     ],
                   ),
                 ],
               ),
-            );
+            )
+                .animate()
+                .fadeIn(duration: 300.ms, delay: (40 * i).ms);
           }),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
 import 'package:dqms_frontend/core/widgets/dqms_drawer.dart';
@@ -96,7 +97,10 @@ class MasterDetailLayout extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
+            )
+                .animate()
+                .fadeIn(duration: 200.ms)
+                .slideX(begin: 0.04, end: 0, duration: 200.ms),
           ),
         ],
       ],
