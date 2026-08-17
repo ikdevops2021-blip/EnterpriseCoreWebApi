@@ -159,6 +159,8 @@ class NavigationMenuNotifier extends AsyncNotifier<List<NavigationMenuModel>> {
 /// This ensures the UI is never broken even without the DB table seeded.
 /// ============================================================================
 const List<NavigationMenuModel> _fallbackMenus = [
+  NavigationMenuModel(id: 16, title: 'Lobby View',                 iconName: 'tv_rounded',                   routePath: '/staff/lobby',             sortOrder: 0,  isActive: true),
+  NavigationMenuModel(id: 17, title: 'Counter Terminal',           iconName: 'desk_rounded',                 routePath: '/staff/counter',           sortOrder: 0,  isActive: true),
   NavigationMenuModel(id: 1,  title: 'Areas & Zones',                iconName: 'grid_view_rounded',            routePath: '/admin/areas',             sortOrder: 1,  isActive: true),
   NavigationMenuModel(id: 2,  title: 'Services & Process Pipelines', iconName: 'account_tree_rounded', routePath: '/admin/processes', sortOrder: 2, isActive: true),
   NavigationMenuModel(id: 15, title: 'Token Transactions & Audit Logs', iconName: 'confirmation_number_rounded', routePath: '/admin/token-transactions', sortOrder: 3, isActive: true),

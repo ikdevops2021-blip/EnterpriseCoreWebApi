@@ -9,9 +9,13 @@ class AuthUserModel {
   final String userCode;
   final String fullName;
   final String email;
-  final String roleName;
+  final String roleName; // 'SuperAdmin', 'Admin', 'BranchManager', 'CounterOperator', 'Kiosk'
   final int organizationId;
   final String token;
+  /// Process IDs this staff member is permitted to operate
+  final List<int> assignedProcessIds;
+  /// Counter IDs this staff member is permitted to open
+  final List<int> assignedCounterIds;
 
   const AuthUserModel({
     required this.userId,
@@ -21,7 +25,15 @@ class AuthUserModel {
     required this.roleName,
     required this.organizationId,
     required this.token,
+    this.assignedProcessIds = const [],
+    this.assignedCounterIds = const [],
   });
+
+  /// Returns true if this user is admin-level (full admin panel access)
+  bool get isAdmin => roleName == 'SuperAdmin' || roleName == 'Admin' || roleName == 'BranchManager';
+
+  /// Returns true if this user is a counter staff operator
+  bool get isStaff => roleName == 'CounterOperator' || roleName == 'Receptionist';
 
   factory AuthUserModel.demoAdmin() {
     return const AuthUserModel(
@@ -32,6 +44,8 @@ class AuthUserModel {
       roleName: 'SuperAdmin',
       organizationId: 1,
       token: 'demo-jwt-bearer-token-enterprise-99812',
+      assignedProcessIds: [],
+      assignedCounterIds: [],
     );
   }
 }
@@ -127,6 +141,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       if (res.statusCode == 200 && res.data != null && res.data['data'] != null) {
         final data = res.data['data'];
+        final assignedProcessIds = (data['assignedProcessIds'] as List?)?.cast<int>() ?? [];
+        final assignedCounterIds = (data['assignedCounterIds'] as List?)?.cast<int>() ?? [];
         final user = AuthUserModel(
           userId: data['userId'] ?? 1,
           userCode: data['userCode'] ?? identifier,
@@ -135,6 +151,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
           roleName: data['roleName'] ?? 'SuperAdmin',
           organizationId: data['organizationId'] ?? AppConfig.organizationId,
           token: data['token'] ?? 'bearer-token-${DateTime.now().millisecondsSinceEpoch}',
+          assignedProcessIds: assignedProcessIds,
+          assignedCounterIds: assignedCounterIds,
         );
 
         final prefs = await SharedPreferences.getInstance();
@@ -160,14 +178,31 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     // Demo authentication fallback if backend API fails or offline
     if (identifier.isNotEmpty && password.isNotEmpty) {
+      // Determine role from identifier for demo mode
+      final bool isAdminUser = identifier.toLowerCase().contains('admin') ||
+          identifier.toLowerCase().contains('manager') ||
+          identifier.toLowerCase().contains('branch');
+      final bool isKiosk = identifier.toLowerCase().contains('kiosk');
+      final String demoRole = isAdminUser
+          ? 'SuperAdmin'
+          : isKiosk
+              ? 'Kiosk'
+              : 'CounterOperator';
+      final String demoName = isAdminUser
+          ? 'Dr. System Admin'
+          : 'Alex Rivera (Demo Staff)';
+
+      // Demo staff: permitted to serve all processes and counters
       final demoUser = AuthUserModel(
-        userId: 1,
+        userId: isAdminUser ? 1 : 501,
         userCode: identifier,
-        fullName: identifier.contains('admin') ? 'Dr. System Admin' : 'Alex Mercer',
+        fullName: demoName,
         email: identifier,
-        roleName: 'SuperAdmin',
+        roleName: demoRole,
         organizationId: AppConfig.organizationId,
         token: 'demo-jwt-bearer-token-${DateTime.now().millisecondsSinceEpoch}',
+        assignedProcessIds: isAdminUser ? [] : [101, 102, 103, 104, 105],
+        assignedCounterIds: isAdminUser ? [] : [1, 2, 3, 4, 5, 6, 7],
       );
 
       final prefs = await SharedPreferences.getInstance();

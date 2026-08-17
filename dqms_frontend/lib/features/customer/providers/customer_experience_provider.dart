@@ -11,7 +11,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class KioskState {
   final int activeStep; // 0: Welcome, 1: Service, 2: Category, 3: Confirm, 4: Ticket Generated
   final String? selectedService;
+  final int? selectedProcessId;
+  final String? selectedProcessCode;
   final String? selectedCategory;
+  final String searchQuery;
+  final String? customerName;
+  final String? mobileNumber;
   final String generatedTokenNumber;
   final int estimatedWaitMins;
   final String qrCodeData;
@@ -19,7 +24,12 @@ class KioskState {
   const KioskState({
     required this.activeStep,
     this.selectedService,
+    this.selectedProcessId,
+    this.selectedProcessCode,
     this.selectedCategory,
+    this.searchQuery = '',
+    this.customerName,
+    this.mobileNumber,
     this.generatedTokenNumber = 'A-108',
     this.estimatedWaitMins = 8,
     this.qrCodeData = 'https://dqms.org/track/A-108',
@@ -28,7 +38,12 @@ class KioskState {
   KioskState copyWith({
     int? activeStep,
     String? selectedService,
+    int? selectedProcessId,
+    String? selectedProcessCode,
     String? selectedCategory,
+    String? searchQuery,
+    String? customerName,
+    String? mobileNumber,
     String? generatedTokenNumber,
     int? estimatedWaitMins,
     String? qrCodeData,
@@ -36,7 +51,12 @@ class KioskState {
     return KioskState(
       activeStep: activeStep ?? this.activeStep,
       selectedService: selectedService ?? this.selectedService,
+      selectedProcessId: selectedProcessId ?? this.selectedProcessId,
+      selectedProcessCode: selectedProcessCode ?? this.selectedProcessCode,
       selectedCategory: selectedCategory ?? this.selectedCategory,
+      searchQuery: searchQuery ?? this.searchQuery,
+      customerName: customerName ?? this.customerName,
+      mobileNumber: mobileNumber ?? this.mobileNumber,
       generatedTokenNumber: generatedTokenNumber ?? this.generatedTokenNumber,
       estimatedWaitMins: estimatedWaitMins ?? this.estimatedWaitMins,
       qrCodeData: qrCodeData ?? this.qrCodeData,
@@ -47,19 +67,45 @@ class KioskState {
 class KioskNotifier extends StateNotifier<KioskState> {
   KioskNotifier() : super(const KioskState(activeStep: 0));
 
-  void selectService(String service) {
-    state = state.copyWith(selectedService: service, activeStep: 2);
+  void startCheckIn() {
+    state = state.copyWith(activeStep: 1, searchQuery: '');
+  }
+
+  void setSearchQuery(String query) {
+    state = state.copyWith(searchQuery: query);
+  }
+
+  void selectService(String service, {int? processId, String? processCode, int? slaMins}) {
+    state = state.copyWith(
+      selectedService: service,
+      selectedProcessId: processId,
+      selectedProcessCode: processCode,
+      estimatedWaitMins: slaMins ?? 10,
+      activeStep: 2,
+    );
   }
 
   void selectCategory(String category) {
     state = state.copyWith(selectedCategory: category, activeStep: 3);
   }
 
+  void setCustomerInfo({String? name, String? mobile}) {
+    state = state.copyWith(customerName: name, mobileNumber: mobile);
+  }
+
+  void goToStep(int step) {
+    state = state.copyWith(activeStep: step);
+  }
+
   void confirmAndGenerateTicket() {
-    final nextTokenNum = 'A-${100 + DateTime.now().second % 50}';
+    final prefix = state.selectedProcessCode != null && state.selectedProcessCode!.isNotEmpty
+        ? state.selectedProcessCode!.replaceAll('PROC-', 'P-')
+        : 'A';
+    final tokenSeq = 100 + DateTime.now().second % 50;
+    final nextTokenNum = '$prefix-$tokenSeq';
     state = state.copyWith(
       generatedTokenNumber: nextTokenNum,
-      estimatedWaitMins: 10,
+      estimatedWaitMins: state.estimatedWaitMins,
       qrCodeData: 'https://dqms.org/track/$nextTokenNum',
       activeStep: 4,
     );

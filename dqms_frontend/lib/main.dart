@@ -31,11 +31,25 @@ import 'features/customer/appointment/screens/appointment_booking_screen.dart';
 import 'features/customer/appointment/screens/appointments_calendar_screen.dart';
 import 'features/customer/tv/screens/waiting_room_tv_screen.dart';
 
+import 'features/staff/screens/staff_lobby_screen.dart';
+import 'features/staff/screens/counter_operator_screen.dart';
+
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
+  final user = authState.currentUser;
+
+  // Determine correct home route based on user role
+  String homeRoute = '/admin/areas';
+  if (user != null) {
+    if (user.isStaff) {
+      homeRoute = '/staff/lobby';
+    } else if (user.roleName == 'Kiosk') {
+      homeRoute = '/kiosk';
+    }
+  }
 
   return GoRouter(
-    initialLocation: authState.isAuthenticated ? '/admin/areas' : '/login',
+    initialLocation: authState.isAuthenticated ? homeRoute : '/login',
     routes: [
       GoRoute(
         path: '/login',
@@ -132,17 +146,35 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/tv',
         builder: (context, state) => const WaitingRoomTvScreen(),
       ),
+      // Staff Counter Station routes
+      GoRoute(
+        path: '/staff/lobby',
+        builder: (context, state) => const StaffLobbyScreen(),
+      ),
+      GoRoute(
+        path: '/staff/counter',
+        builder: (context, state) => const CounterOperatorScreen(),
+      ),
     ],
     redirect: (context, state) {
       final isAuthenticated = authState.isAuthenticated;
-      final isLoggingIn = state.uri.path == '/login';
+      final path = state.uri.path;
+      final isLoggingIn = path == '/login';
 
-      if (!isAuthenticated && !isLoggingIn) {
-        return '/login';
-      }
+      if (!isAuthenticated && !isLoggingIn) return '/login';
+
       if (isAuthenticated && isLoggingIn) {
+        // Role-based redirect after login
+        if (user != null && user.isStaff) return '/staff/lobby';
+        if (user != null && user.roleName == 'Kiosk') return '/kiosk';
         return '/admin/areas';
       }
+
+      // Prevent staff from accessing admin routes
+      if (isAuthenticated && user != null && user.isStaff) {
+        if (path.startsWith('/admin')) return '/staff/lobby';
+      }
+
       return null;
     },
   );

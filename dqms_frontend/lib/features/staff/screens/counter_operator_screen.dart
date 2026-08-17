@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/enums/dqms_enums.dart';
 import '../../../core/models/staff_models.dart';
 import '../providers/staff_providers.dart';
+import '../providers/staff_session_provider.dart';
 
 /// ============================================================================
 /// DQMS ENTERPRISE DESIGN TOKENS (Per UI_UX_DESIGN_SPEC.md)
@@ -40,6 +42,7 @@ class CounterOperatorScreen extends ConsumerStatefulWidget {
 
 class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
   final FocusNode _keyboardFocusNode = FocusNode();
+  bool _showAuditLog = false; // toggle between Queue and Audit Log panel
 
   @override
   void initState() {
@@ -62,17 +65,17 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
       if (event.logicalKey == LogicalKeyboardKey.space || event.logicalKey == LogicalKeyboardKey.f1) {
         queueNotifier.callNextToken();
       } else if (event.logicalKey == LogicalKeyboardKey.f2 && activeToken != null) {
-        queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.calling);
+        queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.calling, tokenNumber: activeToken.tokenNumber);
       } else if (event.logicalKey == LogicalKeyboardKey.f3 && activeToken != null) {
-        queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.active);
+        queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.active, tokenNumber: activeToken.tokenNumber);
       } else if (event.logicalKey == LogicalKeyboardKey.f4 && activeToken != null) {
-        queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.hold, reason: 'Put on hold by operator');
+        queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.hold, reason: 'Put on hold by operator', tokenNumber: activeToken.tokenNumber);
       } else if (event.logicalKey == LogicalKeyboardKey.f5 && activeToken != null) {
-        queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.completed).then((_) {
+        queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.completed, tokenNumber: activeToken.tokenNumber).then((_) {
           queueNotifier.callNextToken();
         });
       } else if (event.logicalKey == LogicalKeyboardKey.f7 && activeToken != null) {
-        queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.canceled, reason: 'No show / Canceled');
+        queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.canceled, reason: 'No show / Canceled', tokenNumber: activeToken.tokenNumber);
       }
     }
   }
@@ -80,6 +83,7 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
   @override
   Widget build(BuildContext context) {
     final tokenQueueState = ref.watch(tokenQueueProvider);
+    final session = ref.watch(staffSessionProvider);
 
     return KeyboardListener(
       focusNode: _keyboardFocusNode,
@@ -88,7 +92,7 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
         backgroundColor: OperatorTheme.bgCanvas,
         body: Column(
           children: [
-            _buildOperatorHeader(),
+            _buildOperatorHeader(session),
             Expanded(
               child: tokenQueueState.when(
                 loading: () => const Center(child: CircularProgressIndicator(color: OperatorTheme.borderHighlight)),
@@ -114,7 +118,7 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
                           ),
                         ),
                       ),
-                      // Waiting Queue Side Panel (Right 35%)
+                      // Queue/Audit Panel (Right 35%)
                       Expanded(
                         flex: 35,
                         child: Container(
@@ -122,7 +126,9 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
                             color: OperatorTheme.bgSurface,
                             border: Border(left: BorderSide(color: OperatorTheme.borderSubtle, width: 1)),
                           ),
-                          child: _buildWaitingQueueList(waitingTokens),
+                          child: _showAuditLog
+                              ? _buildAuditLogPanel(session)
+                              : _buildWaitingQueueList(waitingTokens),
                         ),
                       ),
                     ],
@@ -136,8 +142,8 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
     );
   }
 
-  /// Operator Header with Counter Info & Quick Token Issue
-  Widget _buildOperatorHeader() {
+  /// Operator Header with Counter Info & Session Context
+  Widget _buildOperatorHeader(StaffSessionState session) {
     return Container(
       height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -147,6 +153,16 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
       ),
       child: Row(
         children: [
+          // Back to Lobby
+          IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: OperatorTheme.textMuted, size: 20),
+            tooltip: 'Back to Lobby',
+            onPressed: () {
+              ref.read(staffSessionProvider.notifier).endSession();
+              context.go('/staff/lobby');
+            },
+          ),
+          const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
@@ -154,11 +170,45 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
               border: Border.all(color: OperatorTheme.actionServe.withValues(alpha: 0.4)),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: const Text('COUNTER 01 • WINDOW A', style: TextStyle(color: OperatorTheme.actionServe, fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 1.0)),
+            child: Text(
+              '${session.selectedCounterNumber.isNotEmpty ? session.selectedCounterNumber : "C-01"}  •  ${session.selectedProcessCode.isNotEmpty ? session.selectedProcessCode : "PROC"}',
+              style: const TextStyle(color: OperatorTheme.actionServe, fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 1.0),
+            ),
           ),
-          const SizedBox(width: 16),
-          const Text('Operator: Staff User 101', style: TextStyle(color: OperatorTheme.textMain, fontWeight: FontWeight.w600, fontSize: 14)),
+          const SizedBox(width: 12),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                session.selectedProcessName.isNotEmpty ? session.selectedProcessName : 'Counter Station',
+                style: const TextStyle(color: OperatorTheme.textMain, fontWeight: FontWeight.w700, fontSize: 13),
+              ),
+              Text(
+                'Operator: ${session.staffName.isNotEmpty ? session.staffName : "Staff"}',
+                style: const TextStyle(color: OperatorTheme.textMuted, fontSize: 11),
+              ),
+            ],
+          ),
           const Spacer(),
+          // Stats badges
+          _buildStatBadge('Called', session.totalCalled.toString(), OperatorTheme.borderHighlight),
+          const SizedBox(width: 8),
+          _buildStatBadge('Done', session.tokensCompleted.toString(), OperatorTheme.actionCall),
+          const SizedBox(width: 8),
+          _buildStatBadge('Cancelled', session.tokensCancelled.toString(), OperatorTheme.actionCancel),
+          const SizedBox(width: 16),
+          // Toggle Audit Log
+          TextButton.icon(
+            icon: Icon(_showAuditLog ? Icons.list_alt_rounded : Icons.history_rounded, size: 16),
+            label: Text(_showAuditLog ? 'Queue' : 'Activity Log'),
+            style: TextButton.styleFrom(
+              foregroundColor: _showAuditLog ? OperatorTheme.actionRecall : OperatorTheme.textMuted,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+            onPressed: () => setState(() => _showAuditLog = !_showAuditLog),
+          ),
+          const SizedBox(width: 8),
           ElevatedButton.icon(
             icon: const Icon(Icons.confirmation_number_outlined, size: 16),
             label: const Text('Issue New Token'),
@@ -170,6 +220,24 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
             ),
             onPressed: () => _showIssueTokenDialog(),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatBadge(String label, String count, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(count, style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w900)),
+          Text(label, style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 9, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -259,13 +327,13 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
           runSpacing: 12,
           children: [
             _buildActionButton('SPACE / F1', 'Call Next', OperatorTheme.actionCall, Icons.campaign_rounded, () => queueNotifier.callNextToken(), isPrimary: true),
-            _buildActionButton('F2', 'Recall', OperatorTheme.actionRecall, Icons.replay_rounded, activeToken != null ? () => queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.calling) : null),
-            _buildActionButton('F3', 'Serve Active', OperatorTheme.actionServe, Icons.play_arrow_rounded, activeToken != null ? () => queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.active) : null),
-            _buildActionButton('F4', 'Hold', OperatorTheme.actionHold, Icons.pause_rounded, activeToken != null ? () => queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.hold, reason: 'Hold') : null),
+            _buildActionButton('F2', 'Recall', OperatorTheme.actionRecall, Icons.replay_rounded, activeToken != null ? () => queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.calling, tokenNumber: activeToken.tokenNumber) : null),
+            _buildActionButton('F3', 'Serve Active', OperatorTheme.actionServe, Icons.play_arrow_rounded, activeToken != null ? () => queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.active, tokenNumber: activeToken.tokenNumber) : null),
+            _buildActionButton('F4', 'Hold', OperatorTheme.actionHold, Icons.pause_rounded, activeToken != null ? () => queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.hold, reason: 'Hold', tokenNumber: activeToken.tokenNumber) : null),
             _buildActionButton('F5', 'Complete & Call Next', OperatorTheme.actionServe, Icons.check_circle_rounded, activeToken != null ? () {
-              queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.completed).then((_) => queueNotifier.callNextToken());
+              queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.completed, tokenNumber: activeToken.tokenNumber).then((_) => queueNotifier.callNextToken());
             } : null, isPrimary: true),
-            _buildActionButton('F7', 'Cancel', OperatorTheme.actionCancel, Icons.cancel_outlined, activeToken != null ? () => queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.canceled, reason: 'No Show') : null),
+            _buildActionButton('F7', 'Cancel', OperatorTheme.actionCancel, Icons.cancel_outlined, activeToken != null ? () => queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.canceled, reason: 'No Show', tokenNumber: activeToken.tokenNumber) : null),
           ],
         ),
       ],
@@ -333,7 +401,7 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
               ? const Center(child: Text('Queue Empty', style: TextStyle(color: OperatorTheme.textSubtle, fontSize: 13)))
               : ListView.separated(
                   itemCount: waitingTokens.length,
-                  separatorBuilder: (_, _) => const Divider(color: OperatorTheme.borderSubtle, height: 1),
+                  separatorBuilder: (_, s) => const Divider(color: OperatorTheme.borderSubtle, height: 1),
                   itemBuilder: (ctx, i) {
                     final item = waitingTokens[i];
                     return Material(
@@ -356,6 +424,93 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
         ),
       ],
     );
+  }
+
+  /// Audit Log Panel — today's token actions by this staff member
+  Widget _buildAuditLogPanel(StaffSessionState session) {
+    final log = session.todayLog;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              const Icon(Icons.history_rounded, color: OperatorTheme.actionRecall, size: 16),
+              const SizedBox(width: 8),
+              const Text('TODAY\'S ACTIVITY LOG', style: TextStyle(color: OperatorTheme.textMain, fontWeight: FontWeight.w700, fontSize: 14)),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: OperatorTheme.actionRecall.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text('${log.length} actions', style: const TextStyle(color: OperatorTheme.actionRecall, fontSize: 12, fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
+        ),
+        const Divider(color: OperatorTheme.borderSubtle, height: 1),
+        Expanded(
+          child: log.isEmpty
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.history_toggle_off_rounded, color: OperatorTheme.textSubtle, size: 40),
+                      SizedBox(height: 8),
+                      Text('No activity yet this session', style: TextStyle(color: OperatorTheme.textSubtle, fontSize: 12)),
+                    ],
+                  ),
+                )
+              : ListView.separated(
+                  itemCount: log.length,
+                  separatorBuilder: (_, s) => const Divider(color: OperatorTheme.borderSubtle, height: 1),
+                  itemBuilder: (ctx, i) {
+                    final entry = log[i];
+                    final actionColor = _auditActionColor(entry.action);
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      child: Row(
+                        children: [
+                          Text(entry.formattedTime, style: const TextStyle(color: OperatorTheme.textSubtle, fontSize: 11, fontFamily: 'monospace')),
+                          const SizedBox(width: 10),
+                          Text(entry.tokenNumber, style: const TextStyle(color: OperatorTheme.textMain, fontWeight: FontWeight.w800, fontSize: 13)),
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: actionColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Text(entry.action, style: TextStyle(color: actionColor, fontSize: 10, fontWeight: FontWeight.w800)),
+                          ),
+                          if (entry.notes != null) ...
+                            [
+                              const SizedBox(width: 6),
+                              Expanded(child: Text(entry.notes!, style: const TextStyle(color: OperatorTheme.textSubtle, fontSize: 10), overflow: TextOverflow.ellipsis)),
+                            ],
+                        ],
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  Color _auditActionColor(String action) {
+    switch (action) {
+      case 'Called': return OperatorTheme.actionCall;
+      case 'Recalled': return OperatorTheme.actionRecall;
+      case 'Serving': return OperatorTheme.actionServe;
+      case 'Completed': return OperatorTheme.actionCall;
+      case 'Cancelled': return OperatorTheme.actionCancel;
+      case 'On Hold': return OperatorTheme.actionHold;
+      default: return OperatorTheme.textMuted;
+    }
   }
 
   Widget _buildPriorityBadge(int priorityTier) {
