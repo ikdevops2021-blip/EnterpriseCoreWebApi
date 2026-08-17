@@ -203,16 +203,16 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: proc.tokenLimitDaily > 0 ? AppColors.brandWarning.withValues(alpha: 0.15) : AppColors.brandPrimary.withValues(alpha: 0.1),
+                                      color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning.withValues(alpha: 0.15) : AppColors.brandPrimary.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(4),
                                       border: Border.all(
-                                        color: proc.tokenLimitDaily > 0 ? AppColors.brandWarning.withValues(alpha: 0.3) : AppColors.brandPrimary.withValues(alpha: 0.2),
+                                        color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning.withValues(alpha: 0.3) : AppColors.brandPrimary.withValues(alpha: 0.2),
                                       ),
                                     ),
                                     child: Text(
                                       proc.tokenLimitDaily > 0 ? '${proc.tokenLimitDaily} / day' : 'Unlimited',
                                       style: TextStyle(
-                                        color: proc.tokenLimitDaily > 0 ? AppColors.brandWarning : AppColors.brandPrimary,
+                                        color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning : AppColors.brandPrimary,
                                         fontSize: 10,
                                         fontWeight: FontWeight.w700,
                                       ),
