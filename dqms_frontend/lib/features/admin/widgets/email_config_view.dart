@@ -47,152 +47,281 @@ class _EmailConfigViewState extends ConsumerState<EmailConfigView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header Card
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.bgSurface,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.borderSubtle),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.mark_email_read_rounded, color: AppColors.brandPrimary, size: 24),
-                    const SizedBox(width: 12),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Organization SMTP Gateway & Email Queue Settings', style: TextStyle(color: AppColors.textMain, fontSize: 16, fontWeight: FontWeight.w700)),
-                        Text('Configure tenant-aware SMTP server credentials, SSL/TLS, and HTML signatures', style: TextStyle(color: AppColors.textSubtle, fontSize: 12)),
-                      ],
-                    ),
-                    const Spacer(),
-                    DqmsStatusBadge.activeState(_isAsyncQueueActive),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                const Divider(color: AppColors.borderSubtle, height: 1),
-                const SizedBox(height: 20),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 650;
 
-                // Form Fields
-                Row(
+              return Container(
+                padding: EdgeInsets.all(isMobile ? 14 : 20),
+                decoration: BoxDecoration(
+                  color: AppColors.bgSurface,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.borderSubtle),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 3, child: DqmsTextField(label: 'SMTP Host Server', controller: _smtpHostCtrl)),
-                    const SizedBox(width: 16),
-                    Expanded(flex: 1, child: DqmsTextField(label: 'SMTP Port', controller: _smtpPortCtrl)),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    if (isMobile) ...[
+                      Row(
                         children: [
-                          const Text('SSL / STARTTLS Enforced', style: TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(_enableSsl ? 'TLS Active' : 'Plaintext', style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis),
-                              ),
-                              Switch(
-                                value: _enableSsl,
-                                onChanged: (val) => setState(() => _enableSsl = val),
-                              ),
-                            ],
+                          const Icon(Icons.mark_email_read_rounded, color: AppColors.brandPrimary, size: 24),
+                          const SizedBox(width: 10),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('SMTP Gateway Settings', style: TextStyle(color: AppColors.textMain, fontSize: 16, fontWeight: FontWeight.w700)),
+                                Text('Tenant SMTP credentials & SSL', style: TextStyle(color: AppColors.textSubtle, fontSize: 11)),
+                              ],
+                            ),
+                          ),
+                          DqmsStatusBadge.activeState(_isAsyncQueueActive),
+                        ],
+                      ),
+                    ] else ...[
+                      Row(
+                        children: [
+                          const Icon(Icons.mark_email_read_rounded, color: AppColors.brandPrimary, size: 24),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Organization SMTP Gateway & Email Queue Settings', style: TextStyle(color: AppColors.textMain, fontSize: 16, fontWeight: FontWeight.w700)),
+                                Text('Configure tenant-aware SMTP server credentials, SSL/TLS, and HTML signatures', style: TextStyle(color: AppColors.textSubtle, fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          DqmsStatusBadge.activeState(_isAsyncQueueActive),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    const Divider(color: AppColors.borderSubtle, height: 1),
+                    const SizedBox(height: 16),
+
+                    // Form Fields
+                    if (isMobile) ...[
+                      DqmsTextField(label: 'SMTP Host Server', controller: _smtpHostCtrl),
+                      const SizedBox(height: 12),
+                      DqmsTextField(label: 'SMTP Port', controller: _smtpPortCtrl),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('SSL / STARTTLS', style: TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(_enableSsl ? 'Active' : 'Off', style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w700)),
+                                    ),
+                                    Switch(
+                                      value: _enableSsl,
+                                      onChanged: (val) => setState(() => _enableSsl = val),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Async Queue', style: TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(_isAsyncQueueActive ? 'Active' : 'Paused', style: TextStyle(color: _isAsyncQueueActive ? AppColors.statusActive : AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w700)),
+                                    ),
+                                    Switch(
+                                      value: _isAsyncQueueActive,
+                                      onChanged: (val) => setState(() => _isAsyncQueueActive = val),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: 12),
+                      DqmsTextField(label: 'SMTP Username / Sender Address', controller: _smtpUserCtrl),
+                      const SizedBox(height: 12),
+                      DqmsTextField(label: 'SMTP Password / API Token', controller: _smtpPassCtrl, obscureText: true),
+                    ] else ...[
+                      Row(
                         children: [
-                          const Text('Async Background Queue', style: TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(_isAsyncQueueActive ? 'Queue Active' : 'Paused', style: TextStyle(color: _isAsyncQueueActive ? AppColors.statusActive : AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis),
-                              ),
-                              Switch(
-                                value: _isAsyncQueueActive,
-                                onChanged: (val) => setState(() => _isAsyncQueueActive = val),
-                              ),
-                            ],
+                          Expanded(flex: 3, child: DqmsTextField(label: 'SMTP Host Server', controller: _smtpHostCtrl)),
+                          const SizedBox(width: 16),
+                          Expanded(flex: 1, child: DqmsTextField(label: 'SMTP Port', controller: _smtpPortCtrl)),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            flex: 2,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('SSL / STARTTLS Enforced', style: TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(_enableSsl ? 'TLS Active' : 'Plaintext', style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis),
+                                    ),
+                                    Switch(
+                                      value: _enableSsl,
+                                      onChanged: (val) => setState(() => _enableSsl = val),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            flex: 2,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Async Background Queue', style: TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(_isAsyncQueueActive ? 'Queue Active' : 'Paused', style: TextStyle(color: _isAsyncQueueActive ? AppColors.statusActive : AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis),
+                                    ),
+                                    Switch(
+                                      value: _isAsyncQueueActive,
+                                      onChanged: (val) => setState(() => _isAsyncQueueActive = val),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                Row(
-                  children: [
-                    Expanded(child: DqmsTextField(label: 'SMTP Username / Sender Address', controller: _smtpUserCtrl)),
-                    const SizedBox(width: 16),
-                    Expanded(child: DqmsTextField(label: 'SMTP Password / API Token', controller: _smtpPassCtrl, obscureText: true)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                DqmsTextField(label: 'Default Outbound Display Name', controller: _senderNameCtrl),
-                const SizedBox(height: 16),
-
-                DqmsTextField(
-                  label: 'Organization HTML Email Signature Template',
-                  controller: _htmlSignatureCtrl,
-                  maxLines: 5,
-                ),
-                const SizedBox(height: 24),
-
-                Row(
-                  children: [
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.send_rounded, size: 16),
-                      label: const Text('Send Test Connection Mail'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.brandPrimary,
-                        side: const BorderSide(color: AppColors.brandPrimary),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(child: DqmsTextField(label: 'SMTP Username / Sender Address', controller: _smtpUserCtrl)),
+                          const SizedBox(width: 16),
+                          Expanded(child: DqmsTextField(label: 'SMTP Password / API Token', controller: _smtpPassCtrl, obscureText: true)),
+                        ],
                       ),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Test mail dispatched to notifications@dqms-enterprise.org.'), backgroundColor: AppColors.statusActive),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 16),
-                    DqmsButton(
-                      label: 'Save SMTP Settings',
-                      icon: Icons.save_rounded,
-                      onPressed: () async {
-                        final messenger = ScaffoldMessenger.of(context);
-                        try {
-                          final dio = ref.read(dioProvider);
-                          await dio.post('${AppConfig.apiV1Base}/email/config', data: {
-                            'smtpHost': _smtpHostCtrl.text,
-                            'smtpPort': int.tryParse(_smtpPortCtrl.text) ?? 587,
-                            'username': _smtpUserCtrl.text,
-                            'password': _smtpPassCtrl.text,
-                            'senderName': _senderNameCtrl.text,
-                            'enableSsl': _enableSsl,
-                            'isAsyncQueueActive': _isAsyncQueueActive,
-                          });
-                        } catch (_) {}
+                    ],
+                    const SizedBox(height: 14),
 
-                        messenger.showSnackBar(
-                          const SnackBar(content: Text('SMTP Gateway settings saved to backend API.'), backgroundColor: AppColors.statusActive),
-                        );
-                      },
+                    DqmsTextField(label: 'Default Outbound Display Name', controller: _senderNameCtrl),
+                    const SizedBox(height: 14),
+
+                    DqmsTextField(
+                      label: 'Organization HTML Email Signature Template',
+                      controller: _htmlSignatureCtrl,
+                      maxLines: 4,
                     ),
+                    const SizedBox(height: 20),
+
+                    if (isMobile) ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.send_rounded, size: 16),
+                          label: const Text('Send Test Connection Mail'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.brandPrimary,
+                            side: const BorderSide(color: AppColors.brandPrimary),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Test mail dispatched to notifications@dqms-enterprise.org.'), backgroundColor: AppColors.statusActive),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: DqmsButton(
+                          label: 'Save SMTP Settings',
+                          icon: Icons.save_rounded,
+                          onPressed: () async {
+                            final messenger = ScaffoldMessenger.of(context);
+                            try {
+                              final dio = ref.read(dioProvider);
+                              await dio.post('${AppConfig.apiV1Base}/email/config', data: {
+                                'smtpHost': _smtpHostCtrl.text,
+                                'smtpPort': int.tryParse(_smtpPortCtrl.text) ?? 587,
+                                'username': _smtpUserCtrl.text,
+                                'password': _smtpPassCtrl.text,
+                                'senderName': _senderNameCtrl.text,
+                                'enableSsl': _enableSsl,
+                                'isAsyncQueueActive': _isAsyncQueueActive,
+                              });
+                            } catch (_) {}
+
+                            messenger.showSnackBar(
+                              const SnackBar(content: Text('SMTP Gateway settings saved to backend API.'), backgroundColor: AppColors.statusActive),
+                            );
+                          },
+                        ),
+                      ),
+                    ] else ...[
+                      Row(
+                        children: [
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.send_rounded, size: 16),
+                            label: const Text('Send Test Connection Mail'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.brandPrimary,
+                              side: const BorderSide(color: AppColors.brandPrimary),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            ),
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Test mail dispatched to notifications@dqms-enterprise.org.'), backgroundColor: AppColors.statusActive),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 16),
+                          DqmsButton(
+                            label: 'Save SMTP Settings',
+                            icon: Icons.save_rounded,
+                            onPressed: () async {
+                              final messenger = ScaffoldMessenger.of(context);
+                              try {
+                                final dio = ref.read(dioProvider);
+                                await dio.post('${AppConfig.apiV1Base}/email/config', data: {
+                                  'smtpHost': _smtpHostCtrl.text,
+                                  'smtpPort': int.tryParse(_smtpPortCtrl.text) ?? 587,
+                                  'username': _smtpUserCtrl.text,
+                                  'password': _smtpPassCtrl.text,
+                                  'senderName': _senderNameCtrl.text,
+                                  'enableSsl': _enableSsl,
+                                  'isAsyncQueueActive': _isAsyncQueueActive,
+                                });
+                              } catch (_) {}
+
+                              messenger.showSnackBar(
+                                const SnackBar(content: Text('SMTP Gateway settings saved to backend API.'), backgroundColor: AppColors.statusActive),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ],
       ),

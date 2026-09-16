@@ -81,25 +81,28 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
             child: const Icon(Icons.touch_app_rounded, color: AppColors.brandPrimary, size: 26),
           ),
           const SizedBox(width: 14),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'DQMS SELF-SERVICE KIOSK',
-                style: TextStyle(
-                  color: AppColors.textMain,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.0,
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'DQMS SELF-SERVICE KIOSK',
+                  style: TextStyle(
+                    color: AppColors.textMain,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.0,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Text(
-                'Touch-first Service Selection & Queue Ticket Issuance',
-                style: TextStyle(color: AppColors.textSubtle, fontSize: 11),
-              ),
-            ],
+                Text(
+                  'Touch-first Service Selection & Queue Ticket Issuance',
+                  style: TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
-          const Spacer(),
           if (state.activeStep > 0)
             TextButton.icon(
               icon: const Icon(Icons.home_outlined, size: 18),

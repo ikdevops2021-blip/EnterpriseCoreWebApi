@@ -6,16 +6,18 @@ import '../theme/app_typography.dart';
 enum DqmsButtonVariant { primary, secondary, outline, destructive, ghost }
 
 /// ============================================================================
-/// DQMS ENTERPRISE BUTTON COMPONENT
-/// Standardized button component consuming AppTheme design tokens
+/// DQMS ENTERPRISE 3D TACTILE BUTTON COMPONENT
+/// Features 3D bevel micro-skeuomorphism, mechanical press depression animation,
+/// specular rim lighting, sci-fi neon hover glow, and compact mode.
 /// ============================================================================
-class DqmsButton extends StatelessWidget {
+class DqmsButton extends StatefulWidget {
   final String label;
   final IconData? icon;
   final VoidCallback? onPressed;
   final DqmsButtonVariant variant;
   final bool isLoading;
   final bool isFullWidth;
+  final bool isCompact;
   final String? hotkey;
 
   const DqmsButton({
@@ -26,87 +28,110 @@ class DqmsButton extends StatelessWidget {
     this.variant = DqmsButtonVariant.primary,
     this.isLoading = false,
     this.isFullWidth = false,
+    this.isCompact = false,
     this.hotkey,
   });
+
+  @override
+  State<DqmsButton> createState() => _DqmsButtonState();
+}
+
+class _DqmsButtonState extends State<DqmsButton> {
+  bool _isHovered = false;
+  bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
     Color bg;
     Color fg;
-    BorderSide border = BorderSide.none;
+    Color borderColor = Colors.transparent;
+    Color glowColor = AppColors.brandPrimary;
 
-    switch (variant) {
+    switch (widget.variant) {
       case DqmsButtonVariant.primary:
-        bg = AppColors.brandPrimary;
+        bg = _isHovered ? AppColors.brandPrimaryHover : AppColors.brandPrimary;
         fg = Colors.white;
+        borderColor = Colors.white.withValues(alpha: 0.25);
+        glowColor = AppColors.brandPrimary;
         break;
       case DqmsButtonVariant.secondary:
-        bg = AppColors.bgSurfaceHover;
+        bg = _isHovered ? AppColors.bgSurfaceHover : AppColors.bgSurface;
         fg = AppColors.textMain;
-        border = const BorderSide(color: AppColors.borderSubtle);
+        borderColor = _isHovered ? AppColors.borderHighlight : AppColors.borderSubtle;
+        glowColor = AppColors.borderHighlight;
         break;
       case DqmsButtonVariant.outline:
-        bg = Colors.transparent;
+        bg = _isHovered ? AppColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent;
         fg = AppColors.brandPrimary;
-        border = const BorderSide(color: AppColors.brandPrimary);
+        borderColor = AppColors.brandPrimary;
+        glowColor = AppColors.brandPrimary;
         break;
       case DqmsButtonVariant.destructive:
-        bg = AppColors.statusDeactive;
+        bg = _isHovered ? const Color(0xFFE5534B) : AppColors.statusDeactive;
         fg = Colors.white;
+        borderColor = Colors.white.withValues(alpha: 0.25);
+        glowColor = AppColors.statusDeactive;
         break;
       case DqmsButtonVariant.ghost:
-        bg = Colors.transparent;
-        fg = AppColors.textMuted;
+        bg = _isHovered ? AppColors.bgSurfaceHover.withValues(alpha: 0.5) : Colors.transparent;
+        fg = _isHovered ? AppColors.textMain : AppColors.textMuted;
+        borderColor = Colors.transparent;
+        glowColor = Colors.transparent;
         break;
     }
 
+    final isEnabled = widget.onPressed != null && !widget.isLoading;
+    final double buttonHeight = widget.isCompact ? AppSpacing.compactButtonHeight : 38.0;
+    final double horizontalPadding = widget.isCompact ? 10.0 : 14.0;
+
     final childWidget = Semantics(
       button: true,
-      label: label,
-      hint: hotkey != null ? 'Hotkey $hotkey' : null,
-      enabled: onPressed != null && !isLoading,
+      label: widget.label,
+      hint: widget.hotkey != null ? 'Hotkey ${widget.hotkey}' : null,
+      enabled: isEnabled,
       child: Row(
-        mainAxisSize: isFullWidth ? MainAxisSize.max : MainAxisSize.min,
+        mainAxisSize: widget.isFullWidth ? MainAxisSize.max : MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (isLoading)
+          if (widget.isLoading)
             SizedBox(
-              width: 14,
-              height: 14,
+              width: widget.isCompact ? 12 : 14,
+              height: widget.isCompact ? 12 : 14,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 color: fg,
               ),
             )
           else ...[
-            if (hotkey != null) ...[
+            if (widget.hotkey != null) ...[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                 decoration: BoxDecoration(
-                  color: fg.withValues(alpha: 0.15),
+                  color: fg.withValues(alpha: 0.18),
                   borderRadius: AppRadius.borderXs,
                 ),
                 child: Text(
-                  hotkey!,
+                  widget.hotkey!,
                   style: AppTypography.tableHeader.copyWith(
                     color: fg,
-                    fontSize: 10,
+                    fontSize: widget.isCompact ? 9 : 10,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
             ],
-            if (icon != null) ...[
-              Icon(icon, size: 16, color: fg),
-              const SizedBox(width: 8),
+            if (widget.icon != null) ...[
+              Icon(widget.icon, size: widget.isCompact ? 14 : 16, color: fg),
+              const SizedBox(width: 6),
             ],
             Text(
-              label,
+              widget.label,
               style: AppTypography.titleSmall.copyWith(
                 color: fg,
-                fontSize: 13,
+                fontSize: widget.isCompact ? 12 : 13,
                 fontWeight: FontWeight.w600,
+                letterSpacing: 0.2,
               ),
             ),
           ],
@@ -114,20 +139,68 @@ class DqmsButton extends StatelessWidget {
       ),
     );
 
-    return SizedBox(
-      width: isFullWidth ? double.infinity : null,
-      height: 40,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: bg,
-          foregroundColor: fg,
-          elevation: 0,
-          side: border,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: RoundedRectangleBorder(borderRadius: AppRadius.borderSm),
+    // 3D Tactile Shadows
+    List<BoxShadow> shadows = [];
+    if (isEnabled && widget.variant != DqmsButtonVariant.ghost) {
+      if (_isPressed) {
+        shadows = AppShadows.sunken3d;
+      } else if (_isHovered) {
+        shadows = [
+          ...AppShadows.floating3d,
+          if (glowColor != Colors.transparent)
+            ...AppShadows.neonGlow(glowColor, radius: 10, spread: 0.4),
+        ];
+      } else {
+        shadows = [
+          const BoxShadow(
+            color: Color(0x1FFFFFFF),
+            offset: Offset(-0.5, -0.5),
+            blurRadius: 0.5,
+          ),
+          const BoxShadow(
+            color: Color(0x66000000),
+            offset: Offset(1, 2.5),
+            blurRadius: 3,
+          ),
+        ];
+      }
+    }
+
+    final double verticalShift = _isPressed ? 1.5 : (_isHovered ? -1.0 : 0.0);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 120),
+      curve: Curves.easeOutCubic,
+      transform: Matrix4.translationValues(0.0, verticalShift, 0.0),
+      width: widget.isFullWidth ? double.infinity : null,
+      height: buttonHeight,
+      decoration: BoxDecoration(
+        color: isEnabled ? bg : bg.withValues(alpha: 0.4),
+        borderRadius: AppRadius.borderSm,
+        border: Border.all(
+          color: isEnabled ? borderColor : AppColors.borderSubtle.withValues(alpha: 0.4),
+          width: 1.0,
         ),
-        onPressed: isLoading ? null : onPressed,
-        child: childWidget,
+        boxShadow: shadows,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: AppRadius.borderSm,
+        child: InkWell(
+          borderRadius: AppRadius.borderSm,
+          onTap: isEnabled ? widget.onPressed : null,
+          onTapDown: (_) => isEnabled ? setState(() => _isPressed = true) : null,
+          onTapUp: (_) => isEnabled ? setState(() => _isPressed = false) : null,
+          onTapCancel: () => isEnabled ? setState(() => _isPressed = false) : null,
+          onHover: (hover) => isEnabled ? setState(() => _isHovered = hover) : null,
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: widget.isCompact ? 4.0 : 6.0,
+            ),
+            child: childWidget,
+          ),
+        ),
       ),
     );
   }

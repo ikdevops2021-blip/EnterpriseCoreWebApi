@@ -93,113 +93,224 @@ class _TenantMasterViewState extends ConsumerState<TenantMasterView> {
   }
 
   Widget _buildMasterTable(List<TenantModel> tenants) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
+
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 12 : 18),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: DqmsTextField(
-                  hintText: 'Search Tenant Name, Registration Key, or SaaS Plan...',
+              if (isMobile) ...[
+                DqmsTextField(
+                  hintText: 'Search Tenants...',
                   prefixIcon: const Icon(Icons.search_rounded, size: 18),
                   onChanged: (val) => setState(() => _searchQuery = val),
                 ),
-              ),
-              const SizedBox(width: 12),
-              DqmsButton(
-                label: 'Add Tenant',
-                icon: Icons.business_rounded,
-                onPressed: () {
-                  setState(() {
-                    _selectedTenant = const TenantModel(
-                      tenantId: 99,
-                      registrationKey: 'TEN-NEW-REGISTRATION-KEY',
-                      tenantName: 'New Organization Tenant',
-                      planName: 'Starter Tier',
-                      maxUsers: 10,
-                      maxCounters: 5,
-                      contactEmail: 'new.tenant@dqms.org',
-                      isActive: true,
-                    );
-                  });
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.bgHeader,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.borderSubtle),
-                  ),
-                  child: const Row(
-                    children: [
-                      Expanded(flex: 3, child: Text('ORGANIZATION / TENANT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      Expanded(flex: 3, child: Text('REGISTRATION KEY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      Expanded(flex: 2, child: Text('SAAS PLAN', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                    ],
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: DqmsButton(
+                    label: 'Add Tenant',
+                    icon: Icons.business_rounded,
+                    onPressed: () {
+                      setState(() {
+                        _selectedTenant = const TenantModel(
+                          tenantId: 99,
+                          registrationKey: 'TEN-NEW-REGISTRATION-KEY',
+                          tenantName: 'New Organization Tenant',
+                          planName: 'Starter Tier',
+                          maxUsers: 10,
+                          maxCounters: 5,
+                          contactEmail: 'new.tenant@dqms.org',
+                          isActive: true,
+                        );
+                      });
+                    },
                   ),
                 ),
-                const SizedBox(height: 6),
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: tenants.length,
-                    separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                    itemBuilder: (ctx, i) {
-                      final t = tenants[i];
-                      final isSelected = _selectedTenant?.tenantId == t.tenantId;
-
-                      return InkWell(
-                        onTap: () => setState(() => _selectedTenant = t),
-                        borderRadius: BorderRadius.circular(4),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
+              ] else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: DqmsTextField(
+                        hintText: 'Search Tenant Name, Registration Key, or SaaS Plan...',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    DqmsButton(
+                      label: 'Add Tenant',
+                      icon: Icons.business_rounded,
+                      onPressed: () {
+                        setState(() {
+                          _selectedTenant = const TenantModel(
+                            tenantId: 99,
+                            registrationKey: 'TEN-NEW-REGISTRATION-KEY',
+                            tenantName: 'New Organization Tenant',
+                            planName: 'Starter Tier',
+                            maxUsers: 10,
+                            maxCounters: 5,
+                            contactEmail: 'new.tenant@dqms.org',
+                            isActive: true,
+                          );
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 12),
+              Expanded(
+                child: isMobile
+                    ? ListView.separated(
+                        itemCount: tenants.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 8),
+                        itemBuilder: (ctx, i) {
+                          final t = tenants[i];
+                          final isSelected = _selectedTenant?.tenantId == t.tenantId;
+                          return _buildMobileTenantCard(t, isSelected);
+                        },
+                      )
+                    : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: 750,
+                          child: Column(
                             children: [
-                              Expanded(
-                                flex: 3,
-                                child: Text(t.tenantName, style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bgHeader,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: AppColors.borderSubtle),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Expanded(flex: 3, child: Text('ORGANIZATION / TENANT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    Expanded(flex: 3, child: Text('REGISTRATION KEY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    Expanded(flex: 2, child: Text('SAAS PLAN', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(height: 6),
                               Expanded(
-                                flex: 3,
-                                child: Text(t.registrationKey, style: const TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontFamily: 'monospace', fontWeight: FontWeight.w700)),
-                              ),
-                              Expanded(
-                                flex: 2,
-                                child: Text(t.planName, style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600)),
-                              ),
-                              SizedBox(
-                                width: 90,
-                                child: DqmsStatusBadge.activeState(t.isActive),
+                                child: ListView.separated(
+                                  itemCount: tenants.length,
+                                  separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                                  itemBuilder: (ctx, i) {
+                                    final t = tenants[i];
+                                    final isSelected = _selectedTenant?.tenantId == t.tenantId;
+
+                                    return InkWell(
+                                      onTap: () => setState(() => _selectedTenant = t),
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              flex: 3,
+                                              child: Text(t.tenantName, style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
+                                            ),
+                                            Expanded(
+                                              flex: 3,
+                                              child: Text(t.registrationKey, style: const TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontFamily: 'monospace', fontWeight: FontWeight.w700)),
+                                            ),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text(t.planName, style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600)),
+                                            ),
+                                            SizedBox(
+                                              width: 90,
+                                              child: DqmsStatusBadge.activeState(t.isActive),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ],
                           ),
                         ),
-                      );
-                    },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileTenantCard(TenantModel t, bool isSelected) {
+    return InkWell(
+      onTap: () => setState(() => _selectedTenant = t),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    t.tenantName,
+                    style: const TextStyle(color: AppColors.textMain, fontSize: 14, fontWeight: FontWeight.w700),
                   ),
+                ),
+                DqmsStatusBadge.activeState(t.isActive),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              t.registrationKey,
+              style: const TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontFamily: 'monospace', fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    t.planName,
+                    style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${t.maxCounters} counters • ${t.maxUsers} users',
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -30,9 +30,16 @@ class SideMenu extends StatelessWidget {
 
     return Container(
       width: 250,
-      decoration: const BoxDecoration(
-        color: AppColors.bgSurface,
-        border: Border(right: BorderSide(color: AppColors.borderSubtle, width: 1)),
+      decoration: BoxDecoration(
+        color: AppColors.bgSurface.withValues(alpha: 0.88),
+        border: const Border(right: BorderSide(color: AppColors.borderSubtle, width: 1)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 12,
+            offset: Offset(4, 0),
+          ),
+        ],
       ),
       child: SafeArea(
         child: Column(
@@ -57,8 +64,9 @@ class SideMenu extends StatelessWidget {
                     iconName: 'dashboard_rounded',
                     isActive: location == '/dashboard',
                     press: () {
-                      if (isDrawer) Navigator.pop(context);
-                      context.go('/dashboard');
+                      final router = GoRouter.of(context);
+                      if (isDrawer) Navigator.of(context).pop();
+                      router.go('/dashboard');
                     },
                   ),
                   DrawerListTile(
@@ -66,8 +74,9 @@ class SideMenu extends StatelessWidget {
                     iconName: 'schedule_rounded',
                     isActive: location == '/appointments-calendar',
                     press: () {
-                      if (isDrawer) Navigator.pop(context);
-                      context.go('/appointments-calendar');
+                      final router = GoRouter.of(context);
+                      if (isDrawer) Navigator.of(context).pop();
+                      router.go('/appointments-calendar');
                     },
                   ),
                   const SizedBox(height: 12),
@@ -99,8 +108,11 @@ class SideMenu extends StatelessWidget {
                         iconName: item.iconName,
                         isActive: isSelected,
                         press: () {
-                          if (isDrawer) Navigator.pop(context);
-                          context.go(item.routePath);
+                          final router = GoRouter.of(context);
+                          if (isDrawer) {
+                            Navigator.of(context).pop();
+                          }
+                          router.go(item.routePath);
                         },
                       );
                     }),
@@ -238,8 +250,8 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-/// Abu Anwar Pattern Drawer List Tile with Active Highlighting & Smooth Hover
-class DrawerListTile extends StatelessWidget {
+/// 3D Compact Animated Drawer List Tile with Hover Nudge & Neon Glow
+class DrawerListTile extends StatefulWidget {
   final String title;
   final String? iconName;
   final bool isActive;
@@ -254,59 +266,104 @@ class DrawerListTile extends StatelessWidget {
   });
 
   @override
+  State<DrawerListTile> createState() => _DrawerListTileState();
+}
+
+class _DrawerListTileState extends State<DrawerListTile> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    final iconColor = isActive ? AppColors.brandPrimary : AppColors.textMuted;
-    final iconWidget = IconResolver.resolve(iconName).build(size: 18, color: iconColor);
+    final iconColor = widget.isActive
+        ? AppColors.brandPrimary
+        : (_isHovered ? AppColors.textMain : AppColors.textMuted);
+    final iconWidget = IconResolver.resolve(widget.iconName).build(size: 16, color: iconColor);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          onTap: press,
-          borderRadius: BorderRadius.circular(8),
-          hoverColor: AppColors.brandPrimary.withValues(alpha: 0.08),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? AppColors.brandPrimary.withValues(alpha: 0.15)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-              border: isActive
-                  ? Border.all(
-                      color: AppColors.brandPrimary.withValues(alpha: 0.3),
-                      width: 1,
-                    )
-                  : null,
-            ),
-            child: Row(
-              children: [
-                SizedBox(width: 20, child: Center(child: iconWidget)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: isActive ? AppColors.textMain : AppColors.textSubtle,
-                      fontSize: 13,
-                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1.5),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(_isHovered ? 3.0 : 0.0, 0.0, 0.0),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+            child: InkWell(
+              onTap: widget.press,
+              borderRadius: BorderRadius.circular(6),
+              hoverColor: AppColors.brandPrimary.withValues(alpha: 0.06),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7.5),
+                decoration: BoxDecoration(
+                  color: widget.isActive
+                      ? AppColors.brandPrimary.withValues(alpha: 0.16)
+                      : (_isHovered
+                          ? AppColors.bgSurfaceHover.withValues(alpha: 0.6)
+                          : Colors.transparent),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: widget.isActive
+                        ? AppColors.brandPrimary.withValues(alpha: 0.45)
+                        : (_isHovered
+                            ? AppColors.borderSubtle
+                            : Colors.transparent),
+                    width: 1,
                   ),
+                  boxShadow: widget.isActive
+                      ? [
+                          const BoxShadow(
+                            color: Color(0x1AFFFFFF),
+                            offset: Offset(-0.5, -0.5),
+                            blurRadius: 0.5,
+                          ),
+                          BoxShadow(
+                            color: AppColors.brandPrimary.withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            spreadRadius: 0.5,
+                          ),
+                        ]
+                      : null,
                 ),
-                if (isActive)
-                  Container(
-                    width: 4,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: AppColors.brandPrimary,
-                      borderRadius: BorderRadius.circular(2),
+                child: Row(
+                  children: [
+                    SizedBox(width: 18, child: Center(child: iconWidget)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: TextStyle(
+                          color: widget.isActive
+                              ? AppColors.textMain
+                              : (_isHovered ? AppColors.textMain : AppColors.textSubtle),
+                          fontSize: 12.5,
+                          fontWeight: widget.isActive ? FontWeight.w700 : FontWeight.w500,
+                          letterSpacing: 0.1,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-              ],
+                    if (widget.isActive)
+                      Container(
+                        width: 3.5,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: AppColors.brandPrimary,
+                          borderRadius: BorderRadius.circular(2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.brandPrimary.withValues(alpha: 0.7),
+                              blurRadius: 6,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

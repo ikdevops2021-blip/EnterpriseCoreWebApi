@@ -39,7 +39,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final user = authState.currentUser;
 
   // Determine correct home route based on user role
-  String homeRoute = '/admin/areas';
+  String homeRoute = '/admin/processes';
   if (user != null) {
     if (user.isStaff) {
       homeRoute = '/staff/lobby';

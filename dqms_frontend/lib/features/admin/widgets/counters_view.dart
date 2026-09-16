@@ -47,171 +47,333 @@ class _CountersViewState extends ConsumerState<CountersView> {
   }
 
   Widget _buildMasterTable(List<CounterModel> counters) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Toolbar
-          Row(
-            children: [
-              Expanded(
-                child: DqmsTextField(
-                  hintText: 'Search Counter ID, Name, or Staff...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: 18),
-                  onChanged: (val) {
-                    setState(() {
-                      _searchQuery = val;
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              DqmsButton(
-                label: 'New Counter',
-                icon: Icons.add_rounded,
-                onPressed: () {
-                  setState(() {
-                    _selectedCounter = const CounterModel(
-                      counterId: 999,
-                      areaId: 1,
-                      areaName: 'Main Service Hall A',
-                      counterNumber: 'C-NEW',
-                      counterName: 'New Operating Station',
-                      mode: 'SingleProcess',
-                      assignedStaffName: 'Unassigned Staff',
-                      status: 'Idle',
-                      isVoiceEnabled: true,
-                    );
-                  });
-                },
-              ),
-            ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 12 : 18),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.borderSubtle),
           ),
-          const SizedBox(height: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Toolbar
+              if (isMobile) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: DqmsTextField(
+                        hintText: 'Search counters...',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                        onChanged: (val) {
+                          setState(() {
+                            _searchQuery = val;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filled(
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.brandPrimary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      ),
+                      icon: const Icon(Icons.add_rounded, color: Colors.white),
+                      tooltip: 'New Counter Station',
+                      onPressed: _onAddNewCounter,
+                    ),
+                  ],
+                ),
+              ] else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: DqmsTextField(
+                        hintText: 'Search Counter Station or Operator...',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                        onChanged: (val) {
+                          setState(() {
+                            _searchQuery = val;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    DqmsButton(
+                      label: 'New Counter Station',
+                      icon: Icons.add_rounded,
+                      onPressed: _onAddNewCounter,
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 14),
 
-          // List / Table Content
-          if (counters.isEmpty)
-            const Expanded(
-              child: DqmsEmptyState(
-                title: 'No Counters Found',
-                message: 'No physical counter stations match your search query.',
-                icon: Icons.desk_rounded,
-              ),
-            )
-          else
-            Expanded(
-              child: Column(
-                children: [
-                  // Table Header
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.bgHeader,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.borderSubtle),
-                    ),
-                    child: const Row(
-                      children: [
-                        SizedBox(width: 70, child: Text('STATION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 3, child: Text('COUNTER NAME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 2, child: Text('FACILITY ZONE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 2, child: Text('ASSIGNED OPERATOR', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 100, child: Text('MODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      ],
-                    ),
+              // List / Table Content
+              if (counters.isEmpty)
+                const Expanded(
+                  child: DqmsEmptyState(
+                    title: 'No Counters Found',
+                    message: 'No physical counter stations match your search query.',
+                    icon: Icons.desk_rounded,
                   ),
-                  const SizedBox(height: 6),
-
-                  // Rows
-                  Expanded(
-                    child: ListView.separated(
-                      itemCount: counters.length,
-                      separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                      itemBuilder: (ctx, i) {
-                        final ctr = counters[i];
-                        final isSelected = _selectedCounter?.counterId == ctr.counterId;
-
-                        return InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedCounter = ctr;
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(4),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                              borderRadius: BorderRadius.circular(4),
+                )
+              else if (isMobile)
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: counters.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (ctx, i) {
+                      final ctr = counters[i];
+                      final isSelected = _selectedCounter?.counterId == ctr.counterId;
+                      return InkWell(
+                        onTap: () {
+                          setState(() {
+                            _selectedCounter = ctr;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle,
+                              width: isSelected ? 1.5 : 1.0,
                             ),
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 70,
-                                  child: Text(
-                                    ctr.counterNumber,
-                                    style: const TextStyle(
-                                      color: AppColors.brandPrimary,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w800,
-                                      fontFamily: 'monospace',
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+                                    ),
+                                    child: Text(
+                                      ctr.counterNumber,
+                                      style: const TextStyle(
+                                        color: AppColors.brandPrimary,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                        fontFamily: 'monospace',
+                                      ),
                                     ),
                                   ),
+                                  DqmsStatusBadge.activeState(ctr.status == 'Active'),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                ctr.counterName,
+                                style: const TextStyle(
+                                  color: AppColors.textMain,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                Expanded(
-                                  flex: 3,
-                                  child: Text(
-                                    ctr.counterName,
-                                    style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(Icons.location_on_outlined, size: 13, color: AppColors.textMuted),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      ctr.areaName,
+                                      style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(
-                                    ctr.areaName,
-                                    style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-                                    overflow: TextOverflow.ellipsis,
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.brandAccent.withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.person_outline_rounded, size: 12, color: AppColors.brandAccent),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          ctr.assignedStaffName,
+                                          style: const TextStyle(
+                                            color: AppColors.brandAccent,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(
-                                    ctr.assignedStaffName,
-                                    style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600),
-                                    overflow: TextOverflow.ellipsis,
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.bgCanvas,
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(color: AppColors.borderSubtle),
+                                    ),
+                                    child: Text(
+                                      ctr.mode,
+                                      style: const TextStyle(color: AppColors.textSubtle, fontSize: 10),
+                                    ),
                                   ),
-                                ),
-                                SizedBox(
-                                  width: 100,
-                                  child: Text(
-                                    ctr.mode,
-                                    style: const TextStyle(color: AppColors.textSubtle, fontSize: 11),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 90,
-                                  child: DqmsStatusBadge.activeState(ctr.status == 'Active'),
-                                ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                )
+              else
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: 780,
+                      child: Column(
+                        children: [
+                          // Table Header
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.bgHeader,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppColors.borderSubtle),
+                            ),
+                            child: const Row(
+                              children: [
+                                SizedBox(width: 70, child: Text('STATION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                Expanded(flex: 3, child: Text('COUNTER NAME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                Expanded(flex: 2, child: Text('FACILITY ZONE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                Expanded(flex: 2, child: Text('ASSIGNED OPERATOR', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                SizedBox(width: 100, child: Text('MODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
                               ],
                             ),
                           ),
-                        );
-                      },
+                          const SizedBox(height: 6),
+
+                          // Desktop Rows
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: counters.length,
+                              separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                              itemBuilder: (ctx, i) {
+                                final ctr = counters[i];
+                                final isSelected = _selectedCounter?.counterId == ctr.counterId;
+
+                                return InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedCounter = ctr;
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 70,
+                                          child: Text(
+                                            ctr.counterNumber,
+                                            style: const TextStyle(
+                                              color: AppColors.brandPrimary,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w800,
+                                              fontFamily: 'monospace',
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            ctr.counterName,
+                                            style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            ctr.areaName,
+                                            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            ctr.assignedStaffName,
+                                            style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 100,
+                                          child: Text(
+                                            ctr.mode,
+                                            style: const TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 90,
+                                          child: DqmsStatusBadge.activeState(ctr.status == 'Active'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
-        ],
-      ),
+                ),
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  void _onAddNewCounter() {
+    setState(() {
+      _selectedCounter = const CounterModel(
+        counterId: 999,
+        areaId: 1,
+        areaName: 'Main Service Hall A',
+        counterNumber: 'CTR-NEW',
+        counterName: 'New Counter Station',
+        assignedStaffName: 'Agent Unassigned',
+        mode: 'Multi-Service Call',
+        status: 'Active',
+        isVoiceEnabled: true,
+      );
+    });
   }
 
   Widget _buildDetailInspector(CounterModel ctr) {

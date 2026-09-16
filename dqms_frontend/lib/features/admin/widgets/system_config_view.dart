@@ -212,165 +212,304 @@ class _SystemConfigViewState extends ConsumerState<SystemConfigView> {
   }
 
   Widget _buildMasterTable(List<SystemConfigModel> configs) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 12),
-              child: LinearProgressIndicator(color: AppColors.brandPrimary, minHeight: 2),
-            ),
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
+
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 12 : 18),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: DqmsTextField(
-                  hintText: 'Search Key Name, Category, or Description...',
+              if (_isLoading)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: LinearProgressIndicator(color: AppColors.brandPrimary, minHeight: 2),
+                ),
+              if (isMobile) ...[
+                DqmsTextField(
+                  hintText: 'Search Config Keys...',
                   prefixIcon: const Icon(Icons.search_rounded, size: 18),
                   onChanged: (val) => setState(() => _searchQuery = val),
                 ),
-              ),
-              const SizedBox(width: 12),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.dns_rounded, size: 16),
-                label: const Text('API Gateway Endpoints', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.brandAccent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.dns_rounded, size: 14),
+                        label: const Text('Endpoints', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.brandAccent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        ),
+                        onPressed: () => _showApiEndpointsModal(context),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DqmsButton(
+                        label: 'Add Key',
+                        icon: Icons.add_rounded,
+                        onPressed: () {
+                          setState(() {
+                            _selectedConfig = const SystemConfigModel(
+                              configId: 999,
+                              categoryName: 'CustomKeyCategory',
+                              paramKey: 'New.SystemConfigKey',
+                              paramValue: 'DefaultValue',
+                              description: 'Enter description for new key',
+                              acceptedValues: 'Any String',
+                              dataTypeId: 15001,
+                              valueDataType: 'STRING (15001)',
+                              allowEdit: true,
+                              active: true,
+                            );
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                onPressed: () => _showApiEndpointsModal(context),
-              ),
-              const SizedBox(width: 10),
-              DqmsButton(
-                label: 'Add System Key',
-                icon: Icons.add_rounded,
-                onPressed: () {
-                  setState(() {
-                    _selectedConfig = const SystemConfigModel(
-                      configId: 999,
-                      categoryName: 'CustomKeyCategory',
-                      paramKey: 'New.SystemConfigKey',
-                      paramValue: 'DefaultValue',
-                      description: 'Enter description for new key',
-                      acceptedValues: 'Any String',
-                      dataTypeId: 15001,
-                      valueDataType: 'STRING (15001)',
-                      allowEdit: true,
-                      active: true,
-                    );
-                  });
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Active Endpoint Status Banner
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.brandPrimary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.cloud_sync_rounded, size: 16, color: AppColors.brandPrimary),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Active Root API Endpoint: ${AppConfig.apiBaseUrl} (Admin API: ${AppConfig.adminApiBase})',
-                    style: const TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w600, fontFamily: 'monospace'),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => _showApiEndpointsModal(context),
-                  child: const Text('Configure Endpoints', style: TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w700)),
+              ] else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: DqmsTextField(
+                        hintText: 'Search Key Name, Category, or Description...',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.dns_rounded, size: 16),
+                      label: const Text('API Gateway Endpoints', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.brandAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      ),
+                      onPressed: () => _showApiEndpointsModal(context),
+                    ),
+                    const SizedBox(width: 10),
+                    DqmsButton(
+                      label: 'Add System Key',
+                      icon: Icons.add_rounded,
+                      onPressed: () {
+                        setState(() {
+                          _selectedConfig = const SystemConfigModel(
+                            configId: 999,
+                            categoryName: 'CustomKeyCategory',
+                            paramKey: 'New.SystemConfigKey',
+                            paramValue: 'DefaultValue',
+                            description: 'Enter description for new key',
+                            acceptedValues: 'Any String',
+                            dataTypeId: 15001,
+                            valueDataType: 'STRING (15001)',
+                            allowEdit: true,
+                            active: true,
+                          );
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-          Expanded(
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.bgHeader,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.borderSubtle),
-                  ),
-                  child: const Row(
-                    children: [
-                      Expanded(flex: 2, child: Text('CATEGORY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      Expanded(flex: 3, child: Text('SYSTEM CONFIG KEY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      Expanded(flex: 3, child: Text('KEY VALUE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      SizedBox(width: 110, child: Text('DATA TYPE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                    ],
-                  ),
+              // Active Endpoint Status Banner
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
                 ),
-                const SizedBox(height: 6),
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: configs.length,
-                    separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                    itemBuilder: (ctx, i) {
-                      final cfg = configs[i];
-                      final isSelected = _selectedConfig?.configId == cfg.configId;
+                child: Row(
+                  children: [
+                    const Icon(Icons.cloud_sync_rounded, size: 16, color: AppColors.brandPrimary),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Active Root API Endpoint: ${AppConfig.apiBaseUrl}',
+                        style: const TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w600, fontFamily: 'monospace'),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => _showApiEndpointsModal(context),
+                      child: const Text('Configure', style: TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w700)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
 
-                      return InkWell(
-                        onTap: () => setState(() => _selectedConfig = cfg),
-                        borderRadius: BorderRadius.circular(4),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
+              Expanded(
+                child: isMobile
+                    ? ListView.separated(
+                        itemCount: configs.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 8),
+                        itemBuilder: (ctx, i) {
+                          final cfg = configs[i];
+                          final isSelected = _selectedConfig?.configId == cfg.configId;
+                          return _buildMobileConfigCard(cfg, isSelected);
+                        },
+                      )
+                    : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: 750,
+                          child: Column(
                             children: [
-                              Expanded(
-                                flex: 2,
-                                child: Text(cfg.categoryName, style: const TextStyle(color: AppColors.textSubtle, fontSize: 12, fontWeight: FontWeight.w600)),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bgHeader,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: AppColors.borderSubtle),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Expanded(flex: 2, child: Text('CATEGORY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    Expanded(flex: 3, child: Text('SYSTEM CONFIG KEY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    Expanded(flex: 3, child: Text('KEY VALUE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    SizedBox(width: 110, child: Text('DATA TYPE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(height: 6),
                               Expanded(
-                                flex: 3,
-                                child: Text(cfg.paramKey, style: const TextStyle(color: AppColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w800, fontFamily: 'monospace')),
-                              ),
-                              Expanded(
-                                flex: 3,
-                                child: Text(cfg.paramValue, style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
-                              ),
-                              SizedBox(
-                                width: 110,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(color: AppColors.bgSubtle, borderRadius: BorderRadius.circular(4)),
-                                  child: Text(cfg.valueDataType, style: const TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.w700)),
+                                child: ListView.separated(
+                                  itemCount: configs.length,
+                                  separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                                  itemBuilder: (ctx, i) {
+                                    final cfg = configs[i];
+                                    final isSelected = _selectedConfig?.configId == cfg.configId;
+
+                                    return InkWell(
+                                      onTap: () => setState(() => _selectedConfig = cfg),
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text(cfg.categoryName, style: const TextStyle(color: AppColors.textSubtle, fontSize: 12, fontWeight: FontWeight.w600)),
+                                            ),
+                                            Expanded(
+                                              flex: 3,
+                                              child: Text(cfg.paramKey, style: const TextStyle(color: AppColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w800, fontFamily: 'monospace')),
+                                            ),
+                                            Expanded(
+                                              flex: 3,
+                                              child: Text(cfg.paramValue, style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                                            ),
+                                            SizedBox(
+                                              width: 110,
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                decoration: BoxDecoration(color: AppColors.bgSubtle, borderRadius: BorderRadius.circular(4)),
+                                                child: Text(cfg.valueDataType, style: const TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.w700)),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      );
-                    },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileConfigCard(SystemConfigModel cfg, bool isSelected) {
+    return InkWell(
+      onTap: () => setState(() => _selectedConfig = cfg),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgSubtle,
+                    borderRadius: BorderRadius.circular(4),
                   ),
+                  child: Text(
+                    cfg.categoryName,
+                    style: const TextStyle(color: AppColors.textSubtle, fontSize: 10, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(color: AppColors.bgSubtle, borderRadius: BorderRadius.circular(4)),
+                  child: Text(cfg.valueDataType, style: const TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.w700)),
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              cfg.paramKey,
+              style: const TextStyle(
+                color: AppColors.brandPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                fontFamily: 'monospace',
+              ),
+            ),
+            const SizedBox(height: 6),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.bgHeader,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                cfg.paramValue,
+                style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

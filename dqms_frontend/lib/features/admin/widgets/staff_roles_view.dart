@@ -349,100 +349,203 @@ class _StaffRolesViewState extends ConsumerState<StaffRolesView> {
             )
           else
             Expanded(
-              child: Column(
-                children: [
-                  // Table Header
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.bgHeader,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.borderSubtle),
-                    ),
-                    child: const Row(
-                      children: [
-                        SizedBox(width: 80, child: Text('STAFF ID', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 3, child: Text('FULL NAME & EMAIL', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 2, child: Text('ROLE PERMISSION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 130, child: Text('ASSIGNED STATION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 80, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
+              child: LayoutBuilder(
+                builder: (ctx, constraints) {
+                  final isMobile = constraints.maxWidth < 650;
 
-                  // Rows
-                  Expanded(
-                    child: ListView.separated(
+                  if (isMobile) {
+                    return ListView.separated(
                       itemCount: staffList.length,
-                      separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (ctx, i) {
                         final stf = staffList[i];
                         final isSelected = _selectedStaff?.staffId == stf.staffId;
+                        return _buildMobileStaffCard(stf, isSelected);
+                      },
+                    );
+                  }
 
-                        return InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedStaff = stf;
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(4),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: 750,
+                      child: Column(
+                        children: [
+                          // Table Header
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                              borderRadius: BorderRadius.circular(4),
+                              color: AppColors.bgHeader,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppColors.borderSubtle),
                             ),
-                            child: Row(
+                            child: const Row(
                               children: [
-                                SizedBox(
-                                  width: 80,
-                                  child: Text(
-                                    stf.staffCode,
-                                    style: const TextStyle(
-                                      color: AppColors.brandPrimary,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w800,
-                                      fontFamily: 'monospace',
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 3,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(stf.fullName, style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
-                                      Text(stf.email, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
-                                    ],
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: _buildRoleBadge(stf.roleName),
-                                ),
-                                SizedBox(
-                                  width: 130,
-                                  child: Text(
-                                    stf.assignedCounterNumber,
-                                    style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w700, fontFamily: 'monospace'),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 80,
-                                  child: DqmsStatusBadge.activeState(stf.status == 'Active'),
-                                ),
+                                SizedBox(width: 80, child: Text('STAFF ID', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                Expanded(flex: 3, child: Text('FULL NAME & EMAIL', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                Expanded(flex: 2, child: Text('ROLE PERMISSION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                SizedBox(width: 130, child: Text('ASSIGNED STATION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                SizedBox(width: 80, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
                               ],
                             ),
                           ),
-                        );
-                      },
+                          const SizedBox(height: 6),
+
+                          // Rows
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: staffList.length,
+                              separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                              itemBuilder: (ctx, i) {
+                                final stf = staffList[i];
+                                final isSelected = _selectedStaff?.staffId == stf.staffId;
+
+                                return InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedStaff = stf;
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 80,
+                                          child: Text(
+                                            stf.staffCode,
+                                            style: const TextStyle(
+                                              color: AppColors.brandPrimary,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w800,
+                                              fontFamily: 'monospace',
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 3,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(stf.fullName, style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
+                                              Text(stf.email, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                                            ],
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: _buildRoleBadge(stf.roleName),
+                                        ),
+                                        SizedBox(
+                                          width: 130,
+                                          child: Text(
+                                            stf.assignedCounterNumber,
+                                            style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w700, fontFamily: 'monospace'),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 80,
+                                          child: DqmsStatusBadge.activeState(stf.status == 'Active'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMobileStaffCard(StaffRoleModel stf, bool isSelected) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedStaff = stf;
+        });
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    stf.staffCode,
+                    style: const TextStyle(
+                      color: AppColors.brandPrimary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                DqmsStatusBadge.activeState(stf.status == 'Active'),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              stf.fullName,
+              style: const TextStyle(
+                color: AppColors.textMain,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Text(
+              stf.email,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                _buildRoleBadge(stf.roleName),
+                const Spacer(),
+                const Icon(Icons.desktop_windows_outlined, size: 14, color: AppColors.textSubtle),
+                const SizedBox(width: 4),
+                Text(
+                  stf.assignedCounterNumber,
+                  style: const TextStyle(
+                    color: AppColors.brandAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

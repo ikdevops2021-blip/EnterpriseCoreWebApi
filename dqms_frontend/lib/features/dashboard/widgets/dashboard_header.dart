@@ -48,10 +48,20 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader> {
     final dateStr = '${_currentTime.year}-${_formatTwoDigits(_currentTime.month)}-${_formatTwoDigits(_currentTime.day)}';
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: const BoxDecoration(
-        color: AppColors.bgHeader,
-        border: Border(bottom: BorderSide(color: AppColors.borderSubtle, width: 1)),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.bgHeader.withValues(alpha: 0.94),
+        border: const Border(
+          top: BorderSide(color: Color(0x1AFFFFFF), width: 1),
+          bottom: BorderSide(color: AppColors.borderSubtle, width: 1),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x40000000),
+            offset: Offset(0, 2),
+            blurRadius: 6,
+          ),
+        ],
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,

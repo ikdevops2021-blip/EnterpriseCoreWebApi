@@ -46,68 +46,120 @@ class _AnalyticsEntryViewState extends ConsumerState<AnalyticsEntryView> {
   }
 
   Widget _buildMasterTable(List<AnalyticsReportEntryModel> reports) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // KPI Metric Cards Strip
-          Row(
-            children: [
-              const Expanded(
-                child: DqmsKpiCard(
-                  title: 'TOTAL TOKENS ISSUED',
-                  value: '1,420',
-                  subtitle: '+12.4% vs last week',
-                  accentColor: AppColors.statusActive,
-                  icon: Icons.confirmation_number_rounded,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: DqmsKpiCard(
-                  title: 'AVG WAIT TIME',
-                  value: '7.4 mins',
-                  subtitle: 'Target SLA: 10.0 mins',
-                  accentColor: AppColors.statusActive,
-                  icon: Icons.timer_outlined,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: DqmsKpiCard(
-                  title: 'SLA COMPLIANCE',
-                  value: '96.8%',
-                  subtitle: '28 SLA breaches',
-                  accentColor: AppColors.statusActive,
-                  icon: Icons.verified_user_rounded,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: DqmsKpiCard(
-                  title: 'ACTIVE COUNTERS',
-                  value: '6 / 8',
-                  subtitle: '88% peak utilization',
-                  accentColor: AppColors.brandAccent,
-                  icon: Icons.desktop_windows_rounded,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
 
-          // Toolbar
-          Row(
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 12 : 18),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: DqmsTextField(
-                  hintText: 'Search Report Name, ID, or Category...',
+              // KPI Metric Cards Strip
+              if (isMobile) ...[
+                const Row(
+                  children: [
+                    Expanded(
+                      child: DqmsKpiCard(
+                        title: 'TOKENS ISSUED',
+                        value: '1,420',
+                        subtitle: '+12.4% vs last week',
+                        accentColor: AppColors.statusActive,
+                        icon: Icons.confirmation_number_rounded,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: DqmsKpiCard(
+                        title: 'AVG WAIT TIME',
+                        value: '7.4 mins',
+                        subtitle: 'Target SLA: 10m',
+                        accentColor: AppColors.statusActive,
+                        icon: Icons.timer_outlined,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Row(
+                  children: [
+                    Expanded(
+                      child: DqmsKpiCard(
+                        title: 'SLA COMPLIANCE',
+                        value: '96.8%',
+                        subtitle: '28 SLA breaches',
+                        accentColor: AppColors.statusActive,
+                        icon: Icons.verified_user_rounded,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: DqmsKpiCard(
+                        title: 'COUNTERS',
+                        value: '6 / 8',
+                        subtitle: '88% utilization',
+                        accentColor: AppColors.brandAccent,
+                        icon: Icons.desktop_windows_rounded,
+                      ),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                Row(
+                  children: [
+                    const Expanded(
+                      child: DqmsKpiCard(
+                        title: 'TOTAL TOKENS ISSUED',
+                        value: '1,420',
+                        subtitle: '+12.4% vs last week',
+                        accentColor: AppColors.statusActive,
+                        icon: Icons.confirmation_number_rounded,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: DqmsKpiCard(
+                        title: 'AVG WAIT TIME',
+                        value: '7.4 mins',
+                        subtitle: 'Target SLA: 10.0 mins',
+                        accentColor: AppColors.statusActive,
+                        icon: Icons.timer_outlined,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: DqmsKpiCard(
+                        title: 'SLA COMPLIANCE',
+                        value: '96.8%',
+                        subtitle: '28 SLA breaches',
+                        accentColor: AppColors.statusActive,
+                        icon: Icons.verified_user_rounded,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: DqmsKpiCard(
+                        title: 'ACTIVE COUNTERS',
+                        value: '6 / 8',
+                        subtitle: '88% peak utilization',
+                        accentColor: AppColors.brandAccent,
+                        icon: Icons.desktop_windows_rounded,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 14),
+
+              // Toolbar
+              if (isMobile) ...[
+                DqmsTextField(
+                  hintText: 'Search Reports...',
                   prefixIcon: const Icon(Icons.search_rounded, size: 18),
                   onChanged: (val) {
                     setState(() {
@@ -115,165 +167,331 @@ class _AnalyticsEntryViewState extends ConsumerState<AnalyticsEntryView> {
                     });
                   },
                 ),
-              ),
-              const SizedBox(width: 12),
-              // Date Range Filter Dropdown
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.bgCard,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.borderSubtle),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.bgCard,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: AppColors.borderSubtle),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _selectedDateRange,
+                            dropdownColor: AppColors.bgSurface,
+                            isExpanded: true,
+                            style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
+                            items: const [
+                              DropdownMenuItem(value: 'Today', child: Text('Today')),
+                              DropdownMenuItem(value: 'Yesterday', child: Text('Yesterday')),
+                              DropdownMenuItem(value: 'Last 7 Days', child: Text('Last 7 Days')),
+                              DropdownMenuItem(value: 'Last 30 Days', child: Text('Last 30 Days')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedDateRange = val);
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    DqmsButton(
+                      label: 'Export CSV',
+                      icon: Icons.download_rounded,
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Exporting complete DQMS Queue Analytics dataset as CSV...'),
+                            backgroundColor: AppColors.statusActive,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedDateRange,
-                    dropdownColor: AppColors.bgSurface,
-                    style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
-                    items: const [
-                      DropdownMenuItem(value: 'Today', child: Text('Today')),
-                      DropdownMenuItem(value: 'Yesterday', child: Text('Yesterday')),
-                      DropdownMenuItem(value: 'Last 7 Days', child: Text('Last 7 Days')),
-                      DropdownMenuItem(value: 'Last 30 Days', child: Text('Last 30 Days')),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) setState(() => _selectedDateRange = val);
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              DqmsButton(
-                label: 'Export All CSV',
-                icon: Icons.download_rounded,
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Exporting complete DQMS Queue Analytics dataset as CSV...'),
-                      backgroundColor: AppColors.statusActive,
+              ] else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: DqmsTextField(
+                        hintText: 'Search Report Name, ID, or Category...',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                        onChanged: (val) {
+                          setState(() {
+                            _searchQuery = val;
+                          });
+                        },
+                      ),
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Content
-          if (reports.isEmpty)
-            const Expanded(
-              child: DqmsEmptyState(
-                title: 'No Reports Found',
-                message: 'No analytics report entries match your search criteria.',
-                icon: Icons.assessment_outlined,
-              ),
-            )
-          else
-            Expanded(
-              child: Column(
-                children: [
-                  // Table Header
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.bgHeader,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.borderSubtle),
-                    ),
-                    child: const Row(
-                      children: [
-                        SizedBox(width: 80, child: Text('REPORT ID', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 3, child: Text('REPORT NAME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 2, child: Text('CATEGORY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 80, child: Text('FORMAT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 130, child: Text('LAST GENERATED', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-
-                  // Rows
-                  Expanded(
-                    child: ListView.separated(
-                      itemCount: reports.length,
-                      separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                      itemBuilder: (ctx, i) {
-                        final rpt = reports[i];
-                        final isSelected = _selectedReport?.reportId == rpt.reportId;
-
-                        return InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedReport = rpt;
-                            });
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.bgCard,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: AppColors.borderSubtle),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedDateRange,
+                          dropdownColor: AppColors.bgSurface,
+                          style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
+                          items: const [
+                            DropdownMenuItem(value: 'Today', child: Text('Today')),
+                            DropdownMenuItem(value: 'Yesterday', child: Text('Yesterday')),
+                            DropdownMenuItem(value: 'Last 7 Days', child: Text('Last 7 Days')),
+                            DropdownMenuItem(value: 'Last 30 Days', child: Text('Last 30 Days')),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) setState(() => _selectedDateRange = val);
                           },
-                          borderRadius: BorderRadius.circular(4),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Row(
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    DqmsButton(
+                      label: 'Export All CSV',
+                      icon: Icons.download_rounded,
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Exporting complete DQMS Queue Analytics dataset as CSV...'),
+                            backgroundColor: AppColors.statusActive,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 12),
+
+              // Content
+              if (reports.isEmpty)
+                const Expanded(
+                  child: DqmsEmptyState(
+                    title: 'No Reports Found',
+                    message: 'No analytics report entries match your search criteria.',
+                    icon: Icons.assessment_outlined,
+                  ),
+                )
+              else
+                Expanded(
+                  child: isMobile
+                      ? ListView.separated(
+                          itemCount: reports.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
+                          itemBuilder: (ctx, i) {
+                            final rpt = reports[i];
+                            final isSelected = _selectedReport?.reportId == rpt.reportId;
+                            return _buildMobileReportCard(rpt, isSelected);
+                          },
+                        )
+                      : SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: SizedBox(
+                            width: 750,
+                            child: Column(
                               children: [
-                                SizedBox(
-                                  width: 80,
-                                  child: Text(
-                                    rpt.reportId,
-                                    style: const TextStyle(
-                                      color: AppColors.brandPrimary,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w800,
-                                      fontFamily: 'monospace',
-                                    ),
+                                // Table Header
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.bgHeader,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: AppColors.borderSubtle),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      SizedBox(width: 80, child: Text('REPORT ID', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      Expanded(flex: 3, child: Text('REPORT NAME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      Expanded(flex: 2, child: Text('CATEGORY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      SizedBox(width: 80, child: Text('FORMAT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      SizedBox(width: 130, child: Text('LAST GENERATED', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    ],
                                   ),
                                 ),
+                                const SizedBox(height: 6),
+
+                                // Rows
                                 Expanded(
-                                  flex: 3,
-                                  child: Text(
-                                    rpt.reportName,
-                                    style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(
-                                    rpt.category,
-                                    style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 80,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.bgSubtle,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      rpt.format,
-                                      style: const TextStyle(color: AppColors.textMain, fontSize: 10, fontWeight: FontWeight.w800),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 130,
-                                  child: Text(
-                                    rpt.lastGeneratedTime,
-                                    style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontFamily: 'monospace'),
+                                  child: ListView.separated(
+                                    itemCount: reports.length,
+                                    separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                                    itemBuilder: (ctx, i) {
+                                      final rpt = reports[i];
+                                      final isSelected = _selectedReport?.reportId == rpt.reportId;
+
+                                      return InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedReport = rpt;
+                                          });
+                                        },
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          decoration: BoxDecoration(
+                                            color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              SizedBox(
+                                                width: 80,
+                                                child: Text(
+                                                  rpt.reportId,
+                                                  style: const TextStyle(
+                                                    color: AppColors.brandPrimary,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w800,
+                                                    fontFamily: 'monospace',
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 3,
+                                                child: Text(
+                                                  rpt.reportName,
+                                                  style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 2,
+                                                child: Text(
+                                                  rpt.category,
+                                                  style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 80,
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.bgSubtle,
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  child: Text(
+                                                    rpt.format,
+                                                    style: const TextStyle(color: AppColors.textMain, fontSize: 10, fontWeight: FontWeight.w800),
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 130,
+                                                child: Text(
+                                                  rpt.lastGeneratedTime,
+                                                  style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontFamily: 'monospace'),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      },
+                        ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileReportCard(AnalyticsReportEntryModel rpt, bool isSelected) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedReport = rpt;
+        });
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    rpt.reportId,
+                    style: const TextStyle(
+                      color: AppColors.brandPrimary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'monospace',
                     ),
                   ),
-                ],
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgSubtle,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    rpt.format,
+                    style: const TextStyle(color: AppColors.textMain, fontSize: 10, fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              rpt.reportName,
+              style: const TextStyle(
+                color: AppColors.textMain,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
               ),
             ),
-        ],
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    rpt.category,
+                    style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const Spacer(),
+                const Icon(Icons.access_time_rounded, size: 13, color: AppColors.textSubtle),
+                const SizedBox(width: 4),
+                Text(
+                  rpt.lastGeneratedTime,
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

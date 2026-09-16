@@ -178,7 +178,17 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('DQMS TV DISPLAY'), findsOneWidget);
-    expect(find.text('NOW CALLING'), findsOneWidget);
-    expect(find.text('PREVIOUS CALLS'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate((widget) =>
+          widget is Text &&
+          (widget.data == 'NOW CALLING' || widget.data == 'QUEUE MONITOR LIVE')),
+      findsOneWidget,
+    );
+    expect(
+      find.byWidgetPredicate((widget) =>
+          widget is Text &&
+          (widget.data == 'PREVIOUS CALLS' || widget.data == 'RECENT & ACTIVE CALLS')),
+      findsOneWidget,
+    );
   });
 }

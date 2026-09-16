@@ -380,9 +380,8 @@ class _AppLogsViewState extends ConsumerState<AppLogsView> {
               const Text('Source: NLog + AppLogs DB Table', style: TextStyle(color: AppColors.textSubtle, fontSize: 11)),
             ],
           ),
-          const SizedBox(height: 10),
-
-          // Log Entries Table
+          const SizedBox(height: 12),
+          // Log Entries Table (Responsive)
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -394,79 +393,152 @@ class _AppLogsViewState extends ConsumerState<AppLogsView> {
                   ? const Center(
                       child: Text('No application logs found matching current filters.', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
                     )
-                  : Column(
-                      children: [
-                        // Table Header
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          decoration: const BoxDecoration(
-                            color: AppColors.bgHeader,
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(6)),
-                            border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
-                          ),
-                          child: const Row(
-                            children: [
-                              SizedBox(width: 140, child: Text('TIMESTAMP', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                              SizedBox(width: 90, child: Text('LEVEL', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                              SizedBox(width: 160, child: Text('LOGGER', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                              Expanded(child: Text('MESSAGE / EXCEPTION SUMMARY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                            ],
-                          ),
-                        ),
-                        // List
-                        Expanded(
-                          child: ListView.separated(
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isMobile = constraints.maxWidth < 650;
+
+                        if (isMobile) {
+                          return ListView.builder(
                             itemCount: logs.length,
-                            separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
                             itemBuilder: (ctx, i) {
                               final log = logs[i];
                               final isSelected = _selectedLog?.id == log.id;
+                              return _buildMobileLogCard(log, isSelected);
+                            },
+                          );
+                        }
 
-                              return InkWell(
-                                onTap: () => setState(() => _selectedLog = log),
-                                child: Container(
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: SizedBox(
+                            width: 780,
+                            child: Column(
+                              children: [
+                                // Table Header
+                                Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                  color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                                  child: Row(
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.bgHeader,
+                                    borderRadius: BorderRadius.vertical(top: Radius.circular(6)),
+                                    border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
+                                  ),
+                                  child: const Row(
                                     children: [
-                                      SizedBox(
-                                        width: 140,
-                                        child: Text(
-                                          _formatShortTime(log.logged.toLocal()),
-                                          style: const TextStyle(color: AppColors.textSubtle, fontSize: 11, fontFamily: 'monospace'),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: 90,
-                                        child: _buildLogLevelBadge(log.level),
-                                      ),
-                                      SizedBox(
-                                        width: 160,
-                                        child: Text(
-                                          log.logger,
-                                          style: const TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w700),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          log.message,
-                                          style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
+                                      SizedBox(width: 140, child: Text('TIMESTAMP', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      SizedBox(width: 90, child: Text('LEVEL', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      SizedBox(width: 160, child: Text('LOGGER', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      Expanded(child: Text('MESSAGE / EXCEPTION SUMMARY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
                                     ],
                                   ),
                                 ),
-                              );
-                            },
+                                // List
+                                Expanded(
+                                  child: ListView.separated(
+                                    itemCount: logs.length,
+                                    separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                                    itemBuilder: (ctx, i) {
+                                      final log = logs[i];
+                                      final isSelected = _selectedLog?.id == log.id;
+
+                                      return InkWell(
+                                        onTap: () => setState(() => _selectedLog = log),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                          child: Row(
+                                            children: [
+                                              SizedBox(
+                                                width: 140,
+                                                child: Text(
+                                                  _formatShortTime(log.logged.toLocal()),
+                                                  style: const TextStyle(color: AppColors.textSubtle, fontSize: 11, fontFamily: 'monospace'),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 90,
+                                                child: _buildLogLevelBadge(log.level),
+                                              ),
+                                              SizedBox(
+                                                width: 160,
+                                                child: Text(
+                                                  log.logger,
+                                                  style: const TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w700),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Text(
+                                                  log.message,
+                                                  style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Mobile Adaptive Log Card (< 650px)
+  Widget _buildMobileLogCard(AppLogModel log, bool isSelected) {
+    return InkWell(
+      onTap: () => setState(() => _selectedLog = log),
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgSurface,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.45) : AppColors.borderSubtle,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                _buildLogLevelBadge(log.level),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    log.logger,
+                    style: const TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w700),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _formatShortTime(log.logged.toLocal()),
+                  style: const TextStyle(color: AppColors.textSubtle, fontSize: 10, fontFamily: 'monospace'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              log.message,
+              style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w500),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }

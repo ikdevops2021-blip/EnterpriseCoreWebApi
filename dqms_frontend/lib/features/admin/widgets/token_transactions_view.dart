@@ -133,7 +133,7 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
           const SizedBox(height: 16),
 
           // ------------------------------------------------------------------
-          // Master Table Content
+          // Master Table Content (Responsive Layout)
           // ------------------------------------------------------------------
           if (filteredTokens.isEmpty)
             const Expanded(
@@ -145,128 +145,268 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
             )
           else
             Expanded(
-              child: Column(
-                children: [
-                  // Table Header
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.bgHeader,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.borderSubtle),
-                    ),
-                    child: const Row(
-                      children: [
-                        SizedBox(width: 90, child: Text('TOKEN #', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 3, child: Text('SERVICE / PROCESS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 2, child: Text('COUNTER STATION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 2, child: Text('VISITOR / PERSON', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 100, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 90, child: Text('SLA TAT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isMobile = constraints.maxWidth < 650;
 
-                  // Token List Rows
-                  Expanded(
-                    child: ListView.separated(
+                  if (isMobile) {
+                    return ListView.builder(
                       itemCount: filteredTokens.length,
-                      separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                      padding: const EdgeInsets.only(top: 4, bottom: 16),
                       itemBuilder: (ctx, i) {
                         final token = filteredTokens[i];
                         final isSelected = _selectedToken?.tokenId == token.tokenId;
+                        return _buildMobileTokenCard(token, isSelected);
+                      },
+                    );
+                  }
 
-                        return InkWell(
-                          onTap: () => setState(() => _selectedToken = token),
-                          borderRadius: BorderRadius.circular(4),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  // Desktop / Tablet Multi-Column View
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: 780,
+                      child: Column(
+                        children: [
+                          // Table Header
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                              borderRadius: BorderRadius.circular(4),
+                              color: AppColors.bgHeader,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppColors.borderSubtle),
                             ),
-                            child: Row(
+                            child: const Row(
                               children: [
-                                // Token # Column
-                                SizedBox(
-                                  width: 90,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        token.tokenNumber,
-                                        style: const TextStyle(
-                                          color: AppColors.brandPrimary,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w800,
-                                          fontFamily: 'monospace',
-                                        ),
-                                      ),
-                                      if (token.subTokenNumber != null)
-                                        Text(
-                                          token.subTokenNumber!,
-                                          style: const TextStyle(color: AppColors.brandAccent, fontSize: 10, fontFamily: 'monospace'),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                                // Service Name
-                                Expanded(
-                                  flex: 3,
-                                  child: Text(
-                                    token.processName,
-                                    style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                // Counter Station
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(
-                                    token.counterName,
-                                    style: const TextStyle(color: AppColors.textSubtle, fontSize: 11),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                // Visitor / Person Name
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(
-                                    token.visitorName,
-                                    style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w700),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                // Status Pill
-                                SizedBox(
-                                  width: 100,
-                                  child: _buildTokenStatusBadge(token.status),
-                                ),
-                                // SLA TAT & Wait Time
-                                SizedBox(
-                                  width: 90,
-                                  child: Text(
-                                    '${token.waitTimeMins}m Wait',
-                                    style: TextStyle(
-                                      color: token.isSlaCompliant ? AppColors.statusActive : AppColors.statusError,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
+                                SizedBox(width: 90, child: Text('TOKEN #', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                Expanded(flex: 3, child: Text('SERVICE / PROCESS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                Expanded(flex: 2, child: Text('COUNTER STATION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                Expanded(flex: 2, child: Text('VISITOR / PERSON', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                SizedBox(width: 100, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                SizedBox(width: 90, child: Text('SLA TAT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
                               ],
                             ),
                           ),
-                        );
-                      },
+                          const SizedBox(height: 6),
+
+                          // Token List Rows
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: filteredTokens.length,
+                              separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                              itemBuilder: (ctx, i) {
+                                final token = filteredTokens[i];
+                                final isSelected = _selectedToken?.tokenId == token.tokenId;
+
+                                return InkWell(
+                                  onTap: () => setState(() => _selectedToken = token),
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        // Token # Column
+                                        SizedBox(
+                                          width: 90,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                token.tokenNumber,
+                                                style: const TextStyle(
+                                                  color: AppColors.brandPrimary,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w800,
+                                                  fontFamily: 'monospace',
+                                                ),
+                                              ),
+                                              if (token.subTokenNumber != null)
+                                                Text(
+                                                  token.subTokenNumber!,
+                                                  style: const TextStyle(color: AppColors.brandAccent, fontSize: 10, fontFamily: 'monospace'),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                        // Service Name
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            token.processName,
+                                            style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        // Counter Station
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            token.counterName,
+                                            style: const TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        // Visitor / Person Name
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            token.visitorName,
+                                            style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w700),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        // Status Pill
+                                        SizedBox(
+                                          width: 100,
+                                          child: _buildTokenStatusBadge(token.status),
+                                        ),
+                                        // SLA TAT & Wait Time
+                                        SizedBox(
+                                          width: 90,
+                                          child: Text(
+                                            '${token.waitTimeMins}m Wait',
+                                            style: TextStyle(
+                                              color: token.isSlaCompliant ? AppColors.statusActive : AppColors.statusError,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  /// Mobile Adaptive Card for Small Screens (< 650px)
+  Widget _buildMobileTokenCard(TokenTransactionModel token, bool isSelected) {
+    return InkWell(
+      onTap: () => setState(() => _selectedToken = token),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.45) : AppColors.borderSubtle,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Row: Token Badge, Status Badge & Wait Time
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        token.tokenNumber,
+                        style: const TextStyle(
+                          color: AppColors.brandPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                      if (token.subTokenNumber != null) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          '(${token.subTokenNumber!})',
+                          style: const TextStyle(color: AppColors.brandAccent, fontSize: 10, fontFamily: 'monospace'),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                _buildTokenStatusBadge(token.status),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: (token.isSlaCompliant ? AppColors.statusActive : AppColors.statusError).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '${token.waitTimeMins}m Wait',
+                    style: TextStyle(
+                      color: token.isSlaCompliant ? AppColors.statusActive : AppColors.statusError,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // Middle: Service / Process Name
+            Text(
+              token.processName,
+              style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+
+            // Bottom: Counter Station & Visitor Name
+            Row(
+              children: [
+                const Icon(Icons.desk_rounded, size: 14, color: AppColors.textSubtle),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    token.counterName,
+                    style: const TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (token.visitorName.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  const Icon(Icons.person_outline_rounded, size: 14, color: AppColors.textSubtle),
+                  const SizedBox(width: 4),
+                  Text(
+                    token.visitorName,
+                    style: const TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

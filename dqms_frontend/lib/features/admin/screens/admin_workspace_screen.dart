@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
-import 'package:dqms_frontend/features/admin/widgets/areas_zones_view.dart';
+import 'package:dqms_frontend/features/admin/widgets/processes_view.dart';
 import 'package:dqms_frontend/features/admin/widgets/side_menu.dart';
 
 import 'package:dqms_frontend/core/network/dio_provider.dart';
@@ -85,7 +85,7 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       color: AppColors.bgCanvas,
-                      child: widget.child ?? const AreasZonesView(),
+                      child: widget.child ?? const ProcessesView(),
                     ),
                   ),
                 ],

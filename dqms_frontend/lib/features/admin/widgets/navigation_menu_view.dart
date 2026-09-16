@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/utils/icon_resolver.dart';
 import 'package:dqms_frontend/core/widgets/dqms_icon_picker.dart';
+import 'package:dqms_frontend/core/widgets/dqms_status_badge.dart';
 import 'package:dqms_frontend/features/admin/providers/navigation_menu_provider.dart';
 
 /// ============================================================================
@@ -101,43 +102,99 @@ class _NavigationMenuViewState extends ConsumerState<NavigationMenuView> {
   // Section Header with Add button
   // ========================================================================
   Widget _buildSectionHeader(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.brandPrimary.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(Icons.menu_rounded, color: AppColors.brandPrimary, size: 20),
-        ),
-        const SizedBox(width: 12),
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 650;
+        if (isNarrow) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.menu_rounded, color: AppColors.brandPrimary, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Navigation Menu',
+                            style: TextStyle(
+                                color: AppColors.textMain,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800)),
+                        Text('Sidebar module configuration',
+                            style: TextStyle(
+                                color: AppColors.textSubtle,
+                                fontSize: 11)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _showMenuEditor(context, null),
+                  icon: const Icon(Icons.add_rounded, size: 16),
+                  label: const Text('Add Menu Item', style: TextStyle(fontWeight: FontWeight.w700)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.brandPrimary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        return Row(
           children: [
-            Text('Navigation Menu Manager',
-                style: TextStyle(
-                    color: AppColors.textMain,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800)),
-            Text('Plug-and-play sidebar module configuration',
-                style: TextStyle(
-                    color: AppColors.textSubtle,
-                    fontSize: 12)),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.menu_rounded, color: AppColors.brandPrimary, size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Navigation Menu Manager',
+                    style: TextStyle(
+                        color: AppColors.textMain,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800)),
+                Text('Plug-and-play sidebar module configuration',
+                    style: TextStyle(
+                        color: AppColors.textSubtle,
+                        fontSize: 12)),
+              ],
+            ),
+            const Spacer(),
+            ElevatedButton.icon(
+              onPressed: () => _showMenuEditor(context, null),
+              icon: const Icon(Icons.add_rounded, size: 16),
+              label: const Text('Add Menu Item', style: TextStyle(fontWeight: FontWeight.w700)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brandPrimary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+            ),
           ],
-        ),
-        const Spacer(),
-        ElevatedButton.icon(
-          onPressed: () => _showMenuEditor(context, null),
-          icon: const Icon(Icons.add_rounded, size: 16),
-          label: const Text('Add Menu Item', style: TextStyle(fontWeight: FontWeight.w700)),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.brandPrimary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -230,50 +287,154 @@ class _NavigationMenuViewState extends ConsumerState<NavigationMenuView> {
   // Main menu table
   // ========================================================================
   Widget _buildMenuTable(BuildContext context, List<NavigationMenuModel> menus) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
+
+        if (isMobile) {
+          return Container(
+            decoration: BoxDecoration(
+              color: AppColors.bgSurface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.borderSubtle),
+            ),
+            child: menus.isEmpty
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text('No menu items found.', style: TextStyle(color: AppColors.textSubtle, fontSize: 13)),
+                    ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: menus.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (ctx, i) => _buildMobileMenuCard(ctx, menus[i]),
+                  ),
+          );
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: 800,
+              child: Column(
+                children: [
+                  // Table Header
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: const BoxDecoration(
+                      color: AppColors.bgHeader,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
+                      ),
+                      border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
+                    ),
+                    child: const Row(
+                      children: [
+                        SizedBox(width: 42, child: Text('#', style: _headerStyle)),
+                        SizedBox(width: 48, child: Text('Icon', style: _headerStyle)),
+                        Expanded(flex: 3, child: Text('Title', style: _headerStyle)),
+                        Expanded(flex: 4, child: Text('Route Path', style: _headerStyle)),
+                        SizedBox(width: 70, child: Text('Order', style: _headerStyle)),
+                        SizedBox(width: 80, child: Text('Status', style: _headerStyle)),
+                        SizedBox(width: 100, child: Text('Actions', style: _headerStyle)),
+                      ],
+                    ),
+                  ),
+
+                  // Table Rows
+                  Expanded(
+                    child: menus.isEmpty
+                        ? const Center(
+                            child: Text('No menu items found.',
+                                style: TextStyle(color: AppColors.textSubtle, fontSize: 13)))
+                        : ListView.separated(
+                            itemCount: menus.length,
+                            separatorBuilder: (_, _) =>
+                                const Divider(height: 1, color: AppColors.borderSubtle),
+                            itemBuilder: (ctx, i) => _buildMenuRow(ctx, menus[i], i),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileMenuCard(BuildContext context, NavigationMenuModel item) {
+    final iconWidget = IconResolver.resolve(item.iconName).build(size: 18, color: AppColors.brandPrimary);
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.bgSurface,
+        color: AppColors.bgCard,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Table Header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: const BoxDecoration(
-              color: AppColors.bgHeader,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.brandPrimary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Center(child: iconWidget),
               ),
-              border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
-            ),
-            child: const Row(
-              children: [
-                SizedBox(width: 42, child: Text('#', style: _headerStyle)),
-                SizedBox(width: 48, child: Text('Icon', style: _headerStyle)),
-                Expanded(flex: 3, child: Text('Title', style: _headerStyle)),
-                Expanded(flex: 4, child: Text('Route Path', style: _headerStyle)),
-                SizedBox(width: 70, child: Text('Order', style: _headerStyle)),
-                SizedBox(width: 80, child: Text('Status', style: _headerStyle)),
-                SizedBox(width: 100, child: Text('Actions', style: _headerStyle)),
-              ],
-            ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: TextStyle(
+                        color: item.isActive ? AppColors.textMain : AppColors.textSubtle,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      item.routePath,
+                      style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontFamily: 'monospace'),
+                    ),
+                  ],
+                ),
+              ),
+              DqmsStatusBadge.activeState(item.isActive),
+            ],
           ),
-
-          // Table Rows
-          Expanded(
-            child: menus.isEmpty
-                ? const Center(
-                    child: Text('No menu items found.',
-                        style: TextStyle(color: AppColors.textSubtle, fontSize: 13)))
-                : ListView.separated(
-                    itemCount: menus.length,
-                    separatorBuilder: (_, _) =>
-                        const Divider(height: 1, color: AppColors.borderSubtle),
-                    itemBuilder: (ctx, i) => _buildMenuRow(ctx, menus[i], i),
-                  ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Text('#${item.id} • Order: ${item.sortOrder}', style: const TextStyle(color: AppColors.textSubtle, fontSize: 11)),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 16, color: AppColors.brandAccent),
+                onPressed: () => _showMenuEditor(context, item),
+                tooltip: 'Edit',
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.statusDeactive),
+                onPressed: () => _confirmDelete(context, item),
+                tooltip: 'Delete',
+              ),
+            ],
           ),
         ],
       ),

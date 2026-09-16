@@ -508,117 +508,240 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
   }
 
   Widget _buildMasterTable(List<UserProfileModel> users) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
+
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 12 : 18),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: DqmsTextField(
-                  hintText: 'Search UserCode, Full Name, Email, or Role...',
+              if (isMobile) ...[
+                DqmsTextField(
+                  hintText: 'Search Users...',
                   prefixIcon: const Icon(Icons.search_rounded, size: 18),
                   onChanged: (val) => setState(() => _searchQuery = val),
                 ),
-              ),
-              const SizedBox(width: 12),
-              DqmsButton(
-                label: 'Create User Account',
-                icon: Icons.person_add_rounded,
-                onPressed: () => _showCreateUserModal(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.bgHeader,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.borderSubtle),
-                  ),
-                  child: const Row(
-                    children: [
-                      SizedBox(width: 120, child: Text('USER CODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      Expanded(flex: 3, child: Text('FULL NAME & TITLE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      Expanded(flex: 3, child: Text('PRIMARY EMAIL & MOBILE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      Expanded(flex: 2, child: Text('ROLE ASSIGNMENT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      SizedBox(width: 80, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                    ],
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: DqmsButton(
+                    label: 'Create User Account',
+                    icon: Icons.person_add_rounded,
+                    onPressed: () => _showCreateUserModal(context),
                   ),
                 ),
-                const SizedBox(height: 6),
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: users.length,
-                    separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                    itemBuilder: (ctx, i) {
-                      final u = users[i];
-                      final isSelected = _selectedUser?.userId == u.userId;
-
-                      return InkWell(
-                        onTap: () => _onUserSelected(u),
-                        borderRadius: BorderRadius.circular(4),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
+              ] else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: DqmsTextField(
+                        hintText: 'Search UserCode, Full Name, Email, or Role...',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    DqmsButton(
+                      label: 'Create User Account',
+                      icon: Icons.person_add_rounded,
+                      onPressed: () => _showCreateUserModal(context),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 12),
+              Expanded(
+                child: isMobile
+                    ? ListView.separated(
+                        itemCount: users.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 8),
+                        itemBuilder: (ctx, i) {
+                          final u = users[i];
+                          final isSelected = _selectedUser?.userId == u.userId;
+                          return _buildMobileUserCard(u, isSelected);
+                        },
+                      )
+                    : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: 850,
+                          child: Column(
                             children: [
-                              SizedBox(
-                                width: 120,
-                                child: Text(u.userCode, style: const TextStyle(color: AppColors.brandPrimary, fontSize: 12, fontWeight: FontWeight.w800, fontFamily: 'monospace')),
-                              ),
-                              Expanded(
-                                flex: 3,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bgHeader,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: AppColors.borderSubtle),
+                                ),
+                                child: const Row(
                                   children: [
-                                    Text(u.calculatedFullName, style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
-                                    Text('Gender: ${u.genderName}', style: const TextStyle(color: AppColors.textSubtle, fontSize: 10)),
+                                    SizedBox(width: 120, child: Text('USER CODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    Expanded(flex: 3, child: Text('FULL NAME & TITLE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    Expanded(flex: 3, child: Text('PRIMARY EMAIL & MOBILE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    Expanded(flex: 2, child: Text('ROLE ASSIGNMENT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    SizedBox(width: 80, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
                                   ],
                                 ),
                               ),
+                              const SizedBox(height: 6),
                               Expanded(
-                                flex: 3,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(u.email, style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600)),
-                                    Text(u.mobileNumber, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
-                                  ],
+                                child: ListView.separated(
+                                  itemCount: users.length,
+                                  separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                                  itemBuilder: (ctx, i) {
+                                    final u = users[i];
+                                    final isSelected = _selectedUser?.userId == u.userId;
+
+                                    return InkWell(
+                                      onTap: () => _onUserSelected(u),
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 120,
+                                              child: Text(u.userCode, style: const TextStyle(color: AppColors.brandPrimary, fontSize: 12, fontWeight: FontWeight.w800, fontFamily: 'monospace')),
+                                            ),
+                                            Expanded(
+                                              flex: 3,
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(u.calculatedFullName, style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
+                                                  Text('Gender: ${u.genderName}', style: const TextStyle(color: AppColors.textSubtle, fontSize: 10)),
+                                                ],
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 3,
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(u.email, style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600)),
+                                                  Text(u.mobileNumber, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                                                ],
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text(u.roleName, style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
+                                            ),
+                                            SizedBox(
+                                              width: 80,
+                                              child: DqmsStatusBadge.activeState(u.isActive),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              ),
-                              Expanded(
-                                flex: 2,
-                                child: Text(u.roleName, style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
-                              ),
-                              SizedBox(
-                                width: 80,
-                                child: DqmsStatusBadge.activeState(u.isActive),
                               ),
                             ],
                           ),
                         ),
-                      );
-                    },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileUserCard(UserProfileModel u, bool isSelected) {
+    return InkWell(
+      onTap: () => _onUserSelected(u),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
                   ),
+                  child: Text(
+                    u.userCode,
+                    style: const TextStyle(
+                      color: AppColors.brandPrimary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                DqmsStatusBadge.activeState(u.isActive),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              u.calculatedFullName,
+              style: const TextStyle(
+                color: AppColors.textMain,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (u.email.isNotEmpty)
+              Text(
+                u.email,
+                style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w600),
+              ),
+            if (u.mobileNumber.isNotEmpty)
+              Text(
+                u.mobileNumber,
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+              ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.borderSubtle.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    u.roleName,
+                    style: const TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'Gender: ${u.genderName}',
+                  style: const TextStyle(color: AppColors.textSubtle, fontSize: 10),
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

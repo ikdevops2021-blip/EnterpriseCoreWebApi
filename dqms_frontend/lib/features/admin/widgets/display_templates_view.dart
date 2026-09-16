@@ -46,21 +46,22 @@ class _DisplayTemplatesViewState extends ConsumerState<DisplayTemplatesView> {
   }
 
   Widget _buildMasterTable(List<DisplayTemplateModel> templates) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Toolbar
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
+
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 12 : 18),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: DqmsTextField(
+              if (isMobile) ...[
+                DqmsTextField(
                   hintText: 'Search TV Layout Name or Type...',
                   prefixIcon: const Icon(Icons.search_rounded, size: 18),
                   onChanged: (val) {
@@ -69,135 +70,268 @@ class _DisplayTemplatesViewState extends ConsumerState<DisplayTemplatesView> {
                     });
                   },
                 ),
-              ),
-              const SizedBox(width: 12),
-              DqmsButton(
-                label: 'New Template',
-                icon: Icons.add_rounded,
-                onPressed: () {
-                  setState(() {
-                    _selectedTemplate = const DisplayTemplateModel(
-                      templateId: 999,
-                      templateName: 'New TV Layout Template',
-                      layoutType: 'GridView (21001)',
-                      audioChime: 'DigitalBell',
-                      scrollSpeed: 'Normal',
-                      tickerText: 'Enter announcement text here',
-                      isActive: true,
-                    );
-                  });
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // List / Table Content
-          if (templates.isEmpty)
-            const Expanded(
-              child: DqmsEmptyState(
-                title: 'No Templates Found',
-                message: 'No TV display templates match your search criteria.',
-                icon: Icons.tv_off_rounded,
-              ),
-            )
-          else
-            Expanded(
-              child: Column(
-                children: [
-                  // Table Header
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.bgHeader,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.borderSubtle),
-                    ),
-                    child: const Row(
-                      children: [
-                        SizedBox(width: 60, child: Text('ID', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 3, child: Text('TEMPLATE NAME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        Expanded(flex: 2, child: Text('LAYOUT TYPE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 110, child: Text('AUDIO CHIME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                        SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      ],
-                    ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: DqmsButton(
+                    label: 'New Template',
+                    icon: Icons.add_rounded,
+                    onPressed: () {
+                      setState(() {
+                        _selectedTemplate = const DisplayTemplateModel(
+                          templateId: 999,
+                          templateName: 'New TV Layout Template',
+                          layoutType: 'GridView (21001)',
+                          audioChime: 'DigitalBell',
+                          scrollSpeed: 'Normal',
+                          tickerText: 'Enter announcement text here',
+                          isActive: true,
+                        );
+                      });
+                    },
                   ),
-                  const SizedBox(height: 6),
+                ),
+              ] else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: DqmsTextField(
+                        hintText: 'Search TV Layout Name or Type...',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                        onChanged: (val) {
+                          setState(() {
+                            _searchQuery = val;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    DqmsButton(
+                      label: 'New Template',
+                      icon: Icons.add_rounded,
+                      onPressed: () {
+                        setState(() {
+                          _selectedTemplate = const DisplayTemplateModel(
+                            templateId: 999,
+                            templateName: 'New TV Layout Template',
+                            layoutType: 'GridView (21001)',
+                            audioChime: 'DigitalBell',
+                            scrollSpeed: 'Normal',
+                            tickerText: 'Enter announcement text here',
+                            isActive: true,
+                          );
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 12),
 
-                  // Rows
-                  Expanded(
-                    child: ListView.separated(
-                      itemCount: templates.length,
-                      separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                      itemBuilder: (ctx, i) {
-                        final tmpl = templates[i];
-                        final isSelected = _selectedTemplate?.templateId == tmpl.templateId;
-
-                        return InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedTemplate = tmpl;
-                            });
+              // List / Table Content
+              if (templates.isEmpty)
+                const Expanded(
+                  child: DqmsEmptyState(
+                    title: 'No Templates Found',
+                    message: 'No TV display templates match your search criteria.',
+                    icon: Icons.tv_off_rounded,
+                  ),
+                )
+              else
+                Expanded(
+                  child: isMobile
+                      ? ListView.separated(
+                          itemCount: templates.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
+                          itemBuilder: (ctx, i) {
+                            final tmpl = templates[i];
+                            final isSelected = _selectedTemplate?.templateId == tmpl.templateId;
+                            return _buildMobileTemplateCard(tmpl, isSelected);
                           },
-                          borderRadius: BorderRadius.circular(4),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Row(
+                        )
+                      : SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: SizedBox(
+                            width: 750,
+                            child: Column(
                               children: [
-                                SizedBox(
-                                  width: 60,
-                                  child: Text(
-                                    '#${tmpl.templateId}',
-                                    style: const TextStyle(
-                                      color: AppColors.brandPrimary,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w800,
-                                      fontFamily: 'monospace',
-                                    ),
+                                // Table Header
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.bgHeader,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: AppColors.borderSubtle),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      SizedBox(width: 60, child: Text('ID', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      Expanded(flex: 3, child: Text('TEMPLATE NAME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      Expanded(flex: 2, child: Text('LAYOUT TYPE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      SizedBox(width: 110, child: Text('AUDIO CHIME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    ],
                                   ),
                                 ),
+                                const SizedBox(height: 6),
+
+                                // Rows
                                 Expanded(
-                                  flex: 3,
-                                  child: Text(
-                                    tmpl.templateName,
-                                    style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
+                                  child: ListView.separated(
+                                    itemCount: templates.length,
+                                    separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                                    itemBuilder: (ctx, i) {
+                                      final tmpl = templates[i];
+                                      final isSelected = _selectedTemplate?.templateId == tmpl.templateId;
+
+                                      return InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedTemplate = tmpl;
+                                          });
+                                        },
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          decoration: BoxDecoration(
+                                            color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              SizedBox(
+                                                width: 60,
+                                                child: Text(
+                                                  '#${tmpl.templateId}',
+                                                  style: const TextStyle(
+                                                    color: AppColors.brandPrimary,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w800,
+                                                    fontFamily: 'monospace',
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 3,
+                                                child: Text(
+                                                  tmpl.templateName,
+                                                  style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 2,
+                                                child: Text(
+                                                  tmpl.layoutType,
+                                                  style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 110,
+                                                child: Text(
+                                                  tmpl.audioChime,
+                                                  style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 90,
+                                                child: DqmsStatusBadge.activeState(tmpl.isActive),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(
-                                    tmpl.layoutType,
-                                    style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 110,
-                                  child: Text(
-                                    tmpl.audioChime,
-                                    style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 90,
-                                  child: DqmsStatusBadge.activeState(tmpl.isActive),
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      },
+                        ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileTemplateCard(DisplayTemplateModel tmpl, bool isSelected) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedTemplate = tmpl;
+        });
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '#${tmpl.templateId}',
+                    style: const TextStyle(
+                      color: AppColors.brandPrimary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'monospace',
                     ),
                   ),
-                ],
+                ),
+                const Spacer(),
+                DqmsStatusBadge.activeState(tmpl.isActive),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              tmpl.templateName,
+              style: const TextStyle(
+                color: AppColors.textMain,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
               ),
             ),
-        ],
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    tmpl.layoutType,
+                    style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const Spacer(),
+                const Icon(Icons.music_note_rounded, size: 14, color: AppColors.textSubtle),
+                const SizedBox(width: 4),
+                Text(
+                  tmpl.audioChime,
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

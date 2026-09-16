@@ -782,150 +782,265 @@ class _ConfigCategoryParametersViewState extends ConsumerState<ConfigCategoryPar
   }
 
   Widget _buildMasterTable(List<ConfigCategoryModel> categories) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 12),
-              child: LinearProgressIndicator(color: AppColors.brandPrimary, minHeight: 2),
-            ),
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
+
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 12 : 18),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: DqmsTextField(
-                  hintText: 'Search Category Code, Category Name (C_*), or Description...',
+              if (_isLoading)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: LinearProgressIndicator(color: AppColors.brandPrimary, minHeight: 2),
+                ),
+              if (isMobile) ...[
+                DqmsTextField(
+                  hintText: 'Search Categories...',
                   prefixIcon: const Icon(Icons.search_rounded, size: 18),
                   onChanged: (val) => setState(() => _searchQuery = val),
                 ),
-              ),
-              const SizedBox(width: 12),
-              DqmsButton(
-                label: 'Add Category',
-                icon: Icons.add_circle_outline_rounded,
-                onPressed: () => _showAddCategoryModal(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.bgHeader,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.borderSubtle),
-                  ),
-                  child: const Row(
-                    children: [
-                      SizedBox(width: 50, child: Text('ID', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      Expanded(flex: 3, child: Text('CATEGORY NAME (C_*)', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      SizedBox(width: 70, child: Text('PRIORITY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      Expanded(flex: 3, child: Text('EXTERNAL CODE / COLOR', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      SizedBox(width: 110, child: Text('PARAM RANGE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                      SizedBox(width: 70, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                    ],
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: DqmsButton(
+                    label: 'Add Category',
+                    icon: Icons.add_circle_outline_rounded,
+                    onPressed: () => _showAddCategoryModal(context),
                   ),
                 ),
-                const SizedBox(height: 6),
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: categories.length,
-                    separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                    itemBuilder: (ctx, i) {
-                      final cat = categories[i];
-                      final isSelected = _selectedCategory?.categoryId == cat.categoryId;
-
-                      return InkWell(
-                        onTap: () {
-                          setState(() => _selectedCategory = cat);
-                          _fetchCategoryParameters(cat.categoryId);
+              ] else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: DqmsTextField(
+                        hintText: 'Search Category Code, Category Name (C_*), or Description...',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    DqmsButton(
+                      label: 'Add Category',
+                      icon: Icons.add_circle_outline_rounded,
+                      onPressed: () => _showAddCategoryModal(context),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 12),
+              Expanded(
+                child: isMobile
+                    ? ListView.separated(
+                        itemCount: categories.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 8),
+                        itemBuilder: (ctx, i) {
+                          final cat = categories[i];
+                          final isSelected = _selectedCategory?.categoryId == cat.categoryId;
+                          return _buildMobileCategoryCard(cat, isSelected);
                         },
-                        borderRadius: BorderRadius.circular(4),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
+                      )
+                    : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: 800,
+                          child: Column(
                             children: [
-                              SizedBox(
-                                width: 50,
-                                child: Text('#${cat.categoryId}', style: const TextStyle(color: AppColors.textSubtle, fontSize: 12, fontWeight: FontWeight.w700)),
-                              ),
-                              Expanded(
-                                flex: 3,
-                                child: Row(
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bgHeader,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: AppColors.borderSubtle),
+                                ),
+                                child: const Row(
                                   children: [
-                                    _buildResolvedIcon(cat.categoryIcon, size: 16, color: _parseHexColor(cat.categoryColor)),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        cat.categoryName,
-                                        style: const TextStyle(color: AppColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w800, fontFamily: 'monospace'),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
+                                    SizedBox(width: 50, child: Text('ID', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    Expanded(flex: 3, child: Text('CATEGORY NAME (C_*)', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    SizedBox(width: 70, child: Text('PRIORITY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    Expanded(flex: 3, child: Text('EXTERNAL CODE / COLOR', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    SizedBox(width: 110, child: Text('PARAM RANGE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    SizedBox(width: 70, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
                                   ],
                                 ),
                               ),
-                              SizedBox(
-                                width: 70,
-                                child: Text('Prio: ${cat.priority}', style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
-                              ),
+                              const SizedBox(height: 6),
                               Expanded(
-                                flex: 3,
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 14,
-                                      height: 14,
-                                      decoration: BoxDecoration(
-                                        color: _parseHexColor(cat.categoryColor),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: Colors.white24, width: 1),
+                                child: ListView.separated(
+                                  itemCount: categories.length,
+                                  separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                                  itemBuilder: (ctx, i) {
+                                    final cat = categories[i];
+                                    final isSelected = _selectedCategory?.categoryId == cat.categoryId;
+
+                                    return InkWell(
+                                      onTap: () {
+                                        setState(() => _selectedCategory = cat);
+                                        _fetchCategoryParameters(cat.categoryId);
+                                      },
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 50,
+                                              child: Text('#${cat.categoryId}', style: const TextStyle(color: AppColors.textSubtle, fontSize: 12, fontWeight: FontWeight.w700)),
+                                            ),
+                                            Expanded(
+                                              flex: 3,
+                                              child: Row(
+                                                children: [
+                                                  _buildResolvedIcon(cat.categoryIcon, size: 16, color: _parseHexColor(cat.categoryColor)),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      cat.categoryName,
+                                                      style: const TextStyle(color: AppColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w800, fontFamily: 'monospace'),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 70,
+                                              child: Text('Prio: ${cat.priority}', style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
+                                            ),
+                                            Expanded(
+                                              flex: 3,
+                                              child: Row(
+                                                children: [
+                                                  Container(
+                                                    width: 14,
+                                                    height: 14,
+                                                    decoration: BoxDecoration(
+                                                      color: _parseHexColor(cat.categoryColor),
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(color: Colors.white24, width: 1),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '${cat.categoryColor ?? "#2F81F7"} (${cat.categoryExternalCode ?? "N/A"})',
+                                                      style: const TextStyle(color: AppColors.textSubtle, fontSize: 11, fontFamily: 'monospace'),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 110,
+                                              child: Text(cat.rangeText, style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w700)),
+                                            ),
+                                            SizedBox(
+                                              width: 70,
+                                              child: DqmsStatusBadge.activeState(cat.active),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        '${cat.categoryColor ?? "#2F81F7"} (${cat.categoryExternalCode ?? "N/A"})',
-                                        style: const TextStyle(color: AppColors.textSubtle, fontSize: 11, fontFamily: 'monospace'),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
+                                    );
+                                  },
                                 ),
-                              ),
-                              SizedBox(
-                                width: 110,
-                                child: Text(cat.rangeText, style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w700)),
-                              ),
-                              SizedBox(
-                                width: 70,
-                                child: DqmsStatusBadge.activeState(cat.active),
                               ),
                             ],
                           ),
                         ),
-                      );
-                    },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileCategoryCard(ConfigCategoryModel cat, bool isSelected) {
+    return InkWell(
+      onTap: () {
+        setState(() => _selectedCategory = cat);
+        _fetchCategoryParameters(cat.categoryId);
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                _buildResolvedIcon(cat.categoryIcon, size: 16, color: _parseHexColor(cat.categoryColor)),
+                const SizedBox(width: 8),
+                Text(
+                  cat.categoryName,
+                  style: const TextStyle(color: AppColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w800, fontFamily: 'monospace'),
+                ),
+                const Spacer(),
+                DqmsStatusBadge.activeState(cat.active),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              cat.description,
+              style: const TextStyle(color: AppColors.textMain, fontSize: 12),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgSubtle,
+                    borderRadius: BorderRadius.circular(4),
                   ),
+                  child: Text('Prio: ${cat.priority}', style: const TextStyle(color: AppColors.textSubtle, fontSize: 10, fontWeight: FontWeight.w700)),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  cat.rangeText,
+                  style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w700),
+                ),
+                const Spacer(),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: _parseHexColor(cat.categoryColor),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  cat.categoryExternalCode ?? 'N/A',
+                  style: const TextStyle(color: AppColors.textSubtle, fontSize: 10, fontFamily: 'monospace'),
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1529,75 +1644,92 @@ class _CategoryInspectorPanelState extends State<_CategoryInspectorPanel> {
                 ? const Center(
                     child: Text('No parameters configured. Click "+ Add Parameter" above.', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
                   )
-                : ListView.separated(
-                    itemCount: widget.parameters.length,
-                    separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                    itemBuilder: (ctx, idx) {
-                      final p = widget.parameters[idx];
-                      return InkWell(
-                        onTap: () => widget.onEditParameter(p),
-                        borderRadius: BorderRadius.circular(4),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          child: Row(
-                            children: [
-                              Text('${p.parameterId}', style: const TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w800, fontFamily: 'monospace')),
-                              const SizedBox(width: 8),
+                : LayoutBuilder(
+                    builder: (context, cons) {
+                      final isNarrow = cons.maxWidth < 420;
 
-                              // Display Swatch for Parameter Color
-                              Container(
-                                width: 14,
-                                height: 14,
-                                decoration: BoxDecoration(
-                                  color: _parseHexColor(p.parameterColor),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white30, width: 1),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              _buildResolvedIcon(p.parameterIcon, size: 14, color: _parseHexColor(p.parameterColor)),
-                              const SizedBox(width: 8),
+                      return ListView.separated(
+                        itemCount: widget.parameters.length,
+                        separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                        itemBuilder: (ctx, idx) {
+                          final p = widget.parameters[idx];
+                          return InkWell(
+                            onTap: () => widget.onEditParameter(p),
+                            borderRadius: BorderRadius.circular(4),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              child: Row(
+                                children: [
+                                  Text('${p.parameterId}', style: const TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w800, fontFamily: 'monospace')),
+                                  const SizedBox(width: 8),
 
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
+                                  // Display Swatch for Parameter Color
+                                  Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: BoxDecoration(
+                                      color: _parseHexColor(p.parameterColor),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: Colors.white30, width: 1),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildResolvedIcon(p.parameterIcon, size: 14, color: _parseHexColor(p.parameterColor)),
+                                  const SizedBox(width: 8),
+
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(p.paramCode, style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w700)),
-                                        const SizedBox(width: 6),
-                                        Text('— ${p.paramName}', style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
-                                        if (p.isDefault) ...[
-                                          const SizedBox(width: 6),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                            decoration: BoxDecoration(color: AppColors.statusSpecial.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(3)),
-                                            child: const Text('DEFAULT', style: TextStyle(color: AppColors.statusSpecial, fontSize: 8, fontWeight: FontWeight.w900)),
-                                          ),
-                                        ],
+                                        Row(
+                                          children: [
+                                            Text(p.paramCode, style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w700)),
+                                            const SizedBox(width: 6),
+                                            Flexible(
+                                              child: Text('— ${p.paramName}', style: const TextStyle(color: AppColors.textMuted, fontSize: 11), overflow: TextOverflow.ellipsis),
+                                            ),
+                                            if (p.isDefault) ...[
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                                decoration: BoxDecoration(color: AppColors.statusSpecial.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(3)),
+                                                child: const Text('DEFAULT', style: TextStyle(color: AppColors.statusSpecial, fontSize: 8, fontWeight: FontWeight.w900)),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                        Text('Color: ${p.parameterColor ?? "#2F81F7"} • ExtCode: ${p.parameterExternalCode ?? "N/A"} • Prio: ${p.priority}', style: const TextStyle(color: AppColors.textSubtle, fontSize: 10), overflow: TextOverflow.ellipsis),
                                       ],
                                     ),
-                                    Text('Color: ${p.parameterColor ?? "#2F81F7"} • ExtCode: ${p.parameterExternalCode ?? "N/A"} • Prio: ${p.priority}', style: const TextStyle(color: AppColors.textSubtle, fontSize: 10)),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  DqmsStatusBadge.activeState(p.isActive),
+                                  const SizedBox(width: 6),
+                                  if (isNarrow)
+                                    IconButton(
+                                      icon: const Icon(Icons.edit_outlined, size: 16, color: AppColors.brandAccent),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () => widget.onEditParameter(p),
+                                    )
+                                  else
+                                    OutlinedButton.icon(
+                                      icon: const Icon(Icons.edit_outlined, size: 13),
+                                      label: const Text('Edit', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: AppColors.brandAccent,
+                                        side: const BorderSide(color: AppColors.brandAccent),
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      onPressed: () => widget.onEditParameter(p),
+                                    ),
+                                ],
                               ),
-                              DqmsStatusBadge.activeState(p.isActive),
-                              const SizedBox(width: 8),
-                              OutlinedButton.icon(
-                                icon: const Icon(Icons.edit_outlined, size: 13),
-                                label: const Text('Edit', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppColors.brandAccent,
-                                  side: const BorderSide(color: AppColors.brandAccent),
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                onPressed: () => widget.onEditParameter(p),
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),

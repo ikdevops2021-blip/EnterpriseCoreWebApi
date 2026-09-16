@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 
 /// Central Enterprise Environment & API Endpoint Configuration
@@ -45,6 +46,19 @@ class AppConfig {
       _runtimeConfig = json.decode(jsonString) as Map<String, dynamic>;
     } catch (_) {
       // Seamless fallback to default compile-time values if file is unreadable
+    }
+
+    // When running in a web browser accessed via mobile Wi-Fi / LAN IP,
+    // automatically map localhost to the current host IP so mobile makes API calls to this machine
+    if (kIsWeb) {
+      final host = Uri.base.host;
+      if (host.isNotEmpty && host != 'localhost' && host != '127.0.0.1') {
+        _runtimeConfig.forEach((key, value) {
+          if (value is String && value.contains('localhost')) {
+            _runtimeConfig[key] = value.replaceAll('localhost', host);
+          }
+        });
+      }
     }
   }
 

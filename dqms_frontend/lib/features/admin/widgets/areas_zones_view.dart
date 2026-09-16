@@ -110,109 +110,214 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
             )
           else
             Expanded(
-              child: Column(
-                children: [
-                  // Table Header
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: 600,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: AppColors.bgHeader,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: AppColors.borderSubtle),
-                        ),
-                        child: const Row(
-                          children: [
-                            SizedBox(width: 80, child: Text('CODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                            Expanded(flex: 3, child: Text('ZONE NAME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                            Expanded(flex: 3, child: Text('DESCRIPTION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                            SizedBox(width: 100, child: Text('SLA TARGET', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                            SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-
-                  // List Rows
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        width: 600,
-                        child: ListView.separated(
-                          itemCount: areas.length,
-                          separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isMobile = constraints.maxWidth < 650;
+                  if (isMobile) {
+                    return ListView.separated(
+                      itemCount: areas.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (ctx, i) {
                         final area = areas[i];
                         final isSelected = _selectedArea?.areaId == area.areaId;
-
                         return InkWell(
                           onTap: () {
                             setState(() {
                               _selectedArea = area;
                             });
                           },
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(8),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle,
+                                width: isSelected ? 1.5 : 1.0,
+                              ),
                             ),
-                            child: Row(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                SizedBox(
-                                  width: 80,
-                                  child: Text(
-                                    area.areaCode,
-                                    style: const TextStyle(
-                                      color: AppColors.brandPrimary,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w800,
-                                      fontFamily: 'monospace',
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+                                      ),
+                                      child: Text(
+                                        area.areaCode,
+                                        style: const TextStyle(
+                                          color: AppColors.brandPrimary,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w800,
+                                          fontFamily: 'monospace',
+                                        ),
+                                      ),
                                     ),
+                                    DqmsStatusBadge.activeState(area.isActive),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  area.areaName,
+                                  style: const TextStyle(
+                                    color: AppColors.textMain,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                Expanded(
-                                  flex: 3,
-                                  child: Text(
-                                    area.areaName,
-                                    style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 3,
-                                  child: Text(
+                                if (area.description.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
                                     area.description,
                                     style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                                    maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                                SizedBox(
-                                  width: 100,
-                                  child: Text(
-                                    '${area.targetSlaMins} Mins',
-                                    style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w700),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 90,
-                                  child: DqmsStatusBadge.activeState(area.isActive),
+                                ],
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.brandAccent.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.timer_outlined, size: 11, color: AppColors.brandAccent),
+                                          const SizedBox(width: 3),
+                                          Text(
+                                            '${area.targetSlaMins} Mins SLA',
+                                            style: const TextStyle(
+                                              color: AppColors.brandAccent,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
                         );
                       },
+                    );
+                  }
+
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: 680,
+                      child: Column(
+                        children: [
+                          // Table Header
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.bgHeader,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppColors.borderSubtle),
+                            ),
+                            child: const Row(
+                              children: [
+                                SizedBox(width: 80, child: Text('CODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                Expanded(flex: 3, child: Text('ZONE NAME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                Expanded(flex: 3, child: Text('DESCRIPTION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                SizedBox(width: 100, child: Text('SLA TARGET', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+
+                          // List Rows
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: areas.length,
+                              separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                              itemBuilder: (ctx, i) {
+                                final area = areas[i];
+                                final isSelected = _selectedArea?.areaId == area.areaId;
+
+                                return InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedArea = area;
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 80,
+                                          child: Text(
+                                            area.areaCode,
+                                            style: const TextStyle(
+                                              color: AppColors.brandPrimary,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w800,
+                                              fontFamily: 'monospace',
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            area.areaName,
+                                            style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            area.description,
+                                            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 100,
+                                          child: Text(
+                                            '${area.targetSlaMins} Mins',
+                                            style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w700),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 90,
+                                          child: DqmsStatusBadge.activeState(area.isActive),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
+            ),
 
                   // Pagination Footer
                   const SizedBox(height: 12),
@@ -237,9 +342,6 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
         ],
       ),
     );
