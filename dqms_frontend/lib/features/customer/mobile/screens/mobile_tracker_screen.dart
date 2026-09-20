@@ -225,9 +225,34 @@ class _MobileTrackerScreenState extends ConsumerState<MobileTrackerScreen> {
             const SizedBox(height: 16),
           ],
 
-          // 2. Hero Appointment & Token Card
-          _buildHeroAppointmentCard(context, ticketState),
+          // Reference Card 2: Now Serving Live Consultation Banner (Web, Mobile, Desktop)
+          NowServingBannerGlassCard(
+            ticketNumber: ticketState.tokenNumber,
+            doctorName: 'Dr. Ahmed Rahman',
+            serviceName: ticketState.serviceName,
+            time: '10:20 AM',
+            room: ticketState.assignedCounter,
+            onTapRoom: () => _showHelpSupportModal(context),
+            onTap: () => ref.read(customerPortalTabProvider.notifier).state = 1,
+          ),
+          const SizedBox(height: 14),
 
+          // Reference Card 1: Your Next Appointment 3D Glass Hero Card (Web, Mobile, Desktop)
+          NextAppointmentGlassCard(
+            ticketNumber: ticketState.tokenNumber,
+            serviceName: ticketState.serviceName,
+            time: '10:20 AM',
+            dateText: 'SEP 16',
+            onViewDetails: () => _showAppointmentDetailsModal(context, ticketState),
+          ),
+          const SizedBox(height: 14),
+
+          // Reference Card 4: Concierge 'Choose Your Service' Card (Web, Mobile, Desktop)
+          ConciergeServiceGlassCard(
+            title: 'Choose Your Service',
+            subtitle: 'Select a department to book an appointment',
+            onTap: () => context.push('/appointment'),
+          ),
           const SizedBox(height: 24),
 
           // 3. Quick Actions
@@ -733,6 +758,8 @@ class _MobileTrackerScreenState extends ConsumerState<MobileTrackerScreen> {
   Widget _buildLiveQueueTab(BuildContext context) {
     final queueItems = ref.watch(liveQueueItemsProvider);
     final activeFilter = ref.watch(queueDepartmentFilterProvider);
+    final ticketState = ref.watch(mobileTicketStateProvider);
+    final isCalling = ticketState.status == 'Calling';
 
     final filteredQueue = activeFilter == 'All'
         ? queueItems
@@ -764,6 +791,18 @@ class _MobileTrackerScreenState extends ConsumerState<MobileTrackerScreen> {
             ],
           ),
           const SizedBox(height: 14),
+
+          // Reference Card 3: You're in Queue Live 3D Progress Modal Card (Web, Mobile, Desktop)
+          QueueProgressModalGlassCard(
+            ticketNumber: ticketState.tokenNumber,
+            position: 2,
+            currentStep: isCalling ? 3 : 2,
+            reassuranceText: isCalling
+                ? "Your number is called! Please proceed to ${ticketState.assignedCounter}."
+                : "Relax, we'll call you shortly",
+            onExploreMore: () => _showHelpSupportModal(context),
+          ),
+          const SizedBox(height: 20),
 
           // 1. Horizontally Scrollable Token Strip
           SizedBox(
@@ -1826,6 +1865,49 @@ class _MobileTrackerScreenState extends ConsumerState<MobileTrackerScreen> {
           GlassPillBadge(label: status, variant: GlassPillVariant.completed),
         ],
       ),
+    );
+  }
+
+  /// Appointment Details Modal
+  void _showAppointmentDetailsModal(BuildContext context, MobileTicketState ticketState) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
+            border: Border.all(color: AppColors.glassBorderLight),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderSubtle,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                'Appointment & Queue Details',
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 16),
+              _buildHeroAppointmentCard(context, ticketState),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
     );
   }
 

@@ -454,6 +454,13 @@ class _AppointmentBookingScreenState extends ConsumerState<AppointmentBookingScr
         ),
         const SizedBox(height: 18),
 
+        // Reference Card 4: Choose Your Service Concierge Card (Web, Mobile, Desktop)
+        const ConciergeServiceGlassCard(
+          title: 'Choose Your Service',
+          subtitle: 'Select a department to book an appointment',
+        ),
+        const SizedBox(height: 18),
+
         // Department Search Bar
         GlassContainer(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
@@ -800,6 +807,18 @@ class _AppointmentBookingScreenState extends ConsumerState<AppointmentBookingScr
                 'Your fast-track digital priority reservation is confirmed.',
                 style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+
+              // Reference Card 1: Your Next Appointment Glass Hero Card (Web, Mobile, Desktop)
+              NextAppointmentGlassCard(
+                ticketNumber: state.bookingReference.isNotEmpty ? state.bookingReference : 'A012',
+                serviceName: state.selectedService ?? 'Consultation - General Physician',
+                time: state.selectedTimeSlot ?? '10:20 AM',
+                dateText: (state.selectedDate != null && state.selectedDate!.length >= 6)
+                    ? state.selectedDate!.substring(0, 6).toUpperCase()
+                    : 'SEP 16',
+                onViewDetails: () => context.go('/mobile'),
               ),
               const SizedBox(height: 20),
 

@@ -910,3 +910,1135 @@ class GlassBottomNav extends StatelessWidget {
     );
   }
 }
+
+/// ============================================================================
+/// 8. CLINICAL SPATIAL 3D GLASS CARDS (MATCHING REFERENCE DESIGNS)
+/// ============================================================================
+
+/// ── Card 1: 'Your Next Appointment' Hero Card (Web, Mobile, Desktop Responsive) ──
+class NextAppointmentGlassCard extends StatefulWidget {
+  final String ticketNumber;
+  final String serviceName;
+  final String time;
+  final String dateText;
+  final VoidCallback? onViewDetails;
+  final double? maxWidth;
+
+  const NextAppointmentGlassCard({
+    super.key,
+    this.ticketNumber = 'A012',
+    this.serviceName = 'Consultation - General Physician',
+    this.time = '10:20 AM',
+    this.dateText = 'SEPT 16',
+    this.onViewDetails,
+    this.maxWidth,
+  });
+
+  @override
+  State<NextAppointmentGlassCard> createState() => _NextAppointmentGlassCardState();
+}
+
+class _NextAppointmentGlassCardState extends State<NextAppointmentGlassCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: 180,
+          maxWidth: widget.maxWidth ?? double.infinity,
+        ),
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          cursor: widget.onViewDetails != null ? SystemMouseCursors.click : MouseCursor.defer,
+          child: AnimatedScale(
+            scale: _isHovered ? 1.012 : 1.0,
+            duration: AppMotion.fast,
+            curve: AppMotion.curveSpring,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF0284C7),
+                    Color(0xFF2563EB),
+                    Color(0xFF1D4ED8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                  color: _isHovered
+                      ? Colors.white.withValues(alpha: 0.65)
+                      : Colors.white.withValues(alpha: 0.35),
+                  width: _isHovered ? 1.5 : 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF0284C7).withValues(alpha: _isHovered ? 0.45 : 0.35),
+                    blurRadius: _isHovered ? 30 : 24,
+                    offset: Offset(0, _isHovered ? 12 : 10),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Stack(
+                  children: [
+                    // Atmospheric Radial Caustics
+                    Positioned(
+                      top: -30,
+                      right: -20,
+                      child: Container(
+                        width: 160,
+                        height: 160,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.18),
+                        ),
+                      ),
+                    ),
+                    // Diagonal Glass Sheen
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withValues(alpha: 0.25),
+                              Colors.transparent,
+                              Colors.white.withValues(alpha: 0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Responsive Content Layout
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isCompact = constraints.maxWidth < 360;
+                        return Padding(
+                          padding: EdgeInsets.all(isCompact ? 14.0 : 20.0),
+                          child: Row(
+                            children: [
+                              // Left Details
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Pill label
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.20),
+                                          borderRadius: BorderRadius.circular(20),
+                                          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.circle, color: Color(0xFF6FFBBE), size: 8),
+                                            SizedBox(width: 6),
+                                            Text(
+                                              'YOUR NEXT APPOINTMENT',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    // Big Ticket (Scales down gracefully on small mobile screens)
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        widget.ticketNumber,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: isCompact ? 32 : 38,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: -1.0,
+                                          height: 1.1,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    // Service
+                                    Text(
+                                      widget.serviceName,
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.90),
+                                        fontSize: isCompact ? 12 : 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    // Bottom row: Time + View Details
+                                    Wrap(
+                                      spacing: 10,
+                                      runSpacing: 8,
+                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                      children: [
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.access_time_rounded, color: Colors.white, size: 14),
+                                            const SizedBox(width: 5),
+                                            Text(
+                                              widget.time,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        InkWell(
+                                          onTap: widget.onViewDetails,
+                                          borderRadius: BorderRadius.circular(20),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              gradient: const LinearGradient(
+                                                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                                              ),
+                                              borderRadius: BorderRadius.circular(20),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 2),
+                                                ),
+                                              ],
+                                            ),
+                                            child: const Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  'View Details',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 4),
+                                                Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 13),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: isCompact ? 8 : 12),
+                              // Right 3D Calendar & Stethoscope Graphic
+                              _build3DCalendarBadge(widget.dateText, isCompact),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _build3DCalendarBadge(String dateText, bool isCompact) {
+    final width = isCompact ? 76.0 : 90.0;
+    final height = isCompact ? 82.0 : 95.0;
+
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 18,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Blue Top Header
+          Container(
+            height: isCompact ? 24 : 28,
+            decoration: const BoxDecoration(
+              color: Color(0xFF2563EB),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Container(width: 5, height: 5, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                Text(
+                  dateText,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isCompact ? 9 : 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                Container(width: 5, height: 5, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+              ],
+            ),
+          ),
+          // Center Date & Stethoscope
+          Expanded(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Text(
+                  '16',
+                  style: TextStyle(
+                    color: const Color(0xFF1E293B),
+                    fontSize: isCompact ? 22 : 26,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                Positioned(
+                  bottom: isCompact ? 2 : 4,
+                  child: Icon(
+                    Icons.medical_services_outlined,
+                    color: const Color(0xFF0284C7).withValues(alpha: 0.6),
+                    size: isCompact ? 14 : 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// ── Card 2: 'Now Serving' Consultation Banner Card (Web, Mobile, Desktop Responsive) ──
+class NowServingBannerGlassCard extends StatefulWidget {
+  final String ticketNumber;
+  final String serviceName;
+  final String doctorName;
+  final String time;
+  final String room;
+  final String? avatarUrl;
+  final VoidCallback? onTapRoom;
+  final VoidCallback? onTap;
+  final double? maxWidth;
+
+  const NowServingBannerGlassCard({
+    super.key,
+    this.ticketNumber = 'A012',
+    this.serviceName = 'Consultation - General Physician',
+    this.doctorName = 'Rahman, A.',
+    this.time = '10:20 AM',
+    this.room = 'Room 2',
+    this.avatarUrl,
+    this.onTapRoom,
+    this.onTap,
+    this.maxWidth,
+  });
+
+  @override
+  State<NowServingBannerGlassCard> createState() => _NowServingBannerGlassCardState();
+}
+
+class _NowServingBannerGlassCardState extends State<NowServingBannerGlassCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: widget.maxWidth ?? double.infinity,
+        ),
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          cursor: widget.onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
+          child: GestureDetector(
+            onTap: widget.onTap,
+            child: AnimatedScale(
+              scale: _isHovered ? 1.012 : 1.0,
+              duration: AppMotion.fast,
+              curve: AppMotion.curveSpring,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF06B6D4),
+                      Color(0xFF0284C7),
+                      Color(0xFF3B82F6),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  border: Border.all(
+                    color: _isHovered
+                        ? Colors.white.withValues(alpha: 0.70)
+                        : Colors.white.withValues(alpha: 0.40),
+                    width: _isHovered ? 1.5 : 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0284C7).withValues(alpha: _isHovered ? 0.45 : 0.30),
+                      blurRadius: _isHovered ? 24 : 18,
+                      offset: Offset(0, _isHovered ? 8 : 6),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Stack(
+                    children: [
+                      // Diagonal Sheen
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white.withValues(alpha: 0.20),
+                                Colors.transparent,
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                      ),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isCompact = constraints.maxWidth < 380;
+                          return Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isCompact ? 12 : 16,
+                              vertical: isCompact ? 10 : 14,
+                            ),
+                            child: Row(
+                              children: [
+                                // Circular Avatar with Blue Verified Badge
+                                Stack(
+                                  children: [
+                                    Container(
+                                      width: isCompact ? 44 : 52,
+                                      height: isCompact ? 44 : 52,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white, width: 2),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.15),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipOval(
+                                        child: widget.avatarUrl != null && widget.avatarUrl!.isNotEmpty
+                                            ? Image.network(widget.avatarUrl!, fit: BoxFit.cover, errorBuilder: (_, _, _) => _defaultAvatar())
+                                            : _defaultAvatar(),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(2),
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF2563EB),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(Icons.check_rounded, color: Colors.white, size: isCompact ? 8 : 10),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(width: isCompact ? 10 : 14),
+                                // Center Info
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            widget.ticketNumber,
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: isCompact ? 16 : 18,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              widget.serviceName,
+                                              style: TextStyle(
+                                                color: Colors.white.withValues(alpha: 0.9),
+                                                fontSize: isCompact ? 11 : 12,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        widget.doctorName,
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.95),
+                                          fontSize: isCompact ? 12 : 13,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.access_time_rounded, color: Colors.white70, size: 12),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            widget.time,
+                                            style: const TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                // Right Indicators (Now Serving + Room)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Mint Green Now Serving Pill
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: isCompact ? 8 : 10,
+                                        vertical: isCompact ? 3 : 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF6FFBBE),
+                                        borderRadius: BorderRadius.circular(16),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFF6FFBBE).withValues(alpha: 0.5),
+                                            blurRadius: 8,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        'Now Serving',
+                                        style: TextStyle(
+                                          color: const Color(0xFF065F46),
+                                          fontSize: isCompact ? 10 : 11,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: isCompact ? 6 : 8),
+                                    // Room Link
+                                    MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+                                      child: InkWell(
+                                        onTap: widget.onTapRoom,
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withValues(alpha: 0.20),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                widget.room,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: isCompact ? 11 : 12,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Icon(Icons.chevron_right_rounded, color: Colors.white, size: isCompact ? 12 : 14),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _defaultAvatar() {
+    return Container(
+      color: const Color(0xFF0284C7),
+      child: const Center(
+        child: Icon(Icons.person, color: Colors.white, size: 28),
+      ),
+    );
+  }
+}
+
+/// ── Card 3: 'You're in Queue' Live Modal Status Card (Web, Mobile, Desktop Responsive) ──
+class QueueProgressModalGlassCard extends StatefulWidget {
+  final String ticketNumber;
+  final int position;
+  final int currentStep; // 1, 2, or 3
+  final String reassuranceText;
+  final VoidCallback? onExploreMore;
+  final double? maxWidth;
+
+  const QueueProgressModalGlassCard({
+    super.key,
+    this.ticketNumber = 'A012',
+    this.position = 2,
+    this.currentStep = 2,
+    this.reassuranceText = "Relax, we'll call you shortly",
+    this.onExploreMore,
+    this.maxWidth = 440,
+  });
+
+  @override
+  State<QueueProgressModalGlassCard> createState() => _QueueProgressModalGlassCardState();
+}
+
+class _QueueProgressModalGlassCardState extends State<QueueProgressModalGlassCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: widget.maxWidth ?? 440),
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: AnimatedScale(
+            scale: _isHovered ? 1.01 : 1.0,
+            duration: AppMotion.fast,
+            curve: AppMotion.curveSpring,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: _isHovered
+                      ? const Color(0xFF00F0FF).withValues(alpha: 0.6)
+                      : const Color(0xFF00F0FF).withValues(alpha: 0.35),
+                  width: _isHovered ? 1.6 : 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00F0FF).withValues(alpha: _isHovered ? 0.30 : 0.20),
+                    blurRadius: _isHovered ? 40 : 30,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Green Glowing Checkmark Badge
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF10B981),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.55),
+                          blurRadius: 18,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.check_rounded, color: Colors.white, size: 32),
+                  ),
+                  const SizedBox(height: 16),
+                  // Title
+                  const Text(
+                    "You're in Queue",
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  // Large Hero Ticket (Responsive Scaling)
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      widget.ticketNumber,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 44,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -1.0,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Position Pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.4)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Position ${widget.position}',
+                          style: const TextStyle(
+                            color: Color(0xFF7DF4FF),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.chevron_right_rounded, color: Color(0xFF7DF4FF), size: 14),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // 3-Step Glowing Cyan Beam Track
+                  _build3StepTrack(widget.currentStep),
+                  const SizedBox(height: 14),
+                  // Reassurance
+                  Text(
+                    widget.reassuranceText,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 22),
+                  // Bottom CTA
+                  MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: InkWell(
+                      onTap: widget.onExploreMore,
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x33000000),
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Explore More',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              SizedBox(width: 6),
+                              Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 14),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _build3StepTrack(int activeStep) {
+    return Row(
+      children: [
+        _buildNode(1 <= activeStep, true),
+        Expanded(child: _buildLine(2 <= activeStep)),
+        _buildNode(2 <= activeStep, 2 == activeStep),
+        Expanded(child: _buildLine(3 <= activeStep)),
+        _buildNode(3 <= activeStep, 3 == activeStep),
+      ],
+    );
+  }
+
+  Widget _buildNode(bool isCompleted, bool isCurrent) {
+    return Container(
+      width: 18,
+      height: 18,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isCompleted ? const Color(0xFF00F0FF) : const Color(0xFF334155),
+        boxShadow: isCompleted
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF00F0FF).withValues(alpha: 0.8),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ]
+            : null,
+      ),
+      child: Center(
+        child: Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLine(bool isActive) {
+    return Container(
+      height: 3,
+      decoration: BoxDecoration(
+        color: isActive ? const Color(0xFF00F0FF) : const Color(0xFF334155),
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF00F0FF).withValues(alpha: 0.6),
+                  blurRadius: 6,
+                ),
+              ]
+            : null,
+      ),
+    );
+  }
+}
+
+/// ── Card 4: 'Choose Your Service' Concierge Card (Web, Mobile, Desktop Responsive) ──
+class ConciergeServiceGlassCard extends StatefulWidget {
+  final String title;
+  final String subtitle;
+  final VoidCallback? onTap;
+  final double? maxWidth;
+
+  const ConciergeServiceGlassCard({
+    super.key,
+    this.title = 'Choose Your Service',
+    this.subtitle = 'Select a department to book an appointment',
+    this.onTap,
+    this.maxWidth,
+  });
+
+  @override
+  State<ConciergeServiceGlassCard> createState() => _ConciergeServiceGlassCardState();
+}
+
+class _ConciergeServiceGlassCardState extends State<ConciergeServiceGlassCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: widget.maxWidth ?? double.infinity),
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: widget.onTap,
+            child: AnimatedScale(
+              scale: _isHovered ? 1.015 : 1.0,
+              duration: AppMotion.fast,
+              curve: AppMotion.curveSpring,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: _isHovered ? 0.22 : 0.15),
+                      Colors.white.withValues(alpha: _isHovered ? 0.08 : 0.05),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: _isHovered
+                        ? Colors.white.withValues(alpha: 0.55)
+                        : Colors.white.withValues(alpha: 0.25),
+                    width: _isHovered ? 1.5 : 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: _isHovered ? 0.30 : 0.20),
+                      blurRadius: _isHovered ? 24 : 16,
+                      offset: Offset(0, _isHovered ? 6 : 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // 3D Bubble Physician Sphere with Specular Glow
+                    AnimatedScale(
+                      scale: _isHovered ? 1.06 : 1.0,
+                      duration: AppMotion.fast,
+                      curve: AppMotion.curveSpring,
+                      child: Container(
+                        width: 58,
+                        height: 58,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: const RadialGradient(
+                            colors: [
+                              Color(0xFF38BDF8),
+                              Color(0xFF0284C7),
+                              Color(0xFF1E3A8A),
+                            ],
+                            center: Alignment(-0.3, -0.3),
+                            radius: 0.8,
+                          ),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF0284C7).withValues(alpha: _isHovered ? 0.6 : 0.4),
+                              blurRadius: _isHovered ? 18 : 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.medical_information_rounded,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Text Content
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            widget.title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.subtitle,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.75),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    AnimatedSlide(
+                      offset: _isHovered ? const Offset(0.2, 0) : Offset.zero,
+                      duration: AppMotion.fast,
+                      child: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// ============================================================================
+/// 9. ADAPTIVE CLINICAL CARDS SECTION (MULTI-PLATFORM BREAKPOINT CONTAINER)
+/// Dynamically arranges cards for Mobile (<600px), Tablet (600-1024px),
+/// and Desktop / Web (>1024px).
+/// ============================================================================
+class AdaptiveClinicalCardsSection extends StatelessWidget {
+  final Widget? nextAppointmentCard;
+  final Widget? nowServingCard;
+  final Widget? queueProgressCard;
+  final Widget? conciergeCard;
+
+  const AdaptiveClinicalCardsSection({
+    super.key,
+    this.nextAppointmentCard,
+    this.nowServingCard,
+    this.queueProgressCard,
+    this.conciergeCard,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+
+        // 1. Desktop & Wide Web (> 960px): Dual Column Grid
+        if (width >= 960) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (nextAppointmentCard != null)
+                    Expanded(child: nextAppointmentCard!),
+                  if (nextAppointmentCard != null && queueProgressCard != null)
+                    const SizedBox(width: 20),
+                  if (queueProgressCard != null)
+                    Expanded(child: queueProgressCard!),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (nowServingCard != null)
+                    Expanded(child: nowServingCard!),
+                  if (nowServingCard != null && conciergeCard != null)
+                    const SizedBox(width: 20),
+                  if (conciergeCard != null)
+                    Expanded(child: conciergeCard!),
+                ],
+              ),
+            ],
+          );
+        }
+
+        // 2. Tablet (600px - 959px): Balanced Stacking
+        if (width >= 600) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (nowServingCard != null) ...[
+                nowServingCard!,
+                const SizedBox(height: 16),
+              ],
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (nextAppointmentCard != null)
+                    Expanded(child: nextAppointmentCard!),
+                  if (nextAppointmentCard != null && conciergeCard != null)
+                    const SizedBox(width: 16),
+                  if (conciergeCard != null)
+                    Expanded(child: conciergeCard!),
+                ],
+              ),
+              if (queueProgressCard != null) ...[
+                const SizedBox(height: 16),
+                queueProgressCard!,
+              ],
+            ],
+          );
+        }
+
+        // 3. Mobile (< 600px): Vertical Fluid Stack
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (nowServingCard != null) ...[
+              nowServingCard!,
+              const SizedBox(height: 14),
+            ],
+            if (nextAppointmentCard != null) ...[
+              nextAppointmentCard!,
+              const SizedBox(height: 14),
+            ],
+            if (conciergeCard != null) ...[
+              conciergeCard!,
+              const SizedBox(height: 14),
+            ],
+            if (queueProgressCard != null) ...[
+              queueProgressCard!,
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
