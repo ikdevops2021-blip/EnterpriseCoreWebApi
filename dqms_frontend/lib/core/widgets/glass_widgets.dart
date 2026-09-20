@@ -1047,7 +1047,7 @@ class _NextAppointmentGlassCardState extends State<NextAppointmentGlassCard> {
                                             Icon(Icons.circle, color: Color(0xFF6FFBBE), size: 8),
                                             SizedBox(width: 6),
                                             Text(
-                                              'YOUR NEXT APPOINTMENT',
+                                              'Your Next Appointment',
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 10,
@@ -1060,6 +1060,16 @@ class _NextAppointmentGlassCardState extends State<NextAppointmentGlassCard> {
                                       ),
                                     ),
                                     const SizedBox(height: 10),
+                                    Text(
+                                      'YOUR TOKEN NUMBER',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.8),
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
                                     // Big Ticket (Scales down gracefully on small mobile screens)
                                     FittedBox(
                                       fit: BoxFit.scaleDown,

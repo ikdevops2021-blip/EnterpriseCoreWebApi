@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
+import 'package:dqms_frontend/features/auth/providers/auth_provider.dart';
 import 'package:dqms_frontend/features/customer/providers/customer_experience_provider.dart';
 
 /// ============================================================================
@@ -140,9 +142,20 @@ class _AppointmentsCalendarScreenState extends ConsumerState<AppointmentsCalenda
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back_rounded, color: AppColors.brandPrimary),
-            tooltip: 'Back to Main Screen',
+            tooltip: 'Back to Main Menu',
             onPressed: () {
-              if (context.canPop()) {
+              final authState = ref.read(authStateProvider);
+              final user = authState.currentUser;
+
+              if (kIsWeb || authState.isAuthenticated) {
+                if (user != null && user.isStaff) {
+                  context.go('/staff/lobby');
+                } else if (user != null && user.roleName == 'Kiosk') {
+                  context.go('/kiosk');
+                } else {
+                  context.go('/admin/areas');
+                }
+              } else if (context.canPop()) {
                 context.pop();
               } else {
                 context.go('/mobile');
