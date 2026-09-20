@@ -1,0 +1,54 @@
+{
+  "projectId": "5228355570366587176",
+  "projectTitle": "DQMS Enterprise Clinical Suite",
+  "designSystem": "assets/1353426914048941940",
+  "deviceType": "RESPONSIVE",
+  "syncWorkflow": {
+    "sourceOfTruth": "Stitch",
+    "targetFramework": "Flutter",
+    "themeMapping": {
+      "colors": "dqms_frontend/lib/core/theme/app_colors.dart",
+      "decorations": "dqms_frontend/lib/core/theme/app_decorations.dart",
+      "typography": "dqms_frontend/lib/core/theme/app_typography.dart",
+      "components": "dqms_frontend/lib/core/widgets/glass_widgets.dart"
+    },
+    "screens": [
+      {
+        "id": "mobile_tracker",
+        "route": "/mobile",
+        "file": "dqms_frontend/lib/features/customer/mobile/screens/mobile_tracker_screen.dart",
+        "description": "Mobile Queue Tracker & Clinical 3D Glass Cards"
+      },
+      {
+        "id": "command_center",
+        "route": "/dashboard",
+        "file": "dqms_frontend/lib/features/dashboard/screens/dashboard_screen.dart",
+        "description": "Operational Command Center & Queue Curves"
+      },
+      {
+        "id": "waiting_room_tv",
+        "route": "/tv",
+        "file": "dqms_frontend/lib/features/customer/tv/screens/waiting_room_tv_screen.dart",
+        "description": "Waiting Room 4K / TV Public Queue Monitor"
+      },
+      {
+        "id": "touch_kiosk",
+        "route": "/kiosk",
+        "file": "dqms_frontend/lib/features/customer/kiosk/screens/kiosk_screen.dart",
+        "description": "Self-Service Touch Reception Check-In Kiosk"
+      },
+      {
+        "id": "counter_console",
+        "route": "/staff/counter",
+        "file": "dqms_frontend/lib/features/staff/screens/counter_operator_screen.dart",
+        "description": "Counter Station Operator Tactical Console"
+      },
+      {
+        "id": "appointment_booking",
+        "route": "/appointment",
+        "file": "dqms_frontend/lib/features/customer/appointment/screens/appointment_booking_screen.dart",
+        "description": "Appointment Booking Wizard & Time Matrix"
+      }
+    ]
+  }
+}
