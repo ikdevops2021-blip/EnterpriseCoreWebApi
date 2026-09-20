@@ -156,6 +156,15 @@
         "file": "dqms_frontend/lib/features/admin/widgets/system_config_view.dart",
         "deviceType": "DESKTOP",
         "description": "Mission-Critical Queuing Parameters, Audio Chimes & Rollback Engine"
+      },
+      {
+        "id": "admin_user_profile_edit",
+        "stitchScreenId": "518d8d03e62a4c019a07917168ffe3a3",
+        "title": "DQMS Enterprise - Clinical User Profile & Master Edit",
+        "route": "/admin/user-profiles/edit",
+        "file": "dqms_frontend/lib/features/admin/widgets/user_profiles_view.dart",
+        "deviceType": "DESKTOP",
+        "description": "Clinical User Profile Add/Edit Master, Identity, DB Avatar Studio & RBAC Station Bindings"
       }
     ]
   }
