@@ -15,39 +15,147 @@
     "screens": [
       {
         "id": "mobile_tracker",
+        "stitchScreenId": "70269ceca817442885ba716c0a626d1b",
+        "title": "DQMS Queue Concierge",
         "route": "/mobile",
         "file": "dqms_frontend/lib/features/customer/mobile/screens/mobile_tracker_screen.dart",
+        "deviceType": "MOBILE",
         "description": "Mobile Queue Tracker & Clinical 3D Glass Cards"
       },
       {
         "id": "command_center",
+        "stitchScreenId": "68ce5f76d37e4ccabc6a6161e7ac4be6",
+        "title": "DQMS Clinical Command Center",
         "route": "/dashboard",
         "file": "dqms_frontend/lib/features/dashboard/screens/dashboard_screen.dart",
+        "deviceType": "DESKTOP",
         "description": "Operational Command Center & Queue Curves"
       },
       {
         "id": "waiting_room_tv",
+        "stitchScreenId": "afceb9a0bdbe489f8d1839723944ad23",
+        "title": "DQMS Public TV Queue Display",
         "route": "/tv",
         "file": "dqms_frontend/lib/features/customer/tv/screens/waiting_room_tv_screen.dart",
+        "deviceType": "DESKTOP",
         "description": "Waiting Room 4K / TV Public Queue Monitor"
       },
       {
         "id": "touch_kiosk",
+        "stitchScreenId": "51f8a4c92c6240ec95e99fd6338a3521",
+        "title": "DQMS Self-Service Touch Kiosk",
         "route": "/kiosk",
         "file": "dqms_frontend/lib/features/customer/kiosk/screens/kiosk_screen.dart",
+        "deviceType": "DESKTOP",
         "description": "Self-Service Touch Reception Check-In Kiosk"
       },
       {
         "id": "counter_console",
+        "stitchScreenId": "80bb20988a5945f5b8b6029971c9b252",
+        "title": "DQMS Clinical Counter Operator Station",
         "route": "/staff/counter",
         "file": "dqms_frontend/lib/features/staff/screens/counter_operator_screen.dart",
+        "deviceType": "DESKTOP",
         "description": "Counter Station Operator Tactical Console"
       },
       {
         "id": "appointment_booking",
+        "stitchScreenId": "7b116076ac1440eb806403bcf0c54090",
+        "title": "DQMS Appointment Booking Wizard & Schedule",
         "route": "/appointment",
         "file": "dqms_frontend/lib/features/customer/appointment/screens/appointment_booking_screen.dart",
+        "deviceType": "DESKTOP",
         "description": "Appointment Booking Wizard & Time Matrix"
+      },
+      {
+        "id": "login_screen",
+        "stitchScreenId": "02ce609618bd48e18eef5953d987efaa",
+        "title": "DQMS Enterprise Clinical Authentication Portal",
+        "route": "/login",
+        "file": "dqms_frontend/lib/features/auth/screens/login_screen.dart",
+        "deviceType": "DESKTOP",
+        "description": "Enterprise Clinical Authentication Portal & Role Selector"
+      },
+      {
+        "id": "staff_lobby",
+        "stitchScreenId": "960941c258ae41a18188d705b3eb76dd",
+        "title": "DQMS Staff Station Lobby & Duty Check-in Portal",
+        "route": "/staff/lobby",
+        "file": "dqms_frontend/lib/features/staff/screens/staff_lobby_screen.dart",
+        "deviceType": "DESKTOP",
+        "description": "Staff Station Lobby, Physical Booth Grid & Duty Check-in"
+      },
+      {
+        "id": "admin_areas",
+        "stitchScreenId": "db0b5f7b7861417ca1140dea0d93d4f3",
+        "title": "DQMS Enterprise - Areas and Zones Management",
+        "route": "/admin/areas",
+        "file": "dqms_frontend/lib/features/admin/widgets/areas_zones_view.dart",
+        "deviceType": "DESKTOP",
+        "description": "Hospital Areas & Physical Zones Master-Detail Management"
+      },
+      {
+        "id": "admin_processes",
+        "stitchScreenId": "3bdb4a61d7974ac79369b6729f18ff56",
+        "title": "DQMS Enterprise - Clinical Services & Process Pipeline SLA Management",
+        "route": "/admin/processes",
+        "file": "dqms_frontend/lib/features/admin/widgets/processes_view.dart",
+        "deviceType": "DESKTOP",
+        "description": "Clinical Services & Process Pipeline SLA Management"
+      },
+      {
+        "id": "admin_user_profiles",
+        "stitchScreenId": "f6a48c7ce6d74097aff18d29efd5c7f8",
+        "title": "DQMS Enterprise User Profiles & Database Avatar Studio",
+        "route": "/admin/user-profiles",
+        "file": "dqms_frontend/lib/features/admin/widgets/user_profiles_view.dart",
+        "deviceType": "DESKTOP",
+        "description": "User Profiles, RBAC Permissions & Database BLOB Avatar Studio"
+      },
+      {
+        "id": "admin_counters",
+        "stitchScreenId": "0bf78ab1ec9547d79432a1a7f93dafab",
+        "title": "DQMS Enterprise - Counter Stations & Physical Bay Allocation",
+        "route": "/admin/counters",
+        "file": "dqms_frontend/lib/features/admin/widgets/counters_view.dart",
+        "deviceType": "DESKTOP",
+        "description": "Counter Stations, Physical Bay Layout & Hardware Telemetry"
+      },
+      {
+        "id": "admin_token_transactions",
+        "stitchScreenId": "16ef669637f8497190496e1d30d2196d",
+        "title": "DQMS Enterprise - Real-time Token Transactions & Operational Audit Log",
+        "route": "/admin/token-transactions",
+        "file": "dqms_frontend/lib/features/admin/widgets/token_transactions_view.dart",
+        "deviceType": "DESKTOP",
+        "description": "Real-time Token Transactions Stream, Stepper & Audit Deep-Trace"
+      },
+      {
+        "id": "admin_analytics",
+        "stitchScreenId": "bce19908ba7446149d3634b48d00e61b",
+        "title": "DQMS Enterprise - Executive Analytics Hub & TAT Heatmaps",
+        "route": "/admin/analytics",
+        "file": "dqms_frontend/lib/features/admin/widgets/analytics_entry_view.dart",
+        "deviceType": "DESKTOP",
+        "description": "Executive Analytics Hub, 24-Hour Congestion Heatmaps & TAT Metrics"
+      },
+      {
+        "id": "admin_logs",
+        "stitchScreenId": "2eb94f9936a940babc281271caecc104",
+        "title": "DQMS Enterprise - System Application Logs & Diagnostics Console",
+        "route": "/admin/logs",
+        "file": "dqms_frontend/lib/features/admin/widgets/app_logs_view.dart",
+        "deviceType": "DESKTOP",
+        "description": "System Application Logs, SignalR WebSocket Feed & Trace Inspector"
+      },
+      {
+        "id": "admin_system_config",
+        "stitchScreenId": "366454789cad41518f9311bc2c6efca1",
+        "title": "DQMS Enterprise - System Configuration & Parameter Engine",
+        "route": "/admin/system-config",
+        "file": "dqms_frontend/lib/features/admin/widgets/system_config_view.dart",
+        "deviceType": "DESKTOP",
+        "description": "Mission-Critical Queuing Parameters, Audio Chimes & Rollback Engine"
       }
     ]
   }
