@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
+import 'package:dqms_frontend/core/theme/app_decorations.dart';
+import 'package:dqms_frontend/core/theme/app_typography.dart';
 import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
+import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
 import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart';
@@ -11,6 +14,7 @@ import 'package:dqms_frontend/features/customer/providers/customer_experience_pr
 /// ============================================================================
 /// SELF-SERVICE TOUCH KIOSK SCREEN (KioskScreen)
 /// Touch-first 5-step wizard with live service search, category selection & ticket generation
+/// Modernized with luxury glassmorphism surfaces, subtle 3D depth & clear information hierarchy
 /// ============================================================================
 class KioskScreen extends ConsumerStatefulWidget {
   const KioskScreen({super.key});
@@ -43,7 +47,7 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Kiosk Brand Header
+            // Kiosk Brand Header with Glass Styling
             _buildKioskHeader(kioskState, notifier),
 
             // Step Progress Indicator Bar (if past welcome)
@@ -65,39 +69,40 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
 
   Widget _buildKioskHeader(KioskState state, KioskNotifier notifier) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-      decoration: const BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
         color: AppColors.bgHeader,
-        border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
+        border: const Border(bottom: BorderSide(color: AppColors.glassBorderLight, width: 1.0)),
+        boxShadow: AppShadows.subtle,
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.brandPrimary.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.touch_app_rounded, color: AppColors.brandPrimary, size: 26),
+          const GlassSquircleIcon(
+            icon: Icons.touch_app_rounded,
+            backgroundColor: AppColors.darkBlueIconBg,
+            iconColor: AppColors.brandPrimary,
+            size: 40,
+            iconSize: 22,
           ),
           const SizedBox(width: 14),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'DQMS SELF-SERVICE KIOSK',
                   style: TextStyle(
                     color: AppColors.textMain,
-                    fontSize: 17,
+                    fontSize: 16,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: 1.0,
+                    letterSpacing: 0.8,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   'Touch-first Service Selection & Queue Ticket Issuance',
-                  style: TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                  style: TextStyle(color: AppColors.textMuted, fontSize: 11),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -105,10 +110,9 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
           ),
           if (state.activeStep > 0)
             TextButton.icon(
-              icon: const Icon(Icons.home_outlined, size: 18),
-              label: const Text('Start Over / Reset'),
+              icon: const Icon(Icons.restart_alt_rounded, size: 16, color: AppColors.textMuted),
+              label: const Text('Start Over / Reset', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.textMuted,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
               onPressed: () {
@@ -131,71 +135,75 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
     ];
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: const BoxDecoration(
         color: AppColors.bgSurface,
         border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: steps.map((s) {
-          final stepNum = s['num'] as int;
-          final isCurrent = state.activeStep == stepNum;
-          final isDone = state.activeStep > stepNum;
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: steps.map((s) {
+            final stepNum = s['num'] as int;
+            final isCurrent = state.activeStep == stepNum;
+            final isDone = state.activeStep > stepNum;
 
-          return InkWell(
-            onTap: isDone ? () => notifier.goToStep(stepNum) : null,
-            child: Row(
-              children: [
-                Container(
-                  width: 26,
-                  height: 26,
-                  decoration: BoxDecoration(
-                    color: isCurrent
-                        ? AppColors.brandPrimary
-                        : (isDone ? AppColors.statusActive : AppColors.bgCanvas),
-                    shape: BoxShape.circle,
-                    border: Border.all(
+            return InkWell(
+              onTap: isDone ? () => notifier.goToStep(stepNum) : null,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              child: Row(
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
                       color: isCurrent
                           ? AppColors.brandPrimary
-                          : (isDone ? AppColors.statusActive : AppColors.borderSubtle),
+                          : (isDone ? AppColors.emeraldSuccess : AppColors.bgCanvas),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isCurrent
+                            ? AppColors.brandPrimary
+                            : (isDone ? AppColors.emeraldSuccess : AppColors.borderSubtle),
+                      ),
                     ),
-                  ),
-                  child: Center(
-                    child: isDone
-                        ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
-                        : Text(
-                            '$stepNum',
-                            style: TextStyle(
-                              color: isCurrent ? Colors.white : AppColors.textMuted,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
+                    child: Center(
+                      child: isDone
+                          ? const Icon(Icons.check_rounded, color: Colors.white, size: 13)
+                          : Text(
+                              '$stepNum',
+                              style: TextStyle(
+                                color: isCurrent ? Colors.white : AppColors.textMuted,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
-                          ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  s['title'] as String,
-                  style: TextStyle(
-                    color: isCurrent ? AppColors.textMain : (isDone ? AppColors.textMain : AppColors.textMuted),
-                    fontSize: 12,
-                    fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w500,
-                  ),
-                ),
-                if (stepNum < steps.length)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    child: Container(
-                      width: 32,
-                      height: 2,
-                      color: isDone ? AppColors.statusActive : AppColors.borderSubtle,
                     ),
                   ),
-              ],
-            ),
-          );
-        }).toList(),
+                  const SizedBox(width: 6),
+                  Text(
+                    s['title'] as String,
+                    style: TextStyle(
+                      color: isCurrent ? AppColors.textMain : (isDone ? AppColors.textMain : AppColors.textMuted),
+                      fontSize: 12,
+                      fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w500,
+                    ),
+                  ),
+                  if (stepNum < steps.length)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Container(
+                        width: 28,
+                        height: 2,
+                        color: isDone ? AppColors.emeraldSuccess : AppColors.borderSubtle,
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -219,67 +227,96 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
 
   /// Step 0: Welcome Screen
   Widget _buildStep0Welcome(KioskNotifier notifier) {
-    return SingleChildScrollView(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 32),
-              Container(
-                padding: const EdgeInsets.all(28),
-                decoration: BoxDecoration(
-                  color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4), width: 2),
-                ),
-                child: const Icon(Icons.touch_app_rounded, color: AppColors.brandPrimary, size: 72),
-              )
-                  .animate(onPlay: (controller) => controller.repeat(reverse: true))
-                  .scale(
-                    begin: const Offset(1.0, 1.0),
-                    end: const Offset(1.08, 1.08),
-                    duration: 1200.ms,
-                    curve: Curves.easeInOut,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 600;
+        return SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: isMobile ? 14 : 24, vertical: isMobile ? 20 : 36),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 580),
+                child: GlassContainer(
+                  padding: EdgeInsets.all(isMobile ? 20 : 36),
+                  borderRadius: AppRadius.hero,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.cardGlassHighlight,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.cyanGlow.withValues(alpha: 0.4), width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.cyanGlow.withValues(alpha: 0.25),
+                              blurRadius: 20,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.touch_app_rounded, color: AppColors.cyanGlow, size: 64),
+                      )
+                          .animate()
+                          .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.0, 1.0), duration: 800.ms, curve: Curves.easeOutBack),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'WELCOME TO DQMS ENTERPRISE',
+                        style: TextStyle(
+                          color: AppColors.textMain,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.0,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Touch to search and select your service, then receive your queue ticket.',
+                        style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 36),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 320),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: DqmsButton(
+                            label: 'TOUCH TO BEGIN',
+                            icon: Icons.arrow_forward_rounded,
+                            variant: DqmsButtonVariant.gradientPill,
+                            onPressed: () {
+                              _searchCtrl.clear();
+                              notifier.startCheckIn();
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.verified_user_outlined, color: AppColors.emeraldSuccess, size: 14),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Fast • Secure • Contactless QR Support',
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11, fontWeight: FontWeight.w600),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-              const SizedBox(height: 24),
-              const Text(
-                'WELCOME TO DQMS ENTERPRISE',
-                style: TextStyle(color: AppColors.textMain, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 1.2),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Touch to search and select your service, then receive your queue ticket.',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 15),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: 320,
-                height: 64,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.arrow_forward_rounded, size: 24),
-                  label: const Text('TOUCH TO BEGIN', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.brandPrimary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: () {
-                    _searchCtrl.clear();
-                    notifier.startCheckIn();
-                  },
                 ),
-              )
-                  .animate(onPlay: (controller) => controller.repeat(reverse: true))
-                  .shimmer(duration: 2.seconds, color: Colors.white24),
-              const SizedBox(height: 48),
-            ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -288,7 +325,6 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
     final isMobile = AppBreakpoints.isMobile(context);
     final adminState = ref.watch(adminWorkspaceStateProvider);
 
-    // Get live processes from workspace provider or fallback catalog
     final allProcesses = adminState.processes.isNotEmpty
         ? adminState.processes
         : [
@@ -299,7 +335,6 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
             const ProcessModel(processId: 105, areaId: 5, areaName: 'Pharmacy Outpatient E', processCode: 'PROC-501', processName: 'Prescription Dispensing & Advisory', targetSlaMins: 12, allowSubTokens: true, priorityLevel: 'Standard', isActive: true),
           ];
 
-    // Filter processes based on search query and zone filter
     final query = state.searchQuery.trim().toLowerCase();
     final filteredProcesses = allProcesses.where((p) {
       if (!p.isActive) return false;
@@ -313,59 +348,58 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
     }).toList();
 
     return Padding(
-      padding: EdgeInsets.all(isMobile ? 16 : 28),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header & Back Button
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.brandPrimary),
+                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.cyanGlow),
                 tooltip: 'Back to Welcome',
                 onPressed: () => notifier.goToStep(0),
               ),
               const SizedBox(width: 8),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'STEP 1: SEARCH & SELECT SERVICE',
-                    style: TextStyle(color: AppColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.2),
-                  ),
-                  Text(
-                    'Which procedure or service do you require today?',
-                    style: TextStyle(color: AppColors.textMain, fontSize: 19, fontWeight: FontWeight.w800),
-                  ),
-                ],
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GlassPillBadge(
+                      label: 'STEP 1: SEARCH & SELECT SERVICE',
+                      variant: GlassPillVariant.upcoming,
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Which procedure or service do you require today?',
+                      style: TextStyle(color: AppColors.textMain, fontSize: 18, fontWeight: FontWeight.w800),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
           const SizedBox(height: 16),
 
-          // 🔍 Interactive Search Bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.bgSurface,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.borderSubtle),
-            ),
+          // Search Bar
+          GlassContainer(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            borderRadius: AppRadius.md,
             child: Row(
               children: [
-                const Icon(Icons.search_rounded, color: AppColors.brandPrimary, size: 22),
-                const SizedBox(width: 12),
+                const Icon(Icons.search_rounded, color: AppColors.cyanGlow, size: 20),
+                const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
                     controller: _searchCtrl,
-                    style: const TextStyle(color: AppColors.textMain, fontSize: 15),
+                    style: const TextStyle(color: AppColors.textMain, fontSize: 14),
                     decoration: InputDecoration(
-                      hintText: 'Search by service name, code, department (e.g. Registration, Triage, Cashier, Rx, PROC-101)...',
+                      hintText: 'Search service name, code, department (e.g. Registration, Triage, Cashier, Rx)...',
                       hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
                       border: InputBorder.none,
                       suffixIcon: _searchCtrl.text.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear_rounded, size: 18, color: AppColors.textMuted),
+                              icon: const Icon(Icons.clear_rounded, size: 16, color: AppColors.textMuted),
                               onPressed: () {
                                 _searchCtrl.clear();
                                 notifier.setSearchQuery('');
@@ -411,18 +445,12 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
                         const SizedBox(height: 12),
                         Text(
                           'No services found matching "${state.searchQuery}"',
-                          style: const TextStyle(color: AppColors.textMain, fontSize: 16, fontWeight: FontWeight.w700),
+                          style: const TextStyle(color: AppColors.textMain, fontSize: 15, fontWeight: FontWeight.w700),
                         ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Try searching with a different keyword or reset the search filter.',
-                          style: TextStyle(color: AppColors.textMuted, fontSize: 12),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.refresh_rounded, size: 16),
-                          label: const Text('Clear Search Filter'),
-                          style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandPrimary),
+                        const SizedBox(height: 14),
+                        DqmsButton(
+                          label: 'Clear Search Filter',
+                          icon: Icons.refresh_rounded,
                           onPressed: () {
                             _searchCtrl.clear();
                             setState(() => _selectedZoneFilter = 'All');
@@ -435,17 +463,14 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
                 : GridView.builder(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: isMobile ? 1 : 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: isMobile ? 2.5 : 2.4,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                      childAspectRatio: isMobile ? 2.5 : 2.2,
                     ),
                     itemCount: filteredProcesses.length,
                     itemBuilder: (ctx, i) {
                       final proc = filteredProcesses[i];
-                      return _buildServiceCard(proc, notifier)
-                          .animate()
-                          .fadeIn(duration: 300.ms, delay: (35 * i).ms)
-                          .slideY(begin: 0.08, end: 0, duration: 300.ms, curve: Curves.easeOutCubic);
+                      return _buildServiceCard(proc, notifier);
                     },
                   ),
           ),
@@ -458,21 +483,20 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
     final isSelected = _selectedZoneFilter == filterKey;
     return InkWell(
       onTap: () => setState(() => _selectedZoneFilter = filterKey),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(AppRadius.pill),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.2) : AppColors.bgSurface,
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.25) : AppColors.glassSurfaceDark,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
           border: Border.all(
-            color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle,
-            width: isSelected ? 1.5 : 1.0,
+            color: isSelected ? AppColors.cyanGlow : AppColors.glassBorderLight,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? AppColors.brandPrimary : AppColors.textMuted,
+            color: isSelected ? AppColors.cyanGlow : AppColors.textMuted,
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
           ),
@@ -483,19 +507,32 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
 
   Widget _buildServiceCard(ProcessModel proc, KioskNotifier notifier) {
     IconData icon = Icons.medical_services_outlined;
+    Color iconBg = AppColors.darkBlueIconBg;
+    Color iconColor = AppColors.brandPrimary;
+
     if (proc.processName.toLowerCase().contains('registration') || proc.processName.toLowerCase().contains('check-in')) {
-      icon = Icons.assignment_ind_outlined;
+      icon = Icons.assignment_ind_rounded;
+      iconBg = AppColors.darkBlueIconBg;
+      iconColor = AppColors.brandPrimary;
     } else if (proc.processName.toLowerCase().contains('triage') || proc.processName.toLowerCase().contains('screening')) {
-      icon = Icons.health_and_safety_outlined;
+      icon = Icons.health_and_safety_rounded;
+      iconBg = AppColors.darkPurpleIconBg;
+      iconColor = AppColors.violetPrimary;
     } else if (proc.processName.toLowerCase().contains('billing') || proc.processName.toLowerCase().contains('cashier')) {
-      icon = Icons.payments_outlined;
+      icon = Icons.payments_rounded;
+      iconBg = AppColors.amberOrange.withValues(alpha: 0.16);
+      iconColor = AppColors.amberOrange;
     } else if (proc.processName.toLowerCase().contains('pharmacy') || proc.processName.toLowerCase().contains('prescription')) {
-      icon = Icons.local_pharmacy_outlined;
+      icon = Icons.local_pharmacy_rounded;
+      iconBg = AppColors.emeraldSuccess.withValues(alpha: 0.16);
+      iconColor = AppColors.emeraldSuccess;
     } else if (proc.processName.toLowerCase().contains('vip') || proc.processName.toLowerCase().contains('consultation')) {
-      icon = Icons.star_outline_rounded;
+      icon = Icons.star_rounded;
+      iconBg = AppColors.cyanGlow.withValues(alpha: 0.16);
+      iconColor = AppColors.cyanGlow;
     }
 
-    return InkWell(
+    return GlassCard(
       onTap: () {
         notifier.selectService(
           proc.processName,
@@ -504,98 +541,88 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
           slaMins: proc.targetSlaMins,
         );
       },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.bgSurface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.borderSubtle),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: AppColors.brandPrimary, size: 28),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.brandAccent.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              proc.processCode,
-                              style: const TextStyle(color: AppColors.brandAccent, fontSize: 10, fontWeight: FontWeight.w800),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              proc.areaName,
-                              style: const TextStyle(color: AppColors.textSubtle, fontSize: 11),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        proc.processName,
-                        style: const TextStyle(color: AppColors.textMain, fontSize: 15, fontWeight: FontWeight.w800),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      const Icon(Icons.access_time_rounded, color: AppColors.brandPrimary, size: 13),
-                      const SizedBox(width: 4),
-                      Text('~${proc.targetSlaMins} mins SLA', style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w600)),
-                      const Spacer(),
-                      if (proc.tokenLimitDaily > 0)
+      padding: const EdgeInsets.all(16),
+      borderRadius: AppRadius.card,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GlassSquircleIcon(
+            icon: icon,
+            backgroundColor: iconBg,
+            iconColor: iconColor,
+            size: 46,
+            iconSize: 22,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColors.statusWarning.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(3),
+                            color: iconColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: iconColor.withValues(alpha: 0.3)),
                           ),
                           child: Text(
-                            'Limit: ${proc.tokenLimitDaily}/d',
-                            style: const TextStyle(color: AppColors.statusWarning, fontSize: 9, fontWeight: FontWeight.w700),
+                            proc.processCode,
+                            style: TextStyle(color: iconColor, fontSize: 10, fontWeight: FontWeight.w800),
                           ),
-                        )
-                      else
-                        const Text(
-                          'Unlimited',
-                          style: TextStyle(color: AppColors.textSubtle, fontSize: 10),
                         ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.brandPrimary, size: 12),
-                    ],
-                  ),
-                ],
-              ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            proc.areaName,
+                            style: const TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      proc.processName,
+                      style: const TextStyle(color: AppColors.textMain, fontSize: 14, fontWeight: FontWeight.w800),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Icon(Icons.access_time_rounded, color: AppColors.cyanGlow, size: 12),
+                    const SizedBox(width: 4),
+                    Text('~${proc.targetSlaMins} mins SLA', style: const TextStyle(color: AppColors.cyanGlow, fontSize: 11, fontWeight: FontWeight.w600)),
+                    const Spacer(),
+                    if (proc.tokenLimitDaily > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.statusWarning.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: Text(
+                          'Limit: ${proc.tokenLimitDaily}/d',
+                          style: const TextStyle(color: AppColors.statusWarning, fontSize: 9, fontWeight: FontWeight.w700),
+                        ),
+                      )
+                    else
+                      const Text('Unlimited', style: TextStyle(color: AppColors.textSubtle, fontSize: 10)),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.cyanGlow, size: 12),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -604,89 +631,120 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
   Widget _buildStep2CategorySelection(BuildContext context, KioskState state, KioskNotifier notifier) {
     final isMobile = AppBreakpoints.isMobile(context);
     final categories = [
-      {'title': 'Standard Customer', 'subtitle': 'Regular queue line registration', 'icon': Icons.person_outline_rounded, 'badge': 'Standard'},
-      {'title': 'Senior Citizen (65+)', 'subtitle': 'Priority assisted queue line', 'icon': Icons.elderly_rounded, 'badge': 'Priority'},
-      {'title': 'Accessibility / Assist', 'subtitle': 'Wheelchair & disability support', 'icon': Icons.accessible_rounded, 'badge': 'Priority'},
-      {'title': 'VIP / Executive Pass', 'subtitle': 'Express private consultation lounge', 'icon': Icons.star_rounded, 'badge': 'VIP Tier'},
+      {
+        'title': 'Standard Customer',
+        'subtitle': 'Regular queue line registration',
+        'icon': Icons.person_outline_rounded,
+        'badge': 'Standard',
+        'color': AppColors.brandPrimary,
+      },
+      {
+        'title': 'Senior Citizen (65+)',
+        'subtitle': 'Priority assisted queue line',
+        'icon': Icons.elderly_rounded,
+        'badge': 'Priority',
+        'color': AppColors.violetPrimary,
+      },
+      {
+        'title': 'Accessibility / Assist',
+        'subtitle': 'Wheelchair & disability support',
+        'icon': Icons.accessible_rounded,
+        'badge': 'Priority',
+        'color': AppColors.emeraldSuccess,
+      },
+      {
+        'title': 'VIP / Executive Pass',
+        'subtitle': 'Express private consultation lounge',
+        'icon': Icons.star_rounded,
+        'badge': 'VIP Tier',
+        'color': AppColors.amberOrange,
+      },
     ];
 
     return Padding(
-      padding: EdgeInsets.all(isMobile ? 16 : 28),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.brandPrimary),
+                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.cyanGlow),
                 tooltip: 'Back to Service Selection',
                 onPressed: () => notifier.goToStep(1),
               ),
               const SizedBox(width: 8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('STEP 2: SELECT CUSTOMER CATEGORY', style: TextStyle(color: AppColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
-                  Text(
-                    'Selected Service: ${state.selectedService ?? "General Registration"}',
-                    style: const TextStyle(color: AppColors.textMain, fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const GlassPillBadge(
+                      label: 'STEP 2: SELECT CUSTOMER CATEGORY',
+                      variant: GlassPillVariant.upcoming,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Service: ${state.selectedService ?? "General Registration"}',
+                      style: const TextStyle(color: AppColors.textMain, fontSize: 17, fontWeight: FontWeight.w800),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           Expanded(
             child: GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: isMobile ? 1 : 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
                 childAspectRatio: isMobile ? 2.5 : 2.2,
               ),
               itemCount: categories.length,
               itemBuilder: (ctx, i) {
                 final item = categories[i];
-                return InkWell(
+                final color = item['color'] as Color;
+
+                return GlassCard(
                   onTap: () => notifier.selectCategory(item['title'] as String),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppColors.bgSurface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.borderSubtle),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.brandAccent.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(item['icon'] as IconData, color: AppColors.brandAccent, size: 32),
+                  padding: const EdgeInsets.all(18),
+                  borderRadius: AppRadius.card,
+                  child: Row(
+                    children: [
+                      GlassSquircleIcon(
+                        icon: item['icon'] as IconData,
+                        backgroundColor: color.withValues(alpha: 0.16),
+                        iconColor: color,
+                        size: 46,
+                        iconSize: 24,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              item['title'] as String,
+                              style: const TextStyle(color: AppColors.textMain, fontSize: 15, fontWeight: FontWeight.w800),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              item['subtitle'] as String,
+                              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(item['title'] as String, style: const TextStyle(color: AppColors.textMain, fontSize: 16, fontWeight: FontWeight.w800), overflow: TextOverflow.ellipsis),
-                              const SizedBox(height: 4),
-                              Text(item['subtitle'] as String, style: const TextStyle(color: AppColors.textMuted, fontSize: 12), overflow: TextOverflow.ellipsis),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.brandPrimary, size: 14),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.cyanGlow, size: 14),
+                    ],
                   ),
-                )
-                    .animate()
-                    .fadeIn(duration: 300.ms, delay: (40 * i).ms)
-                    .slideX(begin: 0.05, end: 0, duration: 300.ms, curve: Curves.easeOutCubic);
+                );
               },
             ),
           ),
@@ -700,108 +758,109 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       child: Center(
-        child: Container(
-          width: 520,
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: AppColors.bgSurface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.borderSubtle),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded, color: AppColors.brandPrimary),
-                    tooltip: 'Back to Category',
-                    onPressed: () => notifier.goToStep(2),
-                  ),
-                  const SizedBox(width: 8),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('STEP 3: CONFIRM TICKET DETAILS', style: TextStyle(color: AppColors.brandPrimary, fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
-                      Text('Review Information', style: TextStyle(color: AppColors.textMain, fontSize: 18, fontWeight: FontWeight.w800)),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Summary Box
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.bgCard,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.borderSubtle),
-                ),
-                child: Column(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 540),
+          child: GlassContainer(
+            padding: const EdgeInsets.all(28),
+            borderRadius: AppRadius.card,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    _buildSummaryRow('Selected Service:', state.selectedService ?? 'General Registration'),
-                    if (state.selectedProcessCode != null) ...[
-                      const Divider(color: AppColors.borderSubtle, height: 16),
-                      _buildSummaryRow('Service Code:', state.selectedProcessCode!),
-                    ],
-                    const Divider(color: AppColors.borderSubtle, height: 16),
-                    _buildSummaryRow('Customer Category:', state.selectedCategory ?? 'Standard Customer'),
-                    const Divider(color: AppColors.borderSubtle, height: 16),
-                    _buildSummaryRow('Estimated Wait Time:', '~${state.estimatedWaitMins} Minutes'),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded, color: AppColors.cyanGlow),
+                      tooltip: 'Back to Category',
+                      onPressed: () => notifier.goToStep(2),
+                    ),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GlassPillBadge(
+                            label: 'STEP 3: CONFIRM TICKET DETAILS',
+                            variant: GlassPillVariant.upcoming,
+                          ),
+                          SizedBox(height: 4),
+                          Text('Review Information', style: TextStyle(color: AppColors.textMain, fontSize: 18, fontWeight: FontWeight.w800)),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Optional Customer Contact Inputs
-              const Text(
-                'OPTIONAL: NOTIFICATIONS (SMS & WHATSAPP)',
-                style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 10),
-              DqmsTextField(
-                label: 'Customer / Patient Name (Optional)',
-                hintText: 'e.g. John Smith',
-                controller: _nameCtrl,
-                prefixIcon: const Icon(Icons.person_outline_rounded, size: 18),
-                onChanged: (val) => notifier.setCustomerInfo(name: val),
-              ),
-              const SizedBox(height: 12),
-              DqmsTextField(
-                label: 'Mobile Phone Number (For WhatsApp / SMS Alerts)',
-                hintText: 'e.g. +1 555 0199',
-                controller: _mobileCtrl,
-                keyboardType: TextInputType.phone,
-                prefixIcon: const Icon(Icons.phone_iphone_rounded, size: 18),
-                onChanged: (val) => notifier.setCustomerInfo(mobile: val),
-              ),
-              const SizedBox(height: 24),
+                // Summary Box
+                GlassCard(
+                  padding: const EdgeInsets.all(18),
+                  borderRadius: AppRadius.card,
+                  child: Column(
+                    children: [
+                      _buildSummaryRow('Selected Service:', state.selectedService ?? 'General Registration'),
+                      if (state.selectedProcessCode != null) ...[
+                        const Divider(color: AppColors.glassBorderLight, height: 16),
+                        _buildSummaryRow('Service Code:', state.selectedProcessCode!),
+                      ],
+                      const Divider(color: AppColors.glassBorderLight, height: 16),
+                      _buildSummaryRow('Customer Category:', state.selectedCategory ?? 'Standard Customer'),
+                      const Divider(color: AppColors.glassBorderLight, height: 16),
+                      _buildSummaryRow('Estimated Wait Time:', '~${state.estimatedWaitMins} Minutes'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
 
-              Row(
-                children: [
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.edit_note_rounded, size: 18),
-                    label: const Text('Change Service'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.brandPrimary,
-                      side: const BorderSide(color: AppColors.brandPrimary),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                // Optional Customer Contact Inputs
+                const Text(
+                  'OPTIONAL: NOTIFICATIONS (SMS & WHATSAPP)',
+                  style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.8),
+                ),
+                const SizedBox(height: 10),
+                DqmsTextField(
+                  label: 'Customer / Patient Name (Optional)',
+                  hintText: 'e.g. John Smith',
+                  controller: _nameCtrl,
+                  prefixIcon: const Icon(Icons.person_outline_rounded, size: 18),
+                  onChanged: (val) => notifier.setCustomerInfo(name: val),
+                ),
+                const SizedBox(height: 12),
+                DqmsTextField(
+                  label: 'Mobile Phone Number (For WhatsApp / SMS Alerts)',
+                  hintText: 'e.g. +1 555 0199',
+                  controller: _mobileCtrl,
+                  keyboardType: TextInputType.phone,
+                  prefixIcon: const Icon(Icons.phone_iphone_rounded, size: 18),
+                  onChanged: (val) => notifier.setCustomerInfo(mobile: val),
+                ),
+                const SizedBox(height: 24),
+
+                Row(
+                  children: [
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.edit_note_rounded, size: 18),
+                      label: const Text('Change Service'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.cyanGlow,
+                        side: const BorderSide(color: AppColors.cyanGlow),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      ),
+                      onPressed: () => notifier.goToStep(1),
                     ),
-                    onPressed: () => notifier.goToStep(1),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: DqmsButton(
-                      label: 'GENERATE TICKET NOW',
-                      icon: Icons.confirmation_number_rounded,
-                      onPressed: () => notifier.confirmAndGenerateTicket(),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DqmsButton(
+                        label: 'GENERATE TICKET NOW',
+                        icon: Icons.confirmation_number_rounded,
+                        variant: DqmsButtonVariant.gradientPill,
+                        onPressed: () => notifier.confirmAndGenerateTicket(),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -813,120 +872,131 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       child: Center(
-        child: Container(
-          width: 460,
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: AppColors.bgSurface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.statusActive.withValues(alpha: 0.5), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.statusActive.withValues(alpha: 0.15),
-                blurRadius: 24,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.check_circle_rounded, color: AppColors.statusActive, size: 56)
-                  .animate()
-                  .scale(
-                    begin: const Offset(0.4, 0.4),
-                    end: const Offset(1.0, 1.0),
-                    duration: 600.ms,
-                    curve: Curves.elasticOut,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: GlassContainer(
+            padding: const EdgeInsets.all(32),
+            borderRadius: AppRadius.hero,
+            borderColor: AppColors.emeraldSuccess.withValues(alpha: 0.4),
+            borderWidth: 1.5,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle_rounded, color: AppColors.emeraldSuccess, size: 58)
+                    .animate()
+                    .scale(begin: const Offset(0.5, 0.5), end: const Offset(1.0, 1.0), duration: 500.ms, curve: Curves.easeOutBack),
+                const SizedBox(height: 10),
+                const Text(
+                  'TICKET GENERATED SUCCESSFULLY!',
+                  style: TextStyle(
+                    color: AppColors.emeraldSuccess,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.0,
                   ),
-              const SizedBox(height: 10),
-              const Text('TICKET GENERATED SUCCESSFULLY!', style: TextStyle(color: AppColors.statusActive, fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: 1.0)),
-              const SizedBox(height: 16),
-
-              // Giant Token Display
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.bgCard,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.borderSubtle),
                 ),
-                child: Column(
+                const SizedBox(height: 16),
+
+                // Giant Token Display
+                GlassCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                  borderRadius: AppRadius.card,
+                  child: Column(
+                    children: [
+                      const Text(
+                        'YOUR QUEUE TICKET NUMBER',
+                        style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.2),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        state.generatedTokenNumber,
+                        style: AppTypography.tokenHero.copyWith(
+                          fontSize: 54,
+                          color: AppColors.cyanGlow,
+                          letterSpacing: 2.0,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        state.selectedService ?? 'General Registration',
+                        style: const TextStyle(color: AppColors.textMain, fontSize: 14, fontWeight: FontWeight.w700),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Estimated Wait: ~${state.estimatedWaitMins} mins',
+                        style: const TextStyle(color: AppColors.cyanGlow, fontSize: 11, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // QR Code Card
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.qr_code_2_rounded, color: Colors.black, size: 90),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Scan QR code with your mobile phone to track live queue status remotely.',
+                  style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+
+                Row(
                   children: [
-                    const Text('YOUR QUEUE TICKET NUMBER', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 4),
-                    Text(
-                      state.generatedTokenNumber,
-                      style: const TextStyle(color: AppColors.brandPrimary, fontSize: 52, fontWeight: FontWeight.w900, fontFamily: 'monospace', letterSpacing: 2.0),
-                    )
-                        .animate()
-                        .shimmer(duration: 1800.ms, color: Colors.white24),
-                    const SizedBox(height: 6),
-                    Text(
-                      state.selectedService ?? 'General Registration',
-                      style: const TextStyle(color: AppColors.textMain, fontSize: 14, fontWeight: FontWeight.w700),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.print_rounded, size: 18),
+                        label: const Text('Print Ticket'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.textMain,
+                          side: const BorderSide(color: AppColors.borderSubtle),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Printing ticket ${state.generatedTokenNumber}...'),
+                              backgroundColor: AppColors.emeraldSuccess,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DqmsButton(
+                        label: 'DONE / NEXT USER',
+                        icon: Icons.done_rounded,
+                        variant: DqmsButtonVariant.gradientPill,
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          _nameCtrl.clear();
+                          _mobileCtrl.clear();
+                          notifier.reset();
+                        },
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 16),
-
-              // QR Code Card
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.qr_code_2_rounded, color: Colors.black, size: 90),
-              ),
-              const SizedBox(height: 8),
-              const Text('Scan QR code with your mobile phone to track live queue status remotely.', style: TextStyle(color: AppColors.textMuted, fontSize: 11), textAlign: TextAlign.center),
-              const SizedBox(height: 24),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.print_rounded, size: 18),
-                      label: const Text('Print Ticket'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textMain,
-                        side: const BorderSide(color: AppColors.borderSubtle),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Printing ticket ${state.generatedTokenNumber}...'),
-                            backgroundColor: AppColors.statusActive,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: DqmsButton(
-                      label: 'DONE / NEXT USER',
-                      icon: Icons.done_rounded,
-                      onPressed: () {
-                        _searchCtrl.clear();
-                        _nameCtrl.clear();
-                        _mobileCtrl.clear();
-                        notifier.reset();
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
-        )
-            .animate()
-            .slideY(begin: -0.1, end: 0, duration: 500.ms, curve: Curves.easeOutBack)
-            .fadeIn(),
+        ),
       ),
     );
   }
@@ -942,6 +1012,7 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
             value,
             style: const TextStyle(color: AppColors.textMain, fontSize: 14, fontWeight: FontWeight.w800),
             textAlign: TextAlign.end,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

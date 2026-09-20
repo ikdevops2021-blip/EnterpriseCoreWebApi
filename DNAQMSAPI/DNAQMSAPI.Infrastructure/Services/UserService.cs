@@ -54,6 +54,23 @@ public class UserService : IUserService
         return users.FirstOrDefault();
     }
 
+    public async Task<IEnumerable<User>> GetAllUsersAsync()
+    {
+        return await _dbFactory.QueryAsync<User>(
+            "PR_S_User",
+            new { p_Id = -1, p_Email = "", p_UserCode = "", p_IsActive = -1 },
+            commandType: CommandType.StoredProcedure);
+    }
+
+    public async Task<bool> UpdateProfileImageAsync(int userId, string profileImageUrl)
+    {
+        var user = await GetUserByIdAsync(userId);
+        if (user == null) return false;
+
+        user.ProfileImageUrl = profileImageUrl;
+        return await UpdateUserAsync(user);
+    }
+
     public async Task<User> CreateUserAsync(User user)
     {
         var parameters = new

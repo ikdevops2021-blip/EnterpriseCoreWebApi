@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
+import 'package:dqms_frontend/core/theme/app_decorations.dart';
+import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/features/dashboard/providers/dashboard_provider.dart';
 
 /// ============================================================================
@@ -16,13 +18,10 @@ class BottleneckPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassContainer(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.statusDeactive.withValues(alpha: 0.3)),
-      ),
+      borderRadius: AppRadius.card,
+      borderColor: AppColors.statusDeactive.withValues(alpha: 0.3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -43,20 +42,11 @@ class BottleneckPanel extends StatelessWidget {
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.statusDeactive.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  '${alerts.length} Active Incidents',
-                  style: const TextStyle(
-                    color: AppColors.statusDeactive,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+              GlassPillBadge(
+                label: '${alerts.length} Active Incidents',
+                variant: GlassPillVariant.custom,
+                customColor: AppColors.statusDeactive,
+                icon: Icons.priority_high_rounded,
               ),
             ],
           ),
@@ -80,11 +70,18 @@ class BottleneckPanel extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
                   color: AppColors.bgCard,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.borderSubtle),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(color: severityColor.withValues(alpha: 0.35)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: severityColor.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                   child: Row(
                     children: [
                       Container(

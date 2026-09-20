@@ -285,6 +285,10 @@ class AppointmentBookingNotifier extends StateNotifier<AppointmentBookingState> 
     );
   }
 
+  void goToStep(int step) {
+    state = state.copyWith(activeStep: step);
+  }
+
   void reset() {
     state = const AppointmentBookingState(activeStep: 0);
   }
@@ -538,5 +542,225 @@ class ScheduledAppointmentsNotifier extends StateNotifier<List<ScheduledAppointm
 final scheduledAppointmentsProvider =
     StateNotifierProvider<ScheduledAppointmentsNotifier, List<ScheduledAppointmentModel>>((ref) {
   return ScheduledAppointmentsNotifier();
+});
+
+// ---------------------------------------------------------------------------
+// 6. CUSTOMER PORTAL INTERACTION STATE PROVIDERS
+// ---------------------------------------------------------------------------
+/// Active Customer Portal Navigation Tab: 0=Home, 1=Queue, 2=Appointments, 3=Profile
+final customerPortalTabProvider = StateProvider<int>((ref) => 0);
+
+/// Active Branch / Location Name
+final customerLocationProvider = StateProvider<String>((ref) => 'Green Valley Medical Center');
+
+/// Active Queue Department Filter
+final queueDepartmentFilterProvider = StateProvider<String>((ref) => 'All');
+
+/// Active Appointment Segment: 0=Upcoming, 1=Past
+final appointmentSegmentProvider = StateProvider<int>((ref) => 0);
+
+// ---------------------------------------------------------------------------
+// 7. LIVE QUEUE ITEM MODEL & PROVIDER
+// ---------------------------------------------------------------------------
+class LiveQueueItemModel {
+  final String tokenNumber;
+  final String serviceName;
+  final String department;
+  final String customerName;
+  final String? doctorOrStaff;
+  final String roomOrCounter;
+  final String status; // 'Serving', 'Waiting', 'Called', 'Completed'
+  final int estimatedWaitMinutes;
+  final String? timeSlot;
+
+  const LiveQueueItemModel({
+    required this.tokenNumber,
+    required this.serviceName,
+    required this.department,
+    required this.customerName,
+    this.doctorOrStaff,
+    required this.roomOrCounter,
+    required this.status,
+    required this.estimatedWaitMinutes,
+    this.timeSlot,
+  });
+
+  LiveQueueItemModel copyWith({
+    String? tokenNumber,
+    String? serviceName,
+    String? department,
+    String? customerName,
+    String? doctorOrStaff,
+    String? roomOrCounter,
+    String? status,
+    int? estimatedWaitMinutes,
+    String? timeSlot,
+  }) {
+    return LiveQueueItemModel(
+      tokenNumber: tokenNumber ?? this.tokenNumber,
+      serviceName: serviceName ?? this.serviceName,
+      department: department ?? this.department,
+      customerName: customerName ?? this.customerName,
+      doctorOrStaff: doctorOrStaff ?? this.doctorOrStaff,
+      roomOrCounter: roomOrCounter ?? this.roomOrCounter,
+      status: status ?? this.status,
+      estimatedWaitMinutes: estimatedWaitMinutes ?? this.estimatedWaitMinutes,
+      timeSlot: timeSlot ?? this.timeSlot,
+    );
+  }
+}
+
+class LiveQueueNotifier extends StateNotifier<List<LiveQueueItemModel>> {
+  LiveQueueNotifier() : super(_generateInitialQueue());
+
+  static List<LiveQueueItemModel> _generateInitialQueue() {
+    return const [
+      LiveQueueItemModel(
+        tokenNumber: 'A012',
+        serviceName: 'Consultation - General Physician',
+        department: 'Consultation',
+        customerName: 'Rahman, A.',
+        doctorOrStaff: 'Dr. Ahmed Rahman',
+        roomOrCounter: 'Room 2',
+        status: 'Now Serving',
+        estimatedWaitMinutes: 0,
+        timeSlot: '10:20 AM',
+      ),
+      LiveQueueItemModel(
+        tokenNumber: 'A013',
+        serviceName: 'Lab Test - Blood Profile & Lipid Panel',
+        department: 'Lab',
+        customerName: 'Begum, S.',
+        doctorOrStaff: 'Dr. Farzana Akter',
+        roomOrCounter: 'Room 1',
+        status: 'Waiting',
+        estimatedWaitMinutes: 10,
+        timeSlot: '10:35 AM',
+      ),
+      LiveQueueItemModel(
+        tokenNumber: 'A014',
+        serviceName: 'Consultation - Specialist Review',
+        department: 'Consultation',
+        customerName: 'Islam, M.',
+        doctorOrStaff: 'Dr. Shafiqul Islam',
+        roomOrCounter: 'Room 3',
+        status: 'Waiting',
+        estimatedWaitMinutes: 22,
+        timeSlot: '10:50 AM',
+      ),
+      LiveQueueItemModel(
+        tokenNumber: 'B005',
+        serviceName: 'Pharmacy Dispensing & Medication Counseling',
+        department: 'Pharmacy',
+        customerName: 'Hassan, T.',
+        doctorOrStaff: 'Pharm. Tariq Hassan',
+        roomOrCounter: 'Pharmacy Desk',
+        status: 'Waiting',
+        estimatedWaitMinutes: 35,
+        timeSlot: '11:05 AM',
+      ),
+      LiveQueueItemModel(
+        tokenNumber: 'C003',
+        serviceName: 'Cardiology ECG & Vital Signs',
+        department: 'Cardiology',
+        customerName: 'Jenkins, S.',
+        doctorOrStaff: 'Dr. Sarah Jenkins',
+        roomOrCounter: 'Room 4',
+        status: 'Waiting',
+        estimatedWaitMinutes: 48,
+        timeSlot: '11:20 AM',
+      ),
+      LiveQueueItemModel(
+        tokenNumber: 'D008',
+        serviceName: 'Dermatology Skin Diagnostics',
+        department: 'Dermatology',
+        customerName: 'Rostova, E.',
+        doctorOrStaff: 'Dr. Elena Rostova',
+        roomOrCounter: 'Room 5',
+        status: 'Waiting',
+        estimatedWaitMinutes: 60,
+        timeSlot: '11:40 AM',
+      ),
+    ];
+  }
+
+  void updateTokenStatus(String tokenNumber, String newStatus, int waitMins) {
+    state = [
+      for (final item in state)
+        if (item.tokenNumber == tokenNumber)
+          item.copyWith(status: newStatus, estimatedWaitMinutes: waitMins)
+        else
+          item,
+    ];
+  }
+}
+
+final liveQueueItemsProvider =
+    StateNotifierProvider<LiveQueueNotifier, List<LiveQueueItemModel>>((ref) {
+  return LiveQueueNotifier();
+});
+
+// ---------------------------------------------------------------------------
+// 8. CUSTOMER NOTIFICATIONS MODEL & PROVIDER
+// ---------------------------------------------------------------------------
+class CustomerNotificationModel {
+  final String id;
+  final String title;
+  final String message;
+  final String timestamp;
+  final String category; // 'queue', 'reminder', 'prescription', 'system'
+  final bool isRead;
+
+  const CustomerNotificationModel({
+    required this.id,
+    required this.title,
+    required this.message,
+    required this.timestamp,
+    required this.category,
+    this.isRead = false,
+  });
+}
+
+final customerNotificationsProvider =
+    StateProvider<List<CustomerNotificationModel>>((ref) {
+  return const [
+    CustomerNotificationModel(
+      id: 'notif-1',
+      title: 'Your token A012 is now serving',
+      message: 'Please proceed to Consultation Desk in Room 2.',
+      timestamp: '10:24 AM',
+      category: 'queue',
+    ),
+    CustomerNotificationModel(
+      id: 'notif-2',
+      title: 'Appointment Reminder',
+      message: 'Your appointment with Dr. Ahmed Rahman is scheduled today at 10:20 AM.',
+      timestamp: '09:00 AM',
+      category: 'reminder',
+    ),
+    CustomerNotificationModel(
+      id: 'notif-3',
+      title: 'Queue Update',
+      message: 'Token B005 is now at position 3 in Pharmacy.',
+      timestamp: '10:12 AM',
+      category: 'queue',
+    ),
+    CustomerNotificationModel(
+      id: 'notif-4',
+      title: 'Prescription Ready',
+      message: 'Your medication prescription is ready for fast pickup at Window B.',
+      timestamp: 'Yesterday',
+      category: 'prescription',
+      isRead: true,
+    ),
+    CustomerNotificationModel(
+      id: 'notif-5',
+      title: 'System Update',
+      message: 'We have upgraded the digital queue tracker with real-time ETA accuracy.',
+      timestamp: 'Sep 16, 2026',
+      category: 'system',
+      isRead: true,
+    ),
+  ];
 });
 

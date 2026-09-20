@@ -3,16 +3,17 @@ import '../theme/app_colors.dart';
 import '../theme/app_decorations.dart';
 import '../theme/app_typography.dart';
 
-enum DqmsButtonVariant { primary, secondary, outline, destructive, ghost }
+enum DqmsButtonVariant { primary, secondary, outline, destructive, ghost, gradientPill }
 
 /// ============================================================================
 /// DQMS ENTERPRISE 3D TACTILE BUTTON COMPONENT
 /// Features 3D bevel micro-skeuomorphism, mechanical press depression animation,
-/// specular rim lighting, sci-fi neon hover glow, and compact mode.
+/// specular rim lighting, sci-fi neon hover glow, gradient pill luxury mode, and compact mode.
 /// ============================================================================
 class DqmsButton extends StatefulWidget {
   final String label;
   final IconData? icon;
+  final IconData? trailingIcon;
   final VoidCallback? onPressed;
   final DqmsButtonVariant variant;
   final bool isLoading;
@@ -24,6 +25,7 @@ class DqmsButton extends StatefulWidget {
     super.key,
     required this.label,
     this.icon,
+    this.trailingIcon,
     this.onPressed,
     this.variant = DqmsButtonVariant.primary,
     this.isLoading = false,
@@ -78,11 +80,23 @@ class _DqmsButtonState extends State<DqmsButton> {
         borderColor = Colors.transparent;
         glowColor = Colors.transparent;
         break;
+      case DqmsButtonVariant.gradientPill:
+        bg = AppColors.electricBlue;
+        fg = Colors.white;
+        borderColor = Colors.white.withValues(alpha: 0.35);
+        glowColor = AppColors.electricBlue;
+        break;
     }
 
+    final isGradient = widget.variant == DqmsButtonVariant.gradientPill;
     final isEnabled = widget.onPressed != null && !widget.isLoading;
-    final double buttonHeight = widget.isCompact ? AppSpacing.compactButtonHeight : 38.0;
-    final double horizontalPadding = widget.isCompact ? 10.0 : 14.0;
+    final double buttonHeight = widget.isCompact
+        ? AppSpacing.compactButtonHeight
+        : (isGradient ? 42.0 : 38.0);
+    final double horizontalPadding = widget.isCompact
+        ? 10.0
+        : (isGradient ? 18.0 : 14.0);
+    final borderRadius = isGradient ? AppRadius.borderPill : AppRadius.borderSm;
 
     final childWidget = Semantics(
       button: true,
@@ -134,6 +148,10 @@ class _DqmsButtonState extends State<DqmsButton> {
                 letterSpacing: 0.2,
               ),
             ),
+            if (widget.trailingIcon != null) ...[
+              const SizedBox(width: 6),
+              Icon(widget.trailingIcon, size: widget.isCompact ? 14 : 16, color: fg),
+            ],
           ],
         ],
       ),
@@ -175,8 +193,13 @@ class _DqmsButtonState extends State<DqmsButton> {
       width: widget.isFullWidth ? double.infinity : null,
       height: buttonHeight,
       decoration: BoxDecoration(
-        color: isEnabled ? bg : bg.withValues(alpha: 0.4),
-        borderRadius: AppRadius.borderSm,
+        color: (!isGradient && isEnabled)
+            ? bg
+            : (!isGradient ? bg.withValues(alpha: 0.4) : null),
+        gradient: (isGradient && isEnabled)
+            ? AppColors.heroGradient
+            : (isGradient ? AppColors.heroGradient : null),
+        borderRadius: borderRadius,
         border: Border.all(
           color: isEnabled ? borderColor : AppColors.borderSubtle.withValues(alpha: 0.4),
           width: 1.0,
@@ -185,9 +208,9 @@ class _DqmsButtonState extends State<DqmsButton> {
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: AppRadius.borderSm,
+        borderRadius: borderRadius,
         child: InkWell(
-          borderRadius: AppRadius.borderSm,
+          borderRadius: borderRadius,
           onTap: isEnabled ? widget.onPressed : null,
           onTapDown: (_) => isEnabled ? setState(() => _isPressed = true) : null,
           onTapUp: (_) => isEnabled ? setState(() => _isPressed = false) : null,

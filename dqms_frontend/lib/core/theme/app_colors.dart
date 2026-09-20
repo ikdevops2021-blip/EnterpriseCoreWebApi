@@ -68,4 +68,92 @@ class AppColors {
   static const Color lightBorderSubtle = Color(0xFFD0D7DE);
   static const Color lightTextMain = Color(0xFF1F2328);
   static const Color lightTextMuted = Color(0xFF656D76);
+
+  // ---------------------------------------------------------------------------
+  // QUEUEPRO LUXURY ACCENTS (Matching Visual Reference Image)
+  // ---------------------------------------------------------------------------
+  static const Color electricBlue = Color(0xFF2563EB);
+  static const Color electricBlueLight = Color(0xFF3B82F6);
+  static const Color violetPrimary = Color(0xFF8B5CF6);
+  static const Color violetDeep = Color(0xFF6D28D9);
+  static const Color violetSoft = Color(0xFF7C3AED);
+  static const Color cyanAccent = Color(0xFF06B6D4);
+  static const Color cyanGlow = Color(0xFF00E5FF);
+  static const Color coralPink = Color(0xFFEC4899);
+  static const Color emeraldSuccess = Color(0xFF10B981);
+  static const Color amberWarning = Color(0xFFF59E0B);
+  static const Color amberOrange = Color(0xFFF97316);
+
+  // ---------------------------------------------------------------------------
+  // GLASSMORPHISM SURFACE & BORDER TOKENS
+  // ---------------------------------------------------------------------------
+  static const Color glassSurfaceDark = Color(0xD913192B);     // 85% opacity deep navy
+  static const Color glassSurfaceDarkSubtle = Color(0x8013192B); // 50% opacity
+  static const Color glassSurfaceLight = Color(0xCCFFFFFF);    // 80% opacity white
+  static const Color glassSurfaceLightSubtle = Color(0x80FFFFFF); // 50% opacity
+  static const Color glassBorderLight = Color(0x40FFFFFF);     // 25% white specular rim
+  static const Color glassBorderDark = Color(0x2E388BFD);      // Translucent electric border
+  static const Color glassBorderSubtle = Color(0x1FFFFFFF);    // 12% white subtle border
+
+  // Tinted Icon Squircle Backgrounds (from reference image)
+  static const Color peachIconBg = Color(0xFFFFF1E6);
+  static const Color peachIconText = Color(0xFFEA580C);
+  static const Color blueIconBg = Color(0xFFEFF6FF);
+  static const Color blueIconText = Color(0xFF2563EB);
+  static const Color purpleIconBg = Color(0xFFF3E8FF);
+  static const Color purpleIconText = Color(0xFF7C3AED);
+  static const Color cyanIconBg = Color(0xFFECFEFF);
+  static const Color cyanIconText = Color(0xFF0891B2);
+  static const Color emeraldIconBg = Color(0xFFECFDF5);
+  static const Color emeraldIconText = Color(0xFF059669);
+  static const Color pinkIconBg = Color(0xFFFDF2F8);
+  static const Color pinkIconText = Color(0xFFDB2777);
+
+  // Dark-mode counterparts for squircle containers
+  static const Color darkPeachIconBg = Color(0x33F97316);
+  static const Color darkBlueIconBg = Color(0x332563EB);
+  static const Color darkPurpleIconBg = Color(0x338B5CF6);
+  static const Color darkCyanIconBg = Color(0x3306B6D4);
+  static const Color darkEmeraldIconBg = Color(0x3310B981);
+  static const Color darkPinkIconBg = Color(0x33EC4899);
+
+  // ---------------------------------------------------------------------------
+  // SIGNATURE LINEAR & RADIAL GRADIENTS
+  // ---------------------------------------------------------------------------
+  /// Primary Hero Gradient: Electric Blue -> Violet
+  static const LinearGradient heroGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF2563EB), Color(0xFF8B5CF6)],
+  );
+
+  /// Serving Live Queue Gradient: Cyan -> Blue -> Violet
+  static const LinearGradient servingGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF00E5FF), Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+  );
+
+  /// Subtle Card Shimmer / Specular Highlight
+  static const LinearGradient cardGlassHighlight = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0x33FFFFFF),
+      Color(0x0AFFFFFF),
+      Colors.transparent,
+    ],
+    stops: [0.0, 0.45, 1.0],
+  );
+
+  /// Ambient Dark Fluid Backdrop Gradient
+  static const LinearGradient darkFluidBackdrop = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color(0xFF0B1120),
+      Color(0xFF0F172A),
+      Color(0xFF090D16),
+    ],
+  );
 }

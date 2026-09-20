@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/utils/icon_resolver.dart';
+import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/features/admin/providers/navigation_menu_provider.dart';
 
 /// ============================================================================
@@ -31,12 +32,12 @@ class SideMenu extends StatelessWidget {
     return Container(
       width: 250,
       decoration: BoxDecoration(
-        color: AppColors.bgSurface.withValues(alpha: 0.88),
-        border: const Border(right: BorderSide(color: AppColors.borderSubtle, width: 1)),
+        color: AppColors.bgSurface.withValues(alpha: 0.95),
+        border: const Border(right: BorderSide(color: AppColors.glassBorderLight, width: 1)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x33000000),
-            blurRadius: 12,
+            blurRadius: 16,
             offset: Offset(4, 0),
           ),
         ],
@@ -138,32 +139,15 @@ class SideMenu extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.brandPrimary.withValues(alpha: 0.8),
-                  AppColors.brandPrimary,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.brandPrimary.withValues(alpha: 0.3),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.shield_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
+          const GlassSquircleIcon(
+            icon: Icons.shield_rounded,
+            iconColor: AppColors.cyanGlow,
+            backgroundColor: AppColors.darkBlueIconBg,
+            size: 36,
+            iconSize: 18,
           ),
-          const SizedBox(width: 12),
-          const Expanded(
+          SizedBox(width: 12),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,

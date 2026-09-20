@@ -28,7 +28,7 @@ class Dqms3dCard extends StatefulWidget {
     this.enableTilt = true,
     this.isCompact = false,
     this.onTap,
-    this.borderRadius = AppRadius.sm,
+    this.borderRadius = AppRadius.card,
     this.showCornerBrackets = false,
   });
 

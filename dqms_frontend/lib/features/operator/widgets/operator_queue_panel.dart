@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
+import 'package:dqms_frontend/core/theme/app_decorations.dart';
+import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/features/operator/providers/operator_console_provider.dart';
 import 'package:dqms_frontend/features/operator/widgets/token_priority_badge.dart';
 
 /// ============================================================================
 /// OPERATOR QUEUE PANEL (OperatorQueuePanel)
 /// Live queue density list showing waiting tokens, priority tiers, & wait times
+/// Modernized with luxury glass surface, neon badges & clean metrics
 /// ============================================================================
 class OperatorQueuePanel extends StatelessWidget {
   final List<OperatorQueueItem> queueItems;
@@ -17,43 +20,45 @@ class OperatorQueuePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
+    return GlassContainer(
+      padding: const EdgeInsets.all(18),
+      borderRadius: AppRadius.card,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Row(
             children: [
-              const Icon(Icons.people_outline_rounded, color: AppColors.brandPrimary, size: 18),
-              const SizedBox(width: 8),
+              const GlassSquircleIcon(
+                icon: Icons.people_outline_rounded,
+                backgroundColor: AppColors.darkBlueIconBg,
+                iconColor: AppColors.cyanGlow,
+                size: 34,
+                iconSize: 18,
+              ),
+              const SizedBox(width: 10),
               const Expanded(
                 child: Text(
                   'WAITING QUEUE DENSITY',
                   style: TextStyle(
                     color: AppColors.textMain,
                     fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w900,
                     letterSpacing: 0.8,
                   ),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+                  color: AppColors.brandPrimary.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  border: Border.all(color: AppColors.cyanGlow.withValues(alpha: 0.4)),
                 ),
                 child: Text(
                   '${queueItems.length} Waiting',
                   style: const TextStyle(
-                    color: AppColors.brandPrimary,
+                    color: AppColors.cyanGlow,
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                   ),
@@ -61,7 +66,7 @@ class OperatorQueuePanel extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
 
           // Queue List View
           if (queueItems.isEmpty)
@@ -70,12 +75,13 @@ class OperatorQueuePanel extends StatelessWidget {
               child: const Center(
                 child: Column(
                   children: [
-                    Icon(Icons.check_circle_outline_rounded, color: AppColors.statusActive, size: 32),
+                    Icon(Icons.check_circle_outline_rounded, color: AppColors.emeraldSuccess, size: 36),
                     SizedBox(height: 8),
                     Text(
                       'No Customers Waiting',
-                      style: TextStyle(color: AppColors.statusActive, fontSize: 13, fontWeight: FontWeight.w700),
+                      style: TextStyle(color: AppColors.emeraldSuccess, fontSize: 13, fontWeight: FontWeight.w800),
                     ),
+                    SizedBox(height: 2),
                     Text(
                       'All queue requests in this zone are clear.',
                       style: TextStyle(color: AppColors.textMuted, fontSize: 11),
@@ -89,17 +95,13 @@ class OperatorQueuePanel extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: queueItems.length,
-              separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 8),
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (ctx, i) {
                 final item = queueItems[i];
 
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.bgCard,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.borderSubtle),
-                  ),
+                return GlassCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  borderRadius: AppRadius.md,
                   child: Row(
                     children: [
                       // Position Index
@@ -107,8 +109,9 @@ class OperatorQueuePanel extends StatelessWidget {
                         width: 22,
                         height: 22,
                         decoration: BoxDecoration(
-                          color: AppColors.bgSubtle,
+                          color: AppColors.glassSurfaceDarkSubtle,
                           shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.glassBorderLight),
                         ),
                         child: Center(
                           child: Text(
@@ -127,7 +130,7 @@ class OperatorQueuePanel extends StatelessWidget {
                       Text(
                         item.tokenNumber,
                         style: const TextStyle(
-                          color: AppColors.brandPrimary,
+                          color: AppColors.cyanGlow,
                           fontSize: 15,
                           fontWeight: FontWeight.w900,
                           fontFamily: 'monospace',

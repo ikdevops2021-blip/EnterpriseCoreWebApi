@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
+import 'package:dqms_frontend/core/theme/app_decorations.dart';
+import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/features/dashboard/providers/dashboard_provider.dart';
 
 /// ============================================================================
-/// TAT ANALYTICS PANEL — TURNAROUND TIME & SLA COMPLIANCE
-/// Performance metrics comparing Target SLA against Actual Handling TAT
+/// TAT & SLA ANALYTICS PANEL
+/// Visualizes turnaround times and compliance percentages per service process
 /// ============================================================================
 class TatAnalyticsPanel extends StatelessWidget {
   final List<TatAnalyticsItem> tatItems;
@@ -17,13 +19,9 @@ class TatAnalyticsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassContainer(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
+      borderRadius: AppRadius.card,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,

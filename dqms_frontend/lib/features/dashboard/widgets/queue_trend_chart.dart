@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
+import 'package:dqms_frontend/core/theme/app_decorations.dart';
+import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/features/dashboard/providers/dashboard_provider.dart';
 
 /// ============================================================================
-/// QUEUE TREND CHART — HOURLY TRAFFIC & CAPACITY ANALYTICS
-/// Interactive fl_chart illustrating hourly queue load vs served volume & capacity
+/// QUEUE TREND CHART — REAL-TIME VOLUME TIMELINE
+/// Renders throughput velocity (Waiting vs. Served) using FL Chart
 /// ============================================================================
 class QueueTrendChart extends StatelessWidget {
   final List<QueueTrendDataPoint> trendData;
@@ -18,13 +20,9 @@ class QueueTrendChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (trendData.isEmpty) {
-      return Container(
+      return GlassContainer(
         height: 220,
-        decoration: BoxDecoration(
-          color: AppColors.bgSurface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.borderSubtle),
-        ),
+        borderRadius: AppRadius.card,
         child: const Center(
           child: Text('No trend data available for current shift', style: TextStyle(color: AppColors.textSubtle)),
         ),
@@ -38,13 +36,9 @@ class QueueTrendChart extends StatelessWidget {
     }
     maxY = (maxY * 1.25).ceilToDouble();
 
-    return Container(
+    return GlassContainer(
       clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
+      borderRadius: AppRadius.card,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,

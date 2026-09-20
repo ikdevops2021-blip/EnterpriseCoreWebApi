@@ -19,3 +19,10 @@ graphify-out/
 ## Ignore User Specific Settings
 appsettings.Development.json
 appsettings.Local.json
+# Added by code-review-graph
+.code-review-graph/
+
+## User Uploads
+DNAQMSAPI/DNAQMSAPI.Api/uploads/*
+!DNAQMSAPI/DNAQMSAPI.Api/uploads/**/.gitkeep
+

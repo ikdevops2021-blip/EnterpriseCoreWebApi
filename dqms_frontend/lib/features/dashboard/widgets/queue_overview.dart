@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
+import 'package:dqms_frontend/core/theme/app_decorations.dart';
+import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/features/dashboard/providers/dashboard_provider.dart';
 
 /// ============================================================================
@@ -18,13 +20,9 @@ class QueueOverviewPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final totalWaiting = state.waitingCustomers;
 
-    return Container(
+    return GlassContainer(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
+      borderRadius: AppRadius.card,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,

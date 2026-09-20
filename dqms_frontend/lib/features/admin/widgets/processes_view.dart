@@ -283,60 +283,63 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
             const SizedBox(height: 10),
             const Divider(color: AppColors.borderSubtle, height: 1),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandAccent.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.timer_outlined, size: 11, color: AppColors.brandAccent),
-                      const SizedBox(width: 3),
-                      Text(
-                        '${proc.targetSlaMins}m SLA',
-                        style: const TextStyle(
-                          color: AppColors.brandAccent,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.brandAccent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.timer_outlined, size: 11, color: AppColors.brandAccent),
+                        const SizedBox(width: 3),
+                        Text(
+                          '${proc.targetSlaMins}m SLA',
+                          style: const TextStyle(
+                            color: AppColors.brandAccent,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning.withValues(alpha: 0.15) : AppColors.brandPrimary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    proc.tokenLimitDaily > 0 ? '${proc.tokenLimitDaily} / day' : 'Unlimited',
-                    style: TextStyle(
-                      color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning : AppColors.brandPrimary,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
+                      ],
                     ),
                   ),
-                ),
-                const Spacer(),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildChannelBadge('SMS', Icons.sms_outlined, proc.isSms),
-                    const SizedBox(width: 3),
-                    _buildChannelBadge('WA', Icons.chat_bubble_outline_rounded, proc.isWhatsApp),
-                    const SizedBox(width: 3),
-                    _buildChannelBadge('Mail', Icons.email_outlined, proc.isEmail),
-                    const SizedBox(width: 3),
-                    _buildChannelBadge('CSAT', Icons.star_outline_rounded, proc.isFeedback),
-                  ],
-                ),
-              ],
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning.withValues(alpha: 0.15) : AppColors.brandPrimary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      proc.tokenLimitDaily > 0 ? '${proc.tokenLimitDaily} / day' : 'Unlimited',
+                      style: TextStyle(
+                        color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning : AppColors.brandPrimary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildChannelBadge('SMS', Icons.sms_outlined, proc.isSms),
+                      const SizedBox(width: 3),
+                      _buildChannelBadge('WA', Icons.chat_bubble_outline_rounded, proc.isWhatsApp),
+                      const SizedBox(width: 3),
+                      _buildChannelBadge('Mail', Icons.email_outlined, proc.isEmail),
+                      const SizedBox(width: 3),
+                      _buildChannelBadge('CSAT', Icons.star_outline_rounded, proc.isFeedback),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),

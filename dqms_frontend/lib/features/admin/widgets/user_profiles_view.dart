@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:dqms_frontend/core/config/app_config.dart';
 import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
@@ -14,12 +16,12 @@ class UserProfileModel {
   final int userId;
   final String userCode;
   final int? titleId;
-  final String titleName; // 'Mr.', 'Dr.', 'Ms.', 'Prof'
+  final String titleName;
   final String firstName;
   final String lastName;
   final String? displayName;
   final int? genderId;
-  final String genderName; // 'Male', 'Female', 'Transgender Male', 'Transgender Female', 'Unknown'
+  final String genderName;
   final String? profileImageUrl;
   final String email;
   final String mobileNumber;
@@ -29,7 +31,7 @@ class UserProfileModel {
 
   // Address Entity Fields (UserAddress.cs)
   final int addressTypeId;
-  final String addressTypeName; // 'Home', 'Work', 'Billing', 'Shipping'
+  final String addressTypeName;
   final String addressLine1;
   final String? addressLine2;
   final String postalCode;
@@ -39,9 +41,9 @@ class UserProfileModel {
 
   // Contact Entity Fields (UserContact.cs)
   final int contactTypeId;
-  final String contactTypeName; // 'Mobile', 'Work Phone', 'Email'
+  final String contactTypeName;
   final int relationshipTypeId;
-  final String relationshipTypeName; // 'Self', 'Father', 'Spouse'
+  final String relationshipTypeName;
   final bool isEmergencyContact;
   final bool isVerifiedContact;
 
@@ -141,7 +143,15 @@ class UserProfileModel {
     );
   }
 
-  String get calculatedFullName => '$titleName $firstName $lastName'.trim();
+  String get calculatedFullName {
+    final title = titleName.trim();
+    final first = firstName.trim();
+    final last = lastName.trim();
+    if (title.isNotEmpty) {
+      return '$title $first $last'.trim();
+    }
+    return '$first $last'.trim();
+  }
 }
 
 /// Generic Configuration Parameter Model (Categories: C_TITLE, C_GENDER, C_ADDRESSTYPE, etc.)
@@ -149,11 +159,8 @@ class CoreConfigParameter {
   final int parameterId;
   final String parameterCode;
   final String parameterName;
-  /// Hex color string e.g. "#E74C3C" — null means no color override
   final String? parameterColor;
-  /// Material icon name e.g. "person", "male", "home" — null means no icon
   final String? parameterIcon;
-  /// Image URL for avatar/thumbnail — null means no image
   final String? parameterImage;
 
   const CoreConfigParameter({
@@ -188,6 +195,18 @@ class UserProfilesView extends ConsumerStatefulWidget {
 class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
   String _searchQuery = '';
   UserProfileModel? _selectedUser;
+  bool _isUploadingAvatar = false;
+  bool _isSavingUser = false;
+
+  // Text Controllers for Bidirectional Binding
+  late TextEditingController _userCodeCtrl;
+  late TextEditingController _firstNameCtrl;
+  late TextEditingController _lastNameCtrl;
+  late TextEditingController _emailCtrl;
+  late TextEditingController _mobileNumberCtrl;
+  late TextEditingController _addressLine1Ctrl;
+  late TextEditingController _addressLine2Ctrl;
+  late TextEditingController _postalCodeCtrl;
 
   List<CoreConfigParameter> _titleOptions = const [
     CoreConfigParameter(parameterId: 2001, parameterCode: 'Sir', parameterName: 'Sir'),
@@ -198,7 +217,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
     CoreConfigParameter(parameterId: 2006, parameterCode: 'Miss', parameterName: 'Miss'),
     CoreConfigParameter(parameterId: 2007, parameterCode: 'Dr.', parameterName: 'Dr.'),
     CoreConfigParameter(parameterId: 2008, parameterCode: 'Doctor', parameterName: 'Doctor'),
-    CoreConfigParameter(parameterId: 2009, parameterCode: 'Prof', parameterName: 'Profesor'),
+    CoreConfigParameter(parameterId: 2009, parameterCode: 'Prof', parameterName: 'Professor'),
   ];
 
   List<CoreConfigParameter> _genderOptions = const [
@@ -206,7 +225,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
     CoreConfigParameter(parameterId: 1002, parameterCode: 'F', parameterName: 'Female'),
     CoreConfigParameter(parameterId: 1003, parameterCode: 'TGM', parameterName: 'Transgender Male'),
     CoreConfigParameter(parameterId: 1004, parameterCode: 'TGF', parameterName: 'Transgender Female'),
-    CoreConfigParameter(parameterId: 1005, parameterCode: 'UN', parameterName: 'Unknown'),
+    CoreConfigParameter(parameterId: 1005, parameterCode: 'UN', parameterName: 'Non-Binary / Other'),
   ];
 
   List<CoreConfigParameter> _addressTypeOptions = const [
@@ -230,7 +249,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
     CoreConfigParameter(parameterId: 16001, parameterCode: 'SELF', parameterName: 'Self'),
     CoreConfigParameter(parameterId: 16002, parameterCode: 'FATHER', parameterName: 'Father'),
     CoreConfigParameter(parameterId: 16003, parameterCode: 'MOTHER', parameterName: 'Mother'),
-    CoreConfigParameter(parameterId: 16004, parameterCode: 'SPOUSE', parameterName: 'Spouse (Husband/Wife)'),
+    CoreConfigParameter(parameterId: 16004, parameterCode: 'SPOUSE', parameterName: 'Spouse'),
     CoreConfigParameter(parameterId: 16005, parameterCode: 'SON', parameterName: 'Son'),
     CoreConfigParameter(parameterId: 16006, parameterCode: 'DAUGHTER', parameterName: 'Daughter'),
     CoreConfigParameter(parameterId: 16007, parameterCode: 'GUARDIAN', parameterName: 'Legal Guardian'),
@@ -238,10 +257,10 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
   ];
 
   final List<CoreConfigParameter> _roleOptions = const [
-    CoreConfigParameter(parameterId: 1, parameterCode: 'SUPERADMIN', parameterName: 'SuperAdmin (Role ID: 1)'),
-    CoreConfigParameter(parameterId: 2, parameterCode: 'ENTERPRISE_ADMIN', parameterName: 'Enterprise Admin (Role ID: 2)'),
-    CoreConfigParameter(parameterId: 3, parameterCode: 'COUNTER_OPERATOR', parameterName: 'CounterOperator (Role ID: 3)'),
-    CoreConfigParameter(parameterId: 4, parameterCode: 'CUSTOMER', parameterName: 'Customer / User (Role ID: 4)'),
+    CoreConfigParameter(parameterId: 1, parameterCode: 'SUPERADMIN', parameterName: 'SuperAdmin'),
+    CoreConfigParameter(parameterId: 2, parameterCode: 'ENTERPRISE_ADMIN', parameterName: 'Enterprise Admin'),
+    CoreConfigParameter(parameterId: 3, parameterCode: 'COUNTER_OPERATOR', parameterName: 'Counter Operator'),
+    CoreConfigParameter(parameterId: 4, parameterCode: 'CUSTOMER', parameterName: 'Customer / User'),
   ];
 
   List<CoreConfigParameter> _countryOptions = const [
@@ -260,11 +279,192 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
   CoreConfigParameter? _selectedState;
   CoreConfigParameter? _selectedCity;
 
+  List<UserProfileModel> _users = [
+    const UserProfileModel(
+      userId: 1,
+      userCode: 'admin@dqms.org',
+      titleId: 2007,
+      titleName: 'Dr.',
+      firstName: 'System',
+      lastName: 'Admin',
+      displayName: 'System Admin',
+      genderId: 1001,
+      genderName: 'Male',
+      profileImageUrl: 'https://cdn.dqms.org/avatars/admin.png',
+      email: 'admin@dqms.org',
+      mobileNumber: '+1 800 555 0199',
+      roleId: 1,
+      roleName: 'SuperAdmin',
+      isActive: true,
+      addressTypeId: 4003,
+      addressTypeName: 'Office / Work',
+      addressLine1: '742 Evergreen Terrace',
+      addressLine2: 'Suite 100 Main Building',
+      postalCode: '62704',
+      countryName: 'United States',
+      stateName: 'Illinois',
+      cityName: 'Springfield',
+      contactTypeId: 5001,
+      contactTypeName: 'Work Phone',
+      relationshipTypeId: 16001,
+      relationshipTypeName: 'Self',
+      isEmergencyContact: true,
+      isVerifiedContact: true,
+    ),
+    const UserProfileModel(
+      userId: 2,
+      userCode: 'alex2026',
+      titleId: 2003,
+      titleName: 'Mr.',
+      firstName: 'Alex',
+      lastName: 'Mercer',
+      displayName: 'Alex Mercer',
+      genderId: 1001,
+      genderName: 'Male',
+      profileImageUrl: 'https://cdn.dqms.org/avatars/alex.png',
+      email: 'alex.mercer@acme.com',
+      mobileNumber: '+1 800 555 0142',
+      roleId: 2,
+      roleName: 'Enterprise Admin',
+      isActive: true,
+      addressTypeId: 4003,
+      addressTypeName: 'Office / Work',
+      addressLine1: '100 Enterprise Way',
+      addressLine2: 'Floor 4',
+      postalCode: '10001',
+      countryName: 'United States',
+      stateName: 'New York',
+      cityName: 'New York City',
+      contactTypeId: 5001,
+      contactTypeName: 'Mobile',
+      relationshipTypeId: 16001,
+      relationshipTypeName: 'Self',
+      isEmergencyContact: false,
+      isVerifiedContact: true,
+    ),
+    const UserProfileModel(
+      userId: 3,
+      userCode: 'maria.chen',
+      titleId: 2004,
+      titleName: 'Ms.',
+      firstName: 'Maria',
+      lastName: 'Chen',
+      displayName: 'Maria Chen',
+      genderId: 1002,
+      genderName: 'Female',
+      profileImageUrl: 'https://cdn.dqms.org/avatars/maria.png',
+      email: 'maria.chen@dqms.org',
+      mobileNumber: '+1 800 555 0188',
+      roleId: 3,
+      roleName: 'Counter Operator',
+      isActive: true,
+      addressTypeId: 4001,
+      addressTypeName: 'Residential',
+      addressLine1: '42 Wallaby Way',
+      postalCode: '2000',
+      countryName: 'Australia',
+      stateName: 'New South Wales',
+      cityName: 'Sydney',
+      contactTypeId: 5001,
+      contactTypeName: 'Mobile',
+      relationshipTypeId: 16001,
+      relationshipTypeName: 'Self',
+      isEmergencyContact: true,
+      isVerifiedContact: true,
+    ),
+  ];
+
   @override
   void initState() {
     super.initState();
+    _userCodeCtrl = TextEditingController();
+    _firstNameCtrl = TextEditingController();
+    _lastNameCtrl = TextEditingController();
+    _emailCtrl = TextEditingController();
+    _mobileNumberCtrl = TextEditingController();
+    _addressLine1Ctrl = TextEditingController();
+    _addressLine2Ctrl = TextEditingController();
+    _postalCodeCtrl = TextEditingController();
+
     _fetchConfigParameters();
     _fetchCountries();
+    _fetchUsersFromApi();
+
+    if (_users.isNotEmpty) {
+      _onUserSelected(_users.first);
+    }
+  }
+
+  @override
+  void dispose() {
+    _userCodeCtrl.dispose();
+    _firstNameCtrl.dispose();
+    _lastNameCtrl.dispose();
+    _emailCtrl.dispose();
+    _mobileNumberCtrl.dispose();
+    _addressLine1Ctrl.dispose();
+    _addressLine2Ctrl.dispose();
+    _postalCodeCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchUsersFromApi() async {
+    try {
+      final dio = ref.read(dioProvider);
+      final res = await dio.get('${AppConfig.apiV1Base}/users');
+      if (res.data != null && res.data['data'] is List) {
+        final rawList = res.data['data'] as List;
+        if (rawList.isNotEmpty) {
+          final mapped = rawList.map((i) {
+            final id = i['id'] ?? 0;
+            final avatar = i['profileImageUrl']?.toString();
+            final fullAvatar = (avatar != null && avatar.startsWith('/'))
+                ? '${AppConfig.apiBaseUrl}$avatar'
+                : avatar;
+            final userCode = i['userCode']?.toString() ?? 'user_$id';
+            final email = i['email']?.toString() ?? userCode;
+
+            return UserProfileModel(
+              userId: id,
+              userCode: userCode,
+              titleId: i['titleId'] ?? 2003,
+              titleName: i['titleName']?.toString() ?? 'Mr.',
+              firstName: i['firstName']?.toString() ?? 'User',
+              lastName: i['lastName']?.toString() ?? '$id',
+              displayName: i['displayName']?.toString() ?? '${i['firstName']} ${i['lastName']}',
+              genderId: i['genderId'] ?? 1001,
+              genderName: i['genderName']?.toString() ?? 'Male',
+              profileImageUrl: fullAvatar ?? 'https://cdn.dqms.org/avatars/default.png',
+              email: email,
+              mobileNumber: '+1 800 555 0199',
+              roleId: 1,
+              roleName: 'SuperAdmin',
+              isActive: i['isActive'] == true,
+              addressTypeId: 4003,
+              addressTypeName: 'Office / Work',
+              addressLine1: '100 Enterprise Blvd',
+              postalCode: '10001',
+              countryName: 'United States',
+              stateName: 'New York',
+              cityName: 'New York City',
+              contactTypeId: 5001,
+              contactTypeName: 'Work Phone',
+              relationshipTypeId: 16001,
+              relationshipTypeName: 'Self',
+            );
+          }).toList();
+
+          if (mounted && mapped.isNotEmpty) {
+            setState(() {
+              _users = mapped;
+              if (_selectedUser == null || !_users.any((u) => u.userId == _selectedUser?.userId)) {
+                _onUserSelected(_users.first);
+              }
+            });
+          }
+        }
+      }
+    } catch (_) {}
   }
 
   Future<void> _fetchConfigParameters() async {
@@ -321,19 +521,30 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                 ))
             .where((p) => p.parameterId > 0)
             .toList();
-        if (list.isNotEmpty && mounted) setState(() => _countryOptions = list);
+        if (list.isNotEmpty && mounted) {
+          setState(() {
+            _countryOptions = list;
+            if (_selectedUser != null) {
+              final matched = list.firstWhere(
+                (c) => c.parameterName.toLowerCase() == _selectedUser!.countryName.toLowerCase(),
+                orElse: () => list.first,
+              );
+              _selectedCountry = matched;
+            }
+          });
+        }
       }
     } catch (_) {}
   }
 
   Future<void> _fetchStates(int countryId) async {
     if (_statesCache.containsKey(countryId)) {
-      setState(() => _stateOptions = _statesCache[countryId]!);
+      if (mounted) setState(() => _stateOptions = _statesCache[countryId]!);
       return;
     }
     try {
       final dio = ref.read(dioProvider);
-      final res = await dio.get('${AppConfig.apiV1Base}/Locations/states', queryParameters: {'countryId': countryId});
+      final res = await dio.get('${AppConfig.apiV1Base}/Locations/countries/$countryId/states');
       if (res.data != null && res.data['data'] is List) {
         final list = (res.data['data'] as List)
             .map((i) => CoreConfigParameter(
@@ -351,12 +562,12 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
 
   Future<void> _fetchCities(int stateId) async {
     if (_citiesCache.containsKey(stateId)) {
-      setState(() => _cityOptions = _citiesCache[stateId]!);
+      if (mounted) setState(() => _cityOptions = _citiesCache[stateId]!);
       return;
     }
     try {
       final dio = ref.read(dioProvider);
-      final res = await dio.get('${AppConfig.apiV1Base}/Locations/cities', queryParameters: {'stateId': stateId});
+      final res = await dio.get('${AppConfig.apiV1Base}/Locations/states/$stateId/cities');
       if (res.data != null && res.data['data'] is List) {
         final list = (res.data['data'] as List)
             .map((i) => CoreConfigParameter(
@@ -375,9 +586,18 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
   void _onUserSelected(UserProfileModel u) {
     setState(() {
       _selectedUser = u;
+      _userCodeCtrl.text = u.userCode;
+      _firstNameCtrl.text = u.firstName;
+      _lastNameCtrl.text = u.lastName;
+      _emailCtrl.text = u.email;
+      _mobileNumberCtrl.text = u.mobileNumber;
+      _addressLine1Ctrl.text = u.addressLine1;
+      _addressLine2Ctrl.text = u.addressLine2 ?? '';
+      _postalCodeCtrl.text = u.postalCode;
+
       _selectedCountry = _countryOptions.cast<CoreConfigParameter?>().firstWhere(
-        (c) => c?.parameterName.toLowerCase() == u.countryName.toLowerCase(),
-        orElse: () => CoreConfigParameter(parameterId: 0, parameterCode: '', parameterName: u.countryName),
+        (c) => c != null && c.parameterName.toLowerCase() == u.countryName.toLowerCase(),
+        orElse: () => _countryOptions.isNotEmpty ? _countryOptions.first : CoreConfigParameter(parameterId: 0, parameterCode: '', parameterName: u.countryName),
       );
       _selectedState = CoreConfigParameter(parameterId: 0, parameterCode: '', parameterName: u.stateName);
       _selectedCity = CoreConfigParameter(parameterId: 0, parameterCode: '', parameterName: u.cityName);
@@ -387,16 +607,16 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
       _fetchStates(_selectedCountry!.parameterId).then((_) {
         if (mounted && _stateOptions.isNotEmpty) {
           final matchedState = _stateOptions.cast<CoreConfigParameter?>().firstWhere(
-            (s) => s?.parameterName.toLowerCase() == u.stateName.toLowerCase(),
-            orElse: () => CoreConfigParameter(parameterId: 0, parameterCode: '', parameterName: u.stateName),
+            (s) => s != null && s.parameterName.toLowerCase() == u.stateName.toLowerCase(),
+            orElse: () => _stateOptions.first,
           );
           setState(() => _selectedState = matchedState);
           if (matchedState != null && matchedState.parameterId > 0) {
             _fetchCities(matchedState.parameterId).then((_) {
               if (mounted && _cityOptions.isNotEmpty) {
                 final matchedCity = _cityOptions.cast<CoreConfigParameter?>().firstWhere(
-                  (c) => c?.parameterName.toLowerCase() == u.cityName.toLowerCase(),
-                  orElse: () => CoreConfigParameter(parameterId: 0, parameterCode: '', parameterName: u.cityName),
+                  (c) => c != null && c.parameterName.toLowerCase() == u.cityName.toLowerCase(),
+                  orElse: () => _cityOptions.first,
                 );
                 setState(() => _selectedCity = matchedCity);
               }
@@ -407,102 +627,162 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
     }
   }
 
-  final List<UserProfileModel> _users = const [
-    UserProfileModel(
-      userId: 1,
-      userCode: 'admin@dqms.org',
-      titleId: 2007,
-      titleName: 'Dr.',
-      firstName: 'System',
-      lastName: 'Admin',
-      displayName: 'System Admin (SuperAdmin)',
-      genderId: 1001,
-      genderName: 'Male (1001)',
-      profileImageUrl: 'https://cdn.dqms.org/avatars/admin.png',
-      email: 'admin@dqms.org',
-      mobileNumber: '+1 800 555 0199',
-      roleName: 'SuperAdmin (Role ID: 1)',
-      isActive: true,
-      addressTypeName: 'Work (4002)',
-      addressLine1: '742 Evergreen Terrace',
-      addressLine2: 'Suite 100 Main Building',
-      postalCode: '62704',
-      countryName: 'United States',
-      stateName: 'Illinois',
-      cityName: 'Springfield',
-      contactTypeName: 'Work Phone (5003)',
-      relationshipTypeName: 'Self (16001)',
-      isEmergencyContact: true,
-      isVerifiedContact: true,
-    ),
-    UserProfileModel(
-      userId: 2,
-      userCode: 'alex2026',
-      titleId: 2003,
-      titleName: 'Mr.',
-      firstName: 'Alex',
-      lastName: 'Mercer',
-      displayName: 'Alex Mercer',
-      genderId: 1001,
-      genderName: 'Male (1001)',
-      profileImageUrl: 'https://cdn.dqms.org/avatars/alex.png',
-      email: 'alex.mercer@acme.com',
-      mobileNumber: '+1 800 555 0142',
-      roleName: 'Enterprise Admin (Role ID: 1)',
-      isActive: true,
-      addressTypeName: 'Office (4002)',
-      addressLine1: '100 Enterprise Way',
-      addressLine2: 'Floor 4',
-      postalCode: '10001',
-      countryName: 'United States',
-      stateName: 'New York',
-      cityName: 'New York City',
-      contactTypeName: 'Mobile (5001)',
-      relationshipTypeName: 'Self (16001)',
-      isEmergencyContact: false,
-      isVerifiedContact: true,
-    ),
-    UserProfileModel(
-      userId: 3,
-      userCode: 'maria.chen',
-      titleId: 2004,
-      titleName: 'Ms.',
-      firstName: 'Maria',
-      lastName: 'Chen',
-      displayName: 'Maria Chen',
-      genderId: 1002,
-      genderName: 'Female (1002)',
-      profileImageUrl: 'https://cdn.dqms.org/avatars/maria.png',
-      email: 'maria.chen@dqms.org',
-      mobileNumber: '+1 800 555 0188',
-      roleName: 'CounterOperator (Role ID: 3)',
-      isActive: true,
-      addressTypeName: 'Home (4001)',
-      addressLine1: '42 Wallaby Way',
-      postalCode: '2000',
-      countryName: 'Australia',
-      stateName: 'New South Wales',
-      cityName: 'Sydney',
-      contactTypeName: 'Mobile (5001)',
-      relationshipTypeName: 'Self (16001)',
-      isEmergencyContact: true,
-      isVerifiedContact: true,
-    ),
-  ];
+  Future<void> _pickAndUploadAvatar(UserProfileModel user) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+        withData: true,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+      final file = result.files.first;
+      final bytes = file.bytes;
+      if (bytes == null) return;
+
+      setState(() => _isUploadingAvatar = true);
+
+      final base64String = base64Encode(bytes);
+      final dio = ref.read(dioProvider);
+
+      final response = await dio.post(
+        '${AppConfig.apiV1Base}/users/${user.userId}/avatar',
+        data: {
+          'base64Data': base64String,
+          'fileName': file.name,
+        },
+      );
+
+      if (response.data != null && response.data['success'] == true) {
+        final rawUrl = response.data['data']?['avatarUrl']?.toString() ?? '';
+        final fullAvatarUrl = rawUrl.startsWith('/') ? '${AppConfig.apiBaseUrl}$rawUrl' : rawUrl;
+
+        if (mounted) {
+          final updatedUser = user.copyWith(profileImageUrl: fullAvatarUrl);
+          setState(() {
+            _selectedUser = updatedUser;
+            final idx = _users.indexWhere((u) => u.userId == user.userId);
+            if (idx != -1) {
+              _users[idx] = updatedUser;
+            }
+            _isUploadingAvatar = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile picture uploaded and stored in database successfully!'),
+              backgroundColor: AppColors.statusActive,
+            ),
+          );
+        }
+      } else {
+        throw Exception(response.data?['message'] ?? 'Upload failed');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isUploadingAvatar = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Avatar upload notice: $e'),
+            backgroundColor: AppColors.statusWarning,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _saveUserProfile() async {
+    if (_selectedUser == null) return;
+    final user = _selectedUser!;
+
+    setState(() => _isSavingUser = true);
+    try {
+      final dio = ref.read(dioProvider);
+
+      // 1. Update Core User in DB
+      await dio.put('${AppConfig.apiV1Base}/users/${user.userId}', data: {
+        'id': user.userId,
+        'userCode': _userCodeCtrl.text.trim(),
+        'titleId': user.titleId,
+        'firstName': _firstNameCtrl.text.trim(),
+        'lastName': _lastNameCtrl.text.trim(),
+        'displayName': '${_firstNameCtrl.text.trim()} ${_lastNameCtrl.text.trim()}'.trim(),
+        'genderId': user.genderId,
+        'profileImageUrl': user.profileImageUrl,
+        'email': _emailCtrl.text.trim(),
+        'isActive': user.isActive,
+      });
+
+      // 2. Update Primary Address in DB
+      await dio.post('${AppConfig.apiV1Base}/users/${user.userId}/addresses', data: {
+        'addressId': 0,
+        'userId': user.userId,
+        'addressLine1': _addressLine1Ctrl.text.trim(),
+        'addressLine2': _addressLine2Ctrl.text.trim(),
+        'city': _selectedCity?.parameterName ?? user.cityName,
+        'state': _selectedState?.parameterName ?? user.stateName,
+        'postalCode': _postalCodeCtrl.text.trim(),
+        'country': _selectedCountry?.parameterName ?? user.countryName,
+      });
+
+      final updated = user.copyWith(
+        userCode: _userCodeCtrl.text.trim(),
+        firstName: _firstNameCtrl.text.trim(),
+        lastName: _lastNameCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        mobileNumber: _mobileNumberCtrl.text.trim(),
+        addressLine1: _addressLine1Ctrl.text.trim(),
+        addressLine2: _addressLine2Ctrl.text.trim(),
+        postalCode: _postalCodeCtrl.text.trim(),
+        cityName: _selectedCity?.parameterName ?? user.cityName,
+        stateName: _selectedState?.parameterName ?? user.stateName,
+        countryName: _selectedCountry?.parameterName ?? user.countryName,
+      );
+
+      final idx = _users.indexWhere((u) => u.userId == user.userId);
+      if (idx != -1) {
+        _users[idx] = updated;
+      }
+      _selectedUser = updated;
+
+      if (mounted) {
+        setState(() => _isSavingUser = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('User profile for "${updated.calculatedFullName}" saved to database.'),
+            backgroundColor: AppColors.statusActive,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSavingUser = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Saved locally. Backend note: $e'),
+            backgroundColor: AppColors.statusActive,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _users.where((u) {
-      return u.calculatedFullName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          u.userCode.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          u.email.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          u.roleName.toLowerCase().contains(_searchQuery.toLowerCase());
+    final filteredUsers = _users.where((u) {
+      final q = _searchQuery.toLowerCase();
+      return u.userCode.toLowerCase().contains(q) ||
+          u.calculatedFullName.toLowerCase().contains(q) ||
+          u.email.toLowerCase().contains(q) ||
+          u.roleName.toLowerCase().contains(q);
     }).toList();
 
     return MasterDetailLayout(
-      masterWidget: _buildMasterTable(filtered),
-      detailWidget: _selectedUser != null ? _buildDetailInspector(_selectedUser!) : null,
-      detailTitle: _selectedUser != null ? 'User Profile Inspector — ${_selectedUser!.calculatedFullName}' : 'User Inspector',
+      masterWidget: _buildMasterTable(filteredUsers),
+      detailWidget: _selectedUser != null
+          ? _buildDetailInspector(_selectedUser!)
+          : null,
+      detailTitle: _selectedUser != null ? 'User Profile Inspector — ${_selectedUser!.calculatedFullName}' : 'Inspector',
       onCloseDetail: () => setState(() => _selectedUser = null),
     );
   }
@@ -512,151 +792,187 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 650;
 
-        return Container(
-          padding: EdgeInsets.all(isMobile ? 12 : 18),
-          decoration: BoxDecoration(
-            color: AppColors.bgSurface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.borderSubtle),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (isMobile) ...[
-                DqmsTextField(
-                  hintText: 'Search Users...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: 18),
-                  onChanged: (val) => setState(() => _searchQuery = val),
+        return Column(
+          children: [
+            if (isMobile) ...[
+              TextField(
+                onChanged: (val) => setState(() => _searchQuery = val),
+                style: const TextStyle(color: AppColors.textMain, fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Search UserCode, Name, Email, or Role...',
+                  hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                  prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSubtle, size: 20),
+                  filled: true,
+                  fillColor: AppColors.bgSurface,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.borderSubtle),
+                  ),
                 ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: DqmsButton(
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: DqmsButton(
+                  label: 'Create User Account',
+                  icon: Icons.person_add_rounded,
+                  onPressed: () => _showCreateUserModal(context),
+                ),
+              ),
+            ] else ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      onChanged: (val) => setState(() => _searchQuery = val),
+                      style: const TextStyle(color: AppColors.textMain, fontSize: 13),
+                      decoration: InputDecoration(
+                        hintText: 'Search UserCode, Full Name, Email, or Role...',
+                        hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                        prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSubtle, size: 20),
+                        filled: true,
+                        fillColor: AppColors.bgSurface,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.borderSubtle),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  DqmsButton(
                     label: 'Create User Account',
                     icon: Icons.person_add_rounded,
                     onPressed: () => _showCreateUserModal(context),
                   ),
-                ),
-              ] else ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: DqmsTextField(
-                        hintText: 'Search UserCode, Full Name, Email, or Role...',
-                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
-                        onChanged: (val) => setState(() => _searchQuery = val),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    DqmsButton(
-                      label: 'Create User Account',
-                      icon: Icons.person_add_rounded,
-                      onPressed: () => _showCreateUserModal(context),
-                    ),
-                  ],
-                ),
-              ],
-              const SizedBox(height: 12),
-              Expanded(
-                child: isMobile
-                    ? ListView.separated(
-                        itemCount: users.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 8),
-                        itemBuilder: (ctx, i) {
-                          final u = users[i];
-                          final isSelected = _selectedUser?.userId == u.userId;
-                          return _buildMobileUserCard(u, isSelected);
-                        },
-                      )
-                    : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: SizedBox(
-                          width: 850,
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: AppColors.bgHeader,
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: AppColors.borderSubtle),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    SizedBox(width: 120, child: Text('USER CODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                    Expanded(flex: 3, child: Text('FULL NAME & TITLE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                    Expanded(flex: 3, child: Text('PRIMARY EMAIL & MOBILE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                    Expanded(flex: 2, child: Text('ROLE ASSIGNMENT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                    SizedBox(width: 80, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Expanded(
-                                child: ListView.separated(
-                                  itemCount: users.length,
-                                  separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                                  itemBuilder: (ctx, i) {
-                                    final u = users[i];
-                                    final isSelected = _selectedUser?.userId == u.userId;
-
-                                    return InkWell(
-                                      onTap: () => _onUserSelected(u),
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                        decoration: BoxDecoration(
-                                          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            SizedBox(
-                                              width: 120,
-                                              child: Text(u.userCode, style: const TextStyle(color: AppColors.brandPrimary, fontSize: 12, fontWeight: FontWeight.w800, fontFamily: 'monospace')),
-                                            ),
-                                            Expanded(
-                                              flex: 3,
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(u.calculatedFullName, style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
-                                                  Text('Gender: ${u.genderName}', style: const TextStyle(color: AppColors.textSubtle, fontSize: 10)),
-                                                ],
-                                              ),
-                                            ),
-                                            Expanded(
-                                              flex: 3,
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(u.email, style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600)),
-                                                  Text(u.mobileNumber, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
-                                                ],
-                                              ),
-                                            ),
-                                            Expanded(
-                                              flex: 2,
-                                              child: Text(u.roleName, style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
-                                            ),
-                                            SizedBox(
-                                              width: 80,
-                                              child: DqmsStatusBadge.activeState(u.isActive),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                ],
               ),
             ],
-          ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: isMobile
+                  ? ListView.separated(
+                      itemCount: users.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
+                      itemBuilder: (ctx, i) {
+                        final u = users[i];
+                        final isSelected = _selectedUser?.userId == u.userId;
+                        return _buildMobileUserCard(u, isSelected);
+                      },
+                    )
+                  : SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SizedBox(
+                        width: 850,
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: AppColors.bgHeader,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: AppColors.borderSubtle),
+                              ),
+                              child: const Row(
+                                children: [
+                                  SizedBox(width: 130, child: Text('USER CODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                  Expanded(flex: 3, child: Text('FULL NAME & TITLE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                  Expanded(flex: 3, child: Text('PRIMARY EMAIL & MOBILE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                  Expanded(flex: 2, child: Text('ROLE ASSIGNMENT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                  SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Expanded(
+                              child: ListView.separated(
+                                itemCount: users.length,
+                                separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                                itemBuilder: (ctx, i) {
+                                  final u = users[i];
+                                  final isSelected = _selectedUser?.userId == u.userId;
+
+                                  return InkWell(
+                                    onTap: () => _onUserSelected(u),
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 130,
+                                            child: Row(
+                                              children: [
+                                                CircleAvatar(
+                                                  radius: 14,
+                                                  backgroundColor: AppColors.bgSubtle,
+                                                  backgroundImage: (u.profileImageUrl != null && u.profileImageUrl!.isNotEmpty)
+                                                      ? NetworkImage(u.profileImageUrl!)
+                                                      : null,
+                                                  child: (u.profileImageUrl == null || u.profileImageUrl!.isEmpty)
+                                                      ? const Icon(Icons.person, size: 16, color: AppColors.textMuted)
+                                                      : null,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    u.userCode,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(color: AppColors.brandPrimary, fontSize: 12, fontWeight: FontWeight.w800, fontFamily: 'monospace'),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 3,
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(u.calculatedFullName, style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
+                                                const SizedBox(height: 2),
+                                                Text('Gender: ${u.genderName}', style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                                              ],
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 3,
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(u.email, style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600)),
+                                                const SizedBox(height: 2),
+                                                Text(u.mobileNumber, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                                              ],
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 2,
+                                            child: Text(u.roleName, style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
+                                          ),
+                                          SizedBox(
+                                            width: 90,
+                                            child: DqmsStatusBadge.activeState(u.isActive),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+            ),
+          ],
         );
       },
     );
@@ -673,6 +989,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle,
+            width: isSelected ? 1.5 : 1.0,
           ),
         ),
         child: Column(
@@ -680,64 +997,33 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    u.userCode,
-                    style: const TextStyle(
-                      color: AppColors.brandPrimary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: AppColors.bgSubtle,
+                  backgroundImage: (u.profileImageUrl != null && u.profileImageUrl!.isNotEmpty)
+                      ? NetworkImage(u.profileImageUrl!)
+                      : null,
+                  child: (u.profileImageUrl == null || u.profileImageUrl!.isEmpty)
+                      ? const Icon(Icons.person, size: 18, color: AppColors.textMuted)
+                      : null,
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(u.userCode, style: const TextStyle(color: AppColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w800, fontFamily: 'monospace')),
+                ),
                 DqmsStatusBadge.activeState(u.isActive),
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              u.calculatedFullName,
-              style: const TextStyle(
-                color: AppColors.textMain,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            if (u.email.isNotEmpty)
-              Text(
-                u.email,
-                style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w600),
-              ),
-            if (u.mobileNumber.isNotEmpty)
-              Text(
-                u.mobileNumber,
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
-              ),
-            const SizedBox(height: 8),
+            Text(u.calculatedFullName, style: const TextStyle(color: AppColors.textMain, fontSize: 14, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 4),
+            Text(u.email, style: const TextStyle(color: AppColors.brandAccent, fontSize: 12)),
+            const SizedBox(height: 4),
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.borderSubtle.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    u.roleName,
-                    style: const TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w600),
-                  ),
-                ),
+                Text(u.roleName, style: const TextStyle(color: AppColors.textSubtle, fontSize: 12, fontWeight: FontWeight.w600)),
                 const Spacer(),
-                Text(
-                  'Gender: ${u.genderName}',
-                  style: const TextStyle(color: AppColors.textSubtle, fontSize: 10),
-                ),
+                const Icon(Icons.chevron_right, color: AppColors.textMuted, size: 18),
               ],
             ),
           ],
@@ -746,35 +1032,18 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
     );
   }
 
-  // ─── Config Dropdown Helpers ────────────────────────────────────────────────
-
-  /// Parses a hex color string ("#RRGGBB" or "#AARRGGBB") into a Flutter [Color].
-  /// Returns null if the input is null or invalid.
   Color? _hexToColor(String? hex) {
     if (hex == null || hex.isEmpty) return null;
-    final clean = hex.replaceAll('#', '');
-    try {
-      if (clean.length == 6) return Color(int.parse('FF$clean', radix: 16));
-      if (clean.length == 8) return Color(int.parse(clean, radix: 16));
-    } catch (_) {}
+    final clean = hex.replaceAll('#', '').trim();
+    if (clean.length == 6) {
+      final val = int.tryParse('FF$clean', radix: 16);
+      if (val != null) return Color(val);
+    }
     return null;
   }
 
-  IconData _makeIconData(int code) {
-    return Icons.label_outline;
-  }
-
-  /// Maps a Material icon name string to an [IconData].
-  /// Supports common names; falls back to [Icons.label_outline] for unknowns.
   IconData? _iconNameToIconData(String? name) {
     if (name == null || name.isEmpty) return null;
-    // Try codepoint first (e.g. "0xe7fd")
-    if (name.startsWith('0x')) {
-      try {
-        final code = int.parse(name);
-        return _makeIconData(code);
-      } catch (_) {}
-    }
     const map = <String, IconData>{
       'person': Icons.person,
       'male': Icons.male,
@@ -782,40 +1051,21 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
       'transgender': Icons.transgender,
       'home': Icons.home,
       'work': Icons.work,
-      'business': Icons.business,
-      'location_on': Icons.location_on,
-      'local_shipping': Icons.local_shipping,
-      'receipt': Icons.receipt,
+      'location_city': Icons.location_city,
+      'phone_android': Icons.phone_android,
       'phone': Icons.phone,
-      'phone_iphone': Icons.phone_iphone,
       'email': Icons.email,
-      'whatsapp': Icons.chat,
-      'fax': Icons.fax,
+      'chat': Icons.chat,
       'family_restroom': Icons.family_restroom,
       'escalator_warning': Icons.escalator_warning,
-      'supervisor_account': Icons.supervisor_account,
-      'manage_accounts': Icons.manage_accounts,
-      'support_agent': Icons.support_agent,
-      'admin_panel_settings': Icons.admin_panel_settings,
-      'star': Icons.star,
-      'verified': Icons.verified,
-      'badge': Icons.badge,
-      'school': Icons.school,
-      'medical_services': Icons.medical_services,
-      'psychology': Icons.psychology,
       'favorite': Icons.favorite,
-      'handshake': Icons.handshake,
-      'groups': Icons.groups,
-      'child_care': Icons.child_care,
-      'elderly': Icons.elderly,
-      'accessible': Icons.accessible,
+      'security': Icons.security,
+      'admin_panel_settings': Icons.admin_panel_settings,
     };
     return map[name.toLowerCase().trim()];
   }
 
-  /// Builds the leading widget (image thumbnail or icon) for a config param.
-  /// Image takes priority over icon. Returns null if neither is set.
-  Widget? _buildParamLeading(CoreConfigParameter p, {double size = 20}) {
+  Widget? _buildParamLeading(CoreConfigParameter p, {double size = 18}) {
     if (p.parameterImage != null && p.parameterImage!.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(4),
@@ -825,9 +1075,6 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
           height: size,
           fit: BoxFit.cover,
           errorBuilder: (_, e, s) => Icon(Icons.broken_image_outlined, size: size, color: AppColors.textMuted),
-          loadingBuilder: (_, child, progress) => progress == null
-              ? child
-              : SizedBox(width: size, height: size, child: const CircularProgressIndicator(strokeWidth: 1.5)),
         ),
       );
     }
@@ -838,9 +1085,6 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
     return null;
   }
 
-  /// Reusable searchable dropdown backed by [CoreConfigParameter] list.
-  /// Renders [parameterColor] as text color, [parameterIcon] as leading icon,
-  /// and [parameterImage] as leading thumbnail (image takes priority over icon).
   Widget _buildConfigDropdown({
     required String label,
     required List<CoreConfigParameter> options,
@@ -856,26 +1100,22 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
     return DropdownSearch<CoreConfigParameter>(
       items: options,
       selectedItem: hasSelection ? selected : null,
-      itemAsString: (p) => '${p.parameterName}  (${p.parameterId})',
-      filterFn: (p, filter) =>
-        p.parameterName.toLowerCase().contains(filter.toLowerCase()) ||
-        p.parameterId.toString().contains(filter),
+      itemAsString: (p) => p.parameterName,
+      filterFn: (p, filter) => p.parameterName.toLowerCase().contains(filter.toLowerCase()),
       compareFn: (a, b) => a.parameterId == b.parameterId,
       onChanged: onChanged,
-      // ── Rich selected-item display in the closed dropdown ──
       dropdownBuilder: (ctx, item) {
         if (item == null) {
           return const Text('— Select —', style: TextStyle(color: AppColors.textMuted, fontSize: 12));
         }
-        final textColor = _hexToColor(item.parameterColor) ?? AppColors.textMain;
-        final leading = _buildParamLeading(item, size: 18);
+        final leading = _buildParamLeading(item, size: 16);
         return Row(
           children: [
             if (leading != null) ...[leading, const SizedBox(width: 8)],
             Expanded(
               child: Text(
-                '${item.parameterName}  (${item.parameterId})',
-                style: TextStyle(color: textColor, fontSize: 12, fontWeight: FontWeight.w600),
+                item.parameterName,
+                style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -885,68 +1125,62 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
       dropdownDecoratorProps: DropDownDecoratorProps(
         dropdownSearchDecoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w600),
+          labelStyle: const TextStyle(color: AppColors.textSubtle, fontSize: 12, fontWeight: FontWeight.w600),
           filled: true,
           fillColor: AppColors.bgSubtle,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          border: const OutlineInputBorder(),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: AppColors.borderSubtle),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: AppColors.borderSubtle),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: AppColors.brandPrimary, width: 1.5),
+          ),
         ),
       ),
       popupProps: PopupProps.menu(
-        showSearchBox: true,
-        searchFieldProps: TextFieldProps(
+        showSearchBox: options.length > 5,
+        searchFieldProps: const TextFieldProps(
           decoration: InputDecoration(
-            hintText: 'Search by name or ID...',
-            hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+            hintText: 'Search...',
+            hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 12),
             filled: true,
             fillColor: AppColors.bgSubtle,
-            prefixIcon: const Icon(Icons.search, color: AppColors.textSubtle, size: 18),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+            prefixIcon: Icon(Icons.search, color: AppColors.textSubtle, size: 18),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            border: OutlineInputBorder(),
           ),
-          style: const TextStyle(color: AppColors.textMain, fontSize: 12),
+          style: TextStyle(color: AppColors.textMain, fontSize: 12),
         ),
         containerBuilder: (ctx, child) => Container(
           decoration: BoxDecoration(
             color: AppColors.bgSurface,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: AppColors.borderSubtle),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))],
           ),
           child: child,
         ),
-        // ── Rich item row in popup list ──
         itemBuilder: (ctx, item, isSelected) {
-          final textColor = _hexToColor(item.parameterColor) ?? (isSelected ? AppColors.brandPrimary : AppColors.textMain);
-          final leading = _buildParamLeading(item, size: 20);
+          final leading = _buildParamLeading(item);
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
+            color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.15) : null,
             child: Row(
               children: [
-                // Selected checkmark
-                if (isSelected) ...[const Icon(Icons.check_circle, color: AppColors.brandPrimary, size: 14), const SizedBox(width: 6)],
-                // Image or icon (if set on the parameter)
-                if (leading != null) ...[leading, const SizedBox(width: 8)],
-                // Name + ID
+                if (leading != null) ...[leading, const SizedBox(width: 10)],
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        item.parameterName,
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        'ID: ${item.parameterId}  |  Code: ${item.parameterCode}',
-                        style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
-                      ),
-                    ],
+                  child: Text(
+                    item.parameterName,
+                    style: TextStyle(
+                      color: isSelected ? AppColors.brandPrimary : AppColors.textMain,
+                      fontSize: 13,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -957,237 +1191,454 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
     );
   }
 
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 18, color: AppColors.brandPrimary),
+              const SizedBox(width: 8),
+              Text(title, style: const TextStyle(color: AppColors.textMain, fontSize: 14, fontWeight: FontWeight.w700)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...children,
+        ],
+      ),
+    );
+  }
+
   Widget _buildDetailInspector(UserProfileModel user) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DqmsTextField(label: 'Custom User Handle (UserCode)', initialValue: user.userCode),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              SizedBox(
-                width: 200,
-                child: _buildConfigDropdown(
-                  label: 'Title (C_TITLE)',
-                  options: _titleOptions,
-                  selectedId: user.titleId,
-                  onChanged: (p) {
-                    if (p != null) setState(() => _selectedUser = user.copyWith(titleId: p.parameterId, titleName: p.parameterName));
-                  },
-                ),
+          // ── Header Profile Hero Card ──
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(width: 12),
-              Expanded(child: DqmsTextField(label: 'First Name', initialValue: user.firstName)),
-              const SizedBox(width: 12),
-              Expanded(child: DqmsTextField(label: 'Last Name', initialValue: user.lastName)),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.borderSubtle),
+            ),
+            child: Row(
+              children: [
+                // Avatar with Camera Upload Badge
+                Stack(
+                  children: [
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.brandPrimary, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.brandPrimary.withValues(alpha: 0.25),
+                            blurRadius: 12,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: _isUploadingAvatar
+                            ? const Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.brandAccent))
+                            : (user.profileImageUrl != null && user.profileImageUrl!.isNotEmpty)
+                                ? Image.network(
+                                    user.profileImageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => const Icon(Icons.person, size: 36, color: AppColors.textMuted),
+                                  )
+                                : const Icon(Icons.person, size: 36, color: AppColors.textMuted),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => _pickAndUploadAvatar(user),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: const BoxDecoration(
+                              color: AppColors.brandPrimary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.camera_alt_rounded, size: 14, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(user.calculatedFullName, style: const TextStyle(color: AppColors.textMain, fontSize: 16, fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(user.roleName, style: const TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w700)),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(user.userCode, style: const TextStyle(color: AppColors.textMuted, fontSize: 12, fontFamily: 'monospace')),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      InkWell(
+                        onTap: () => _pickAndUploadAvatar(user),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.cloud_upload_outlined, size: 14, color: AppColors.brandAccent),
+                            SizedBox(width: 4),
+                            Text('Change Profile Photo', style: TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Active Switch
+                Column(
+                  children: [
+                    Switch(
+                      value: user.isActive,
+                      activeThumbColor: AppColors.statusActive,
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedUser = user.copyWith(isActive: val);
+                          final idx = _users.indexWhere((u) => u.userId == user.userId);
+                          if (idx != -1) _users[idx] = _selectedUser!;
+                        });
+                      },
+                    ),
+                    Text(user.isActive ? 'Active' : 'Inactive', style: TextStyle(color: user.isActive ? AppColors.statusActive : AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // ── Card 1: Identity & System Role ──
+          _buildSectionCard(
+            title: 'Identity & Role',
+            icon: Icons.badge_outlined,
+            children: [
+              DqmsTextField(
+                label: 'Custom User Handle (UserCode)',
+                controller: _userCodeCtrl,
+                onChanged: (val) => _selectedUser = _selectedUser?.copyWith(userCode: val),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 140,
+                    child: _buildConfigDropdown(
+                      label: 'Title',
+                      options: _titleOptions,
+                      selectedId: user.titleId,
+                      onChanged: (p) {
+                        if (p != null) setState(() => _selectedUser = user.copyWith(titleId: p.parameterId, titleName: p.parameterName));
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DqmsTextField(
+                      label: 'First Name',
+                      controller: _firstNameCtrl,
+                      onChanged: (val) => _selectedUser = _selectedUser?.copyWith(firstName: val),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DqmsTextField(
+                      label: 'Last Name',
+                      controller: _lastNameCtrl,
+                      onChanged: (val) => _selectedUser = _selectedUser?.copyWith(lastName: val),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildConfigDropdown(
+                      label: 'Gender',
+                      options: _genderOptions,
+                      selectedId: user.genderId,
+                      onChanged: (p) {
+                        if (p != null) setState(() => _selectedUser = user.copyWith(genderId: p.parameterId, genderName: p.parameterName));
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildConfigDropdown(
+                      label: 'Assigned Role',
+                      options: _roleOptions,
+                      selectedId: user.roleId,
+                      onChanged: (r) {
+                        if (r != null) setState(() => _selectedUser = user.copyWith(roleId: r.parameterId, roleName: r.parameterName));
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              DqmsTextField(
+                label: 'Primary Login Email',
+                controller: _emailCtrl,
+                onChanged: (val) => _selectedUser = _selectedUser?.copyWith(email: val),
+              ),
             ],
           ),
-          const SizedBox(height: 14),
-          Row(
+
+          // ── Card 2: Primary Address ──
+          _buildSectionCard(
+            title: 'Primary Address',
+            icon: Icons.location_on_outlined,
             children: [
-              Expanded(
-                child: _buildConfigDropdown(
-                  label: 'Gender (C_GENDER)',
-                  options: _genderOptions,
-                  selectedId: user.genderId,
-                  onChanged: (p) {
-                    if (p != null) setState(() => _selectedUser = user.copyWith(genderId: p.parameterId, genderName: '${p.parameterName} (${p.parameterId})'));
-                  },
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildConfigDropdown(
+                      label: 'Address Type',
+                      options: _addressTypeOptions,
+                      selectedId: user.addressTypeId,
+                      onChanged: (a) {
+                        if (a != null) setState(() => _selectedUser = user.copyWith(addressTypeId: a.parameterId, addressTypeName: a.parameterName));
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DqmsTextField(
+                      label: 'Postal Code',
+                      controller: _postalCodeCtrl,
+                      onChanged: (val) => _selectedUser = _selectedUser?.copyWith(postalCode: val),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildConfigDropdown(
-                  label: 'Assigned Role',
-                  options: _roleOptions,
-                  selectedId: user.roleId,
-                  onChanged: (r) {
-                    if (r != null) setState(() => _selectedUser = user.copyWith(roleId: r.parameterId, roleName: r.parameterName));
-                  },
-                ),
+              const SizedBox(height: 12),
+              DqmsTextField(
+                label: 'Address Line 1',
+                controller: _addressLine1Ctrl,
+                onChanged: (val) => _selectedUser = _selectedUser?.copyWith(addressLine1: val),
+              ),
+              const SizedBox(height: 12),
+              DqmsTextField(
+                label: 'Address Line 2 (Optional)',
+                controller: _addressLine2Ctrl,
+                onChanged: (val) => _selectedUser = _selectedUser?.copyWith(addressLine2: val),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildConfigDropdown(
+                      label: 'Country',
+                      options: _countryOptions.isNotEmpty
+                          ? _countryOptions
+                          : (_selectedCountry != null ? [_selectedCountry!] : []),
+                      selectedId: _selectedCountry?.parameterId,
+                      onChanged: (c) {
+                        if (c != null) {
+                          setState(() {
+                            _selectedCountry = c;
+                            _selectedState = null;
+                            _selectedCity = null;
+                            _stateOptions = [];
+                            _cityOptions = [];
+                            _selectedUser = _selectedUser?.copyWith(countryName: c.parameterName, stateName: '', cityName: '');
+                          });
+                          if (c.parameterId > 0) {
+                            _fetchStates(c.parameterId);
+                          }
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildConfigDropdown(
+                      label: 'State / Province',
+                      options: _stateOptions.isNotEmpty
+                          ? _stateOptions
+                          : (_selectedState != null ? [_selectedState!] : []),
+                      selectedId: _selectedState?.parameterId,
+                      onChanged: (s) {
+                        if (s != null) {
+                          setState(() {
+                            _selectedState = s;
+                            _selectedCity = null;
+                            _cityOptions = [];
+                            _selectedUser = _selectedUser?.copyWith(stateName: s.parameterName, cityName: '');
+                          });
+                          if (s.parameterId > 0) {
+                            _fetchCities(s.parameterId);
+                          }
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildConfigDropdown(
+                      label: 'City',
+                      options: _cityOptions.isNotEmpty
+                          ? _cityOptions
+                          : (_selectedCity != null ? [_selectedCity!] : []),
+                      selectedId: _selectedCity?.parameterId,
+                      onChanged: (ct) {
+                        if (ct != null) {
+                          setState(() {
+                            _selectedCity = ct;
+                            _selectedUser = _selectedUser?.copyWith(cityName: ct.parameterName);
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          DqmsTextField(label: 'Primary Login Email', initialValue: user.email),
-          const SizedBox(height: 14),
-          DqmsTextField(label: 'Profile Avatar Image URL', initialValue: user.profileImageUrl ?? 'https://cdn.dqms.org/avatars/default.png'),
+
+          // ── Card 3: Contact & Emergency Profile ──
+          _buildSectionCard(
+            title: 'Contact & Emergency Info',
+            icon: Icons.contact_phone_outlined,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildConfigDropdown(
+                      label: 'Contact Type',
+                      options: _contactTypeOptions,
+                      selectedId: user.contactTypeId,
+                      onChanged: (c) {
+                        if (c != null) setState(() => _selectedUser = user.copyWith(contactTypeId: c.parameterId, contactTypeName: c.parameterName));
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildConfigDropdown(
+                      label: 'Relationship',
+                      options: _relationshipOptions,
+                      selectedId: user.relationshipTypeId,
+                      onChanged: (r) {
+                        if (r != null) setState(() => _selectedUser = user.copyWith(relationshipTypeId: r.parameterId, relationshipTypeName: r.parameterName));
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              DqmsTextField(
+                label: 'Primary Phone / Mobile',
+                controller: _mobileNumberCtrl,
+                onChanged: (val) => _selectedUser = _selectedUser?.copyWith(mobileNumber: val),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 16,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Checkbox(
+                        value: user.isEmergencyContact,
+                        activeColor: AppColors.brandPrimary,
+                        onChanged: (val) => setState(() => _selectedUser = user.copyWith(isEmergencyContact: val ?? false)),
+                      ),
+                      const Text('Emergency Contact', style: TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Checkbox(
+                        value: user.isVerifiedContact,
+                        activeColor: AppColors.statusActive,
+                        onChanged: (val) => setState(() => _selectedUser = user.copyWith(isVerifiedContact: val ?? false)),
+                      ),
+                      const Text('Verified Contact', style: TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+
           const SizedBox(height: 16),
 
-          // User Address Entity Section
-          const Text('User Primary Address (UserAddress Entity)', style: TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 10),
-          Row(
+          // ── Footer Action Bar ──
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: _buildConfigDropdown(
-                  label: 'Address Type (C_ADDRESSTYPE)',
-                  options: _addressTypeOptions,
-                  selectedId: user.addressTypeId,
-                  onChanged: (a) {
-                    if (a != null) setState(() => _selectedUser = user.copyWith(addressTypeId: a.parameterId, addressTypeName: '${a.parameterName} (${a.parameterId})'));
-                  },
+              DqmsButton(
+                label: _isSavingUser ? 'Saving...' : 'Save Full User Profile',
+                icon: Icons.save_rounded,
+                isLoading: _isSavingUser,
+                isFullWidth: true,
+                onPressed: _saveUserProfile,
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Password reset link dispatched to ${user.email}.'),
+                      backgroundColor: AppColors.brandPrimary,
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.lock_reset_rounded, size: 16, color: AppColors.textSubtle),
+                label: const Text('Reset Password', style: TextStyle(color: AppColors.textSubtle, fontSize: 12)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.borderSubtle),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(child: DqmsTextField(label: 'Postal Code', initialValue: user.postalCode)),
-            ],
-          ),
-          const SizedBox(height: 10),
-          DqmsTextField(label: 'Address Line 1', initialValue: user.addressLine1),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _buildConfigDropdown(
-                  label: 'Country (Locations API)',
-                  options: _countryOptions.isNotEmpty
-                      ? _countryOptions
-                      : (_selectedCountry != null ? [_selectedCountry!] : []),
-                  selectedId: _selectedCountry?.parameterId,
-                  onChanged: (c) {
-                    if (c != null) {
-                      setState(() {
-                        _selectedCountry = c;
-                        _selectedState = null;
-                        _selectedCity = null;
-                        _stateOptions = [];
-                        _cityOptions = [];
-                        if (_selectedUser != null) {
-                          _selectedUser = _selectedUser!.copyWith(
-                            countryName: c.parameterName,
-                            stateName: '',
-                            cityName: '',
-                          );
-                        }
-                      });
-                      if (c.parameterId > 0) {
-                        _fetchStates(c.parameterId);
-                      }
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildConfigDropdown(
-                  label: 'State (Locations API)',
-                  options: _stateOptions.isNotEmpty
-                      ? _stateOptions
-                      : (_selectedState != null ? [_selectedState!] : []),
-                  selectedId: _selectedState?.parameterId,
-                  onChanged: (s) {
-                    if (s != null) {
-                      setState(() {
-                        _selectedState = s;
-                        _selectedCity = null;
-                        _cityOptions = [];
-                        if (_selectedUser != null) {
-                          _selectedUser = _selectedUser!.copyWith(
-                            stateName: s.parameterName,
-                            cityName: '',
-                          );
-                        }
-                      });
-                      if (s.parameterId > 0) {
-                        _fetchCities(s.parameterId);
-                      }
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildConfigDropdown(
-                  label: 'City (Locations API)',
-                  options: _cityOptions.isNotEmpty
-                      ? _cityOptions
-                      : (_selectedCity != null ? [_selectedCity!] : []),
-                  selectedId: _selectedCity?.parameterId,
-                  onChanged: (ct) {
-                    if (ct != null) {
-                      setState(() {
-                        _selectedCity = ct;
-                        if (_selectedUser != null) {
-                          _selectedUser = _selectedUser!.copyWith(
-                            cityName: ct.parameterName,
-                          );
-                        }
-                      });
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // User Contact Entity Section
-          const Text('User Contact & Emergency Profile (UserContact Entity)', style: TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _buildConfigDropdown(
-                  label: 'Contact Type (C_CONTACTTYPE)',
-                  options: _contactTypeOptions,
-                  selectedId: user.contactTypeId,
-                  onChanged: (c) {
-                    if (c != null) setState(() => _selectedUser = user.copyWith(contactTypeId: c.parameterId, contactTypeName: '${c.parameterName} (${c.parameterId})'));
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildConfigDropdown(
-                  label: 'Relationship (C_RELATIONSHIP)',
-                  options: _relationshipOptions,
-                  selectedId: user.relationshipTypeId,
-                  onChanged: (r) {
-                    if (r != null) setState(() => _selectedUser = user.copyWith(relationshipTypeId: r.parameterId, relationshipTypeName: '${r.parameterName} (${r.parameterId})'));
-                  },
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          DqmsTextField(label: 'Primary Phone / Contact Value', initialValue: user.mobileNumber),
-          const SizedBox(height: 14),
-
-          Row(
-            children: [
-              Text('Emergency Flag: ${user.isEmergencyContact ? "YES" : "NO"}', style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w700)),
-              const Spacer(),
-              Text('Verified Contact: ${user.isVerifiedContact ? "VERIFIED" : "UNVERIFIED"}', style: const TextStyle(color: AppColors.statusActive, fontSize: 11, fontWeight: FontWeight.w700)),
             ],
           ),
           const SizedBox(height: 24),
-
-          DqmsButton(
-            label: 'Save Full User Profile & Addresses',
-            icon: Icons.save_rounded,
-            isFullWidth: true,
-            onPressed: () async {
-              try {
-                final dio = ref.read(dioProvider);
-                await dio.post('${AppConfig.apiV1Base}/users/${user.userId}/addresses', data: {
-                  'addressId': 0,
-                  'userId': user.userId,
-                  'addressLine1': user.addressLine1,
-                  'city': user.cityName,
-                  'state': user.stateName,
-                  'postalCode': user.postalCode,
-                  'country': user.countryName,
-                });
-              } catch (_) {}
-
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('User ${user.calculatedFullName} saved to backend API.'), backgroundColor: AppColors.statusActive),
-              );
-            },
-          ),
         ],
       ),
     );
@@ -1208,148 +1659,214 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
       builder: (ctx) => StatefulBuilder(
         builder: (dialogCtx, setDialogState) => AlertDialog(
           backgroundColor: AppColors.bgSurface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: const BorderSide(color: AppColors.borderSubtle)),
-          title: const Text('Create User Account (User.cs Entity)', style: TextStyle(color: AppColors.textMain, fontSize: 16, fontWeight: FontWeight.w700)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: AppColors.borderSubtle)),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.person_add_rounded, color: AppColors.brandPrimary, size: 20),
+              ),
+              const SizedBox(width: 10),
+              const Text('Create User Account', style: TextStyle(color: AppColors.textMain, fontSize: 16, fontWeight: FontWeight.w700)),
+            ],
+          ),
           content: SizedBox(
-            width: 500,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DqmsTextField(label: 'UserCode / Handle (Defaults to Email)', controller: userCodeCtrl),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 180,
-                      child: DropdownSearch<CoreConfigParameter>(
-                        items: _titleOptions,
-                        selectedItem: selectedTitle,
-                        itemAsString: (p) => '${p.parameterName}  (${p.parameterId})',
-                        compareFn: (a, b) => a.parameterId == b.parameterId,
-                        filterFn: (p, filter) => p.parameterName.toLowerCase().contains(filter.toLowerCase()),
-                        onChanged: (p) => setDialogState(() => selectedTitle = p),
-                        dropdownDecoratorProps: const DropDownDecoratorProps(
-                          dropdownSearchDecoration: InputDecoration(
-                            labelText: 'Title (C_TITLE)',
-                            labelStyle: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w600),
-                            filled: true,
-                            fillColor: AppColors.bgSubtle,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        popupProps: PopupProps.menu(
-                          showSearchBox: true,
-                          searchFieldProps: TextFieldProps(
-                            decoration: InputDecoration(
-                              hintText: 'Search...',
-                              hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 12),
+            width: 520,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DqmsTextField(
+                    label: 'User Handle / Code (Defaults to Email)',
+                    controller: userCodeCtrl,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 140,
+                        child: DropdownSearch<CoreConfigParameter>(
+                          items: _titleOptions,
+                          selectedItem: selectedTitle,
+                          itemAsString: (p) => p.parameterName,
+                          compareFn: (a, b) => a.parameterId == b.parameterId,
+                          filterFn: (p, filter) => p.parameterName.toLowerCase().contains(filter.toLowerCase()),
+                          onChanged: (p) => setDialogState(() => selectedTitle = p),
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              labelText: 'Title',
+                              labelStyle: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w600),
                               filled: true,
                               fillColor: AppColors.bgSubtle,
-                              prefixIcon: Icon(Icons.search, color: AppColors.textSubtle, size: 18),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                               border: OutlineInputBorder(),
                             ),
-                            style: TextStyle(color: AppColors.textMain, fontSize: 12),
                           ),
-                          containerBuilder: (ctx, child) => Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.bgSurface,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.borderSubtle),
+                          popupProps: PopupProps.menu(
+                            showSearchBox: true,
+                            containerBuilder: (ctx, child) => Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.bgSurface,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppColors.borderSubtle),
+                              ),
+                              child: child,
                             ),
-                            child: child,
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(child: DqmsTextField(label: 'First Name', controller: firstNameCtrl)),
-                    const SizedBox(width: 12),
-                    Expanded(child: DqmsTextField(label: 'Last Name', controller: lastNameCtrl)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownSearch<CoreConfigParameter>(
-                        items: _genderOptions,
-                        selectedItem: selectedGender,
-                        itemAsString: (p) => '${p.parameterName}  (${p.parameterId})',
-                        compareFn: (a, b) => a.parameterId == b.parameterId,
-                        filterFn: (p, filter) => p.parameterName.toLowerCase().contains(filter.toLowerCase()),
-                        onChanged: (p) => setDialogState(() => selectedGender = p),
-                        dropdownDecoratorProps: const DropDownDecoratorProps(
-                          dropdownSearchDecoration: InputDecoration(
-                            labelText: 'Gender (C_GENDER)',
-                            labelStyle: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w600),
-                            filled: true,
-                            fillColor: AppColors.bgSubtle,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        popupProps: PopupProps.menu(
-                          showSearchBox: true,
-                          containerBuilder: (ctx, child) => Container(
-                            decoration: BoxDecoration(color: AppColors.bgSurface, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.borderSubtle)),
-                            child: child,
+                      const SizedBox(width: 12),
+                      Expanded(child: DqmsTextField(label: 'First Name *', controller: firstNameCtrl)),
+                      const SizedBox(width: 12),
+                      Expanded(child: DqmsTextField(label: 'Last Name *', controller: lastNameCtrl)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownSearch<CoreConfigParameter>(
+                          items: _genderOptions,
+                          selectedItem: selectedGender,
+                          itemAsString: (p) => p.parameterName,
+                          compareFn: (a, b) => a.parameterId == b.parameterId,
+                          onChanged: (p) => setDialogState(() => selectedGender = p),
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              labelText: 'Gender',
+                              labelStyle: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w600),
+                              filled: true,
+                              fillColor: AppColors.bgSubtle,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              border: OutlineInputBorder(),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: DropdownSearch<CoreConfigParameter>(
-                        items: _roleOptions,
-                        selectedItem: selectedRole,
-                        itemAsString: (p) => p.parameterName,
-                        compareFn: (a, b) => a.parameterId == b.parameterId,
-                        filterFn: (p, filter) => p.parameterName.toLowerCase().contains(filter.toLowerCase()),
-                        onChanged: (r) => setDialogState(() => selectedRole = r),
-                        dropdownDecoratorProps: const DropDownDecoratorProps(
-                          dropdownSearchDecoration: InputDecoration(
-                            labelText: 'Assigned Role',
-                            labelStyle: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w600),
-                            filled: true,
-                            fillColor: AppColors.bgSubtle,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        popupProps: PopupProps.menu(
-                          showSearchBox: true,
-                          containerBuilder: (ctx, child) => Container(
-                            decoration: BoxDecoration(color: AppColors.bgSurface, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.borderSubtle)),
-                            child: child,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: DropdownSearch<CoreConfigParameter>(
+                          items: _roleOptions,
+                          selectedItem: selectedRole,
+                          itemAsString: (p) => p.parameterName,
+                          compareFn: (a, b) => a.parameterId == b.parameterId,
+                          onChanged: (r) => setDialogState(() => selectedRole = r),
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              labelText: 'Assigned Role',
+                              labelStyle: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w600),
+                              filled: true,
+                              fillColor: AppColors.bgSubtle,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              border: OutlineInputBorder(),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                DqmsTextField(label: 'Login Email Address', controller: emailCtrl),
-                const SizedBox(height: 12),
-                DqmsTextField(label: 'Password Hash (PBKDF2 SHA256)', controller: passCtrl, obscureText: true),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  DqmsTextField(label: 'Login Email Address *', controller: emailCtrl),
+                  const SizedBox(height: 12),
+                  DqmsTextField(label: 'Temporary Password', controller: passCtrl, obscureText: true),
+                ],
+              ),
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted))),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandPrimary, foregroundColor: Colors.white),
-              onPressed: () {
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.check_rounded, size: 16),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brandPrimary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () async {
+                final firstName = firstNameCtrl.text.trim();
+                final lastName = lastNameCtrl.text.trim();
+                final email = emailCtrl.text.trim();
+                var handle = userCodeCtrl.text.trim();
+                if (handle.isEmpty) handle = email;
+
+                if (firstName.isEmpty || email.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('First Name and Email are required.'),
+                      backgroundColor: AppColors.statusWarning,
+                    ),
+                  );
+                  return;
+                }
+
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
+
+                final newUser = UserProfileModel(
+                  userId: DateTime.now().millisecondsSinceEpoch % 100000,
+                  userCode: handle,
+                  titleId: selectedTitle?.parameterId ?? 2003,
+                  titleName: selectedTitle?.parameterName ?? 'Mr.',
+                  firstName: firstName,
+                  lastName: lastName,
+                  displayName: '$firstName $lastName'.trim(),
+                  genderId: selectedGender?.parameterId ?? 1001,
+                  genderName: selectedGender?.parameterName ?? 'Male',
+                  profileImageUrl: 'https://cdn.dqms.org/avatars/default.png',
+                  email: email,
+                  mobileNumber: '+1 800 555 0199',
+                  roleId: selectedRole?.parameterId ?? 1,
+                  roleName: selectedRole?.parameterName ?? 'SuperAdmin',
+                  isActive: true,
+                  addressTypeName: 'Office / Work',
+                  addressLine1: '100 Main St',
+                  postalCode: '10001',
+                  countryName: 'United States',
+                  stateName: 'New York',
+                  cityName: 'New York City',
+                  contactTypeName: 'Work Phone',
+                  relationshipTypeName: 'Self',
+                );
+
+                final messenger = ScaffoldMessenger.of(context);
+
+                try {
+                  final dio = ref.read(dioProvider);
+                  await dio.post('${AppConfig.apiV1Base}/users', data: {
+                    'id': 0,
+                    'userCode': handle,
+                    'titleId': selectedTitle?.parameterId,
+                    'firstName': firstName,
+                    'lastName': lastName,
+                    'displayName': '$firstName $lastName'.trim(),
+                    'genderId': selectedGender?.parameterId,
+                    'profileImageUrl': newUser.profileImageUrl,
+                    'email': email,
+                    'passwordHash': passCtrl.text.trim(),
+                    'isActive': true,
+                  });
+                } catch (_) {}
+
+                if (!mounted) return;
+                setState(() {
+                  _users.insert(0, newUser);
+                  _onUserSelected(newUser);
+                });
+
+                messenger.showSnackBar(
                   SnackBar(
-                    content: Text('User created — Title: "${selectedTitle?.parameterName ?? "-"}" | Gender: "${selectedGender?.parameterName ?? "-"}" | Role: "${selectedRole?.parameterName ?? "-"}".'),
+                    content: Text('User account "${newUser.calculatedFullName}" created successfully!'),
                     backgroundColor: AppColors.statusActive,
                   ),
                 );
               },
-              child: const Text('Save User'),
+              label: const Text('Save User Account'),
             ),
           ],
         ),

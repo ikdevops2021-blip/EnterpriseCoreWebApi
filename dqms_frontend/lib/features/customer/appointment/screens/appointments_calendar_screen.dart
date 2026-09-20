@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
@@ -130,13 +131,25 @@ class _AppointmentsCalendarScreenState extends ConsumerState<AppointmentsCalenda
   /// Top Operational Header
   Widget _buildTopHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
         color: AppColors.bgHeader,
         border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
       ),
       child: Row(
         children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.brandPrimary),
+            tooltip: 'Back to Main Screen',
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/mobile');
+              }
+            },
+          ),
+          const SizedBox(width: 6),
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -146,7 +159,7 @@ class _AppointmentsCalendarScreenState extends ConsumerState<AppointmentsCalenda
             ),
             child: const Icon(Icons.calendar_month_rounded, color: AppColors.brandPrimary, size: 22),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,14 +168,16 @@ class _AppointmentsCalendarScreenState extends ConsumerState<AppointmentsCalenda
                   'Scheduled Appointments Calendar',
                   style: TextStyle(
                     color: AppColors.textMain,
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 2),
                 Text(
                   'Multi-tenant appointment management & pre-booking schedule matrix',
                   style: TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -228,36 +243,80 @@ class _AppointmentsCalendarScreenState extends ConsumerState<AppointmentsCalenda
           // Filter & Format Switchers Header
           Padding(
             padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                const Icon(Icons.filter_list_rounded, color: AppColors.textMuted, size: 16),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _filterLocation,
-                      dropdownColor: AppColors.bgSurface,
-                      style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
-                      items: ['All Locations', 'HQ Main Medical Center', 'West Wing Regional Center']
-                          .map((loc) => DropdownMenuItem(value: loc, child: Text(loc)))
-                          .toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _filterLocation = val);
-                      },
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth < 450) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.filter_list_rounded, color: AppColors.textMuted, size: 16),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                isExpanded: true,
+                                value: _filterLocation,
+                                dropdownColor: AppColors.bgSurface,
+                                style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
+                                items: ['All Locations', 'HQ Main Medical Center', 'West Wing Regional Center']
+                                    .map((loc) => DropdownMenuItem(value: loc, child: Text(loc, overflow: TextOverflow.ellipsis)))
+                                    .toList(),
+                                onChanged: (val) {
+                                  if (val != null) setState(() => _filterLocation = val);
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      SegmentedButton<CalendarFormat>(
+                        segments: const [
+                          ButtonSegment(value: CalendarFormat.month, label: Text('Month', style: TextStyle(fontSize: 11))),
+                          ButtonSegment(value: CalendarFormat.twoWeeks, label: Text('2-Wk', style: TextStyle(fontSize: 11))),
+                          ButtonSegment(value: CalendarFormat.week, label: Text('Week', style: TextStyle(fontSize: 11))),
+                        ],
+                        selected: {_calendarFormat},
+                        onSelectionChanged: (set) => setState(() => _calendarFormat = set.first),
+                      ),
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    const Icon(Icons.filter_list_rounded, color: AppColors.textMuted, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: _filterLocation,
+                          dropdownColor: AppColors.bgSurface,
+                          style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
+                          items: ['All Locations', 'HQ Main Medical Center', 'West Wing Regional Center']
+                              .map((loc) => DropdownMenuItem(value: loc, child: Text(loc, overflow: TextOverflow.ellipsis)))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) setState(() => _filterLocation = val);
+                          },
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SegmentedButton<CalendarFormat>(
-                  segments: const [
-                    ButtonSegment(value: CalendarFormat.month, label: Text('Month', style: TextStyle(fontSize: 11))),
-                    ButtonSegment(value: CalendarFormat.twoWeeks, label: Text('2-Wk', style: TextStyle(fontSize: 11))),
-                    ButtonSegment(value: CalendarFormat.week, label: Text('Week', style: TextStyle(fontSize: 11))),
+                    const SizedBox(width: 12),
+                    SegmentedButton<CalendarFormat>(
+                      segments: const [
+                        ButtonSegment(value: CalendarFormat.month, label: Text('Month', style: TextStyle(fontSize: 11))),
+                        ButtonSegment(value: CalendarFormat.twoWeeks, label: Text('2-Wk', style: TextStyle(fontSize: 11))),
+                        ButtonSegment(value: CalendarFormat.week, label: Text('Week', style: TextStyle(fontSize: 11))),
+                      ],
+                      selected: {_calendarFormat},
+                      onSelectionChanged: (set) => setState(() => _calendarFormat = set.first),
+                    ),
                   ],
-                  selected: {_calendarFormat},
-                  onSelectionChanged: (set) => setState(() => _calendarFormat = set.first),
-                ),
-              ],
+                );
+              },
             ),
           ),
           const Divider(color: AppColors.borderSubtle, height: 1),

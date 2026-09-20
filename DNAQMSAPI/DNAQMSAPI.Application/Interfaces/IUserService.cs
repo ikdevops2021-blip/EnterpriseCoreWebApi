@@ -12,6 +12,8 @@ public interface IUserService
     Task<User> CreateUserAsync(User user);
     Task<bool> UpdateUserAsync(User user);
     Task<bool> DeleteUserAsync(int userId);
+    Task<IEnumerable<User>> GetAllUsersAsync();
+    Task<bool> UpdateProfileImageAsync(int userId, string profileImageUrl);
     Task<ApiResponse<string>> LoginAsync(string identifier, string password);
     Task<ApiResponse<User>> RegisterAsync(RegisterRequestDto request);
 }

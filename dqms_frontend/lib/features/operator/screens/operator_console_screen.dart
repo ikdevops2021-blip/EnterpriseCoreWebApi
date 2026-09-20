@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
+import 'package:dqms_frontend/core/theme/app_decorations.dart';
 import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
 import 'package:dqms_frontend/features/dashboard/screens/dashboard_screen.dart';
 import 'package:dqms_frontend/features/admin/screens/admin_workspace_screen.dart';
@@ -132,11 +133,12 @@ class _OperatorConsoleScreenState extends ConsumerState<OperatorConsoleScreen> {
   /// Top Operational Header Bar
   Widget _buildTopHeader(BuildContext context, OperatorConsoleState state) {
     return Container(
-      height: 56,
+      height: 58,
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.bgHeader,
-        border: Border(bottom: BorderSide(color: AppColors.borderSubtle, width: 1)),
+        border: const Border(bottom: BorderSide(color: AppColors.glassBorderLight, width: 1.0)),
+        boxShadow: AppShadows.subtle,
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -144,17 +146,23 @@ class _OperatorConsoleScreenState extends ConsumerState<OperatorConsoleScreen> {
           children: [
             // Badge
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4)),
-                borderRadius: BorderRadius.circular(4),
+                color: AppColors.brandPrimary.withValues(alpha: 0.2),
+                border: Border.all(color: AppColors.cyanGlow.withValues(alpha: 0.5)),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.cyanGlow.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                  ),
+                ],
               ),
               child: const Text(
                 'COUNTER OPERATOR CONSOLE',
                 style: TextStyle(
-                  color: AppColors.brandPrimary,
-                  fontWeight: FontWeight.w800,
+                  color: AppColors.cyanGlow,
+                  fontWeight: FontWeight.w900,
                   fontSize: 11,
                   letterSpacing: 1.2,
                 ),
@@ -165,7 +173,7 @@ class _OperatorConsoleScreenState extends ConsumerState<OperatorConsoleScreen> {
               '${state.counterNumber} (${state.counterName})',
               style: const TextStyle(
                 color: AppColors.textMain,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
                 fontSize: 14,
               ),
             ),
@@ -173,19 +181,19 @@ class _OperatorConsoleScreenState extends ConsumerState<OperatorConsoleScreen> {
 
             // Action Feedback Pill
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.statusActive.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: AppColors.statusActive.withValues(alpha: 0.3)),
+                color: AppColors.emeraldSuccess.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+                border: Border.all(color: AppColors.emeraldSuccess.withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline_rounded, color: AppColors.statusActive, size: 12),
+                  const Icon(Icons.info_outline_rounded, color: AppColors.emeraldSuccess, size: 13),
                   const SizedBox(width: 6),
                   Text(
                     state.lastActionNotice,
-                    style: const TextStyle(color: AppColors.statusActive, fontSize: 11, fontWeight: FontWeight.w700),
+                    style: const TextStyle(color: AppColors.emeraldSuccess, fontSize: 11, fontWeight: FontWeight.w800),
                   ),
                 ],
               ),
@@ -197,9 +205,10 @@ class _OperatorConsoleScreenState extends ConsumerState<OperatorConsoleScreen> {
               icon: const Icon(Icons.dashboard_customize_rounded, size: 14),
               label: const Text('Command Center', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.brandPrimary,
-                side: const BorderSide(color: AppColors.brandPrimary),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                foregroundColor: AppColors.cyanGlow,
+                side: const BorderSide(color: AppColors.cyanGlow),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
               ),
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
@@ -210,9 +219,10 @@ class _OperatorConsoleScreenState extends ConsumerState<OperatorConsoleScreen> {
               icon: const Icon(Icons.admin_panel_settings_rounded, size: 14),
               label: const Text('Admin Workspace', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.textSubtle,
-                side: const BorderSide(color: AppColors.borderSubtle),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                foregroundColor: AppColors.textMuted,
+                side: const BorderSide(color: AppColors.glassBorderLight),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
               ),
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminWorkspaceScreen()));

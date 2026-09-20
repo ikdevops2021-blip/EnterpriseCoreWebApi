@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
+import 'package:dqms_frontend/core/theme/app_decorations.dart';
+import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/features/dashboard/providers/dashboard_provider.dart';
 
 /// ============================================================================
@@ -32,13 +34,9 @@ class _CounterStatusPanelState extends State<CounterStatusPanel> {
       return true;
     }).toList();
 
-    return Container(
+    return GlassContainer(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
+      borderRadius: AppRadius.card,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -124,22 +122,31 @@ class _CounterStatusPanelState extends State<CounterStatusPanel> {
           _filter = label;
         });
       },
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(AppRadius.pill),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? activeColor.withValues(alpha: 0.2) : AppColors.bgCard,
-          borderRadius: BorderRadius.circular(4),
+          color: isSelected ? activeColor.withValues(alpha: 0.22) : AppColors.bgCard,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
           border: Border.all(
-            color: isSelected ? activeColor : AppColors.borderSubtle,
+            color: isSelected ? activeColor.withValues(alpha: 0.7) : AppColors.glassBorderLight,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: activeColor.withValues(alpha: 0.25),
+                    blurRadius: 6,
+                    spreadRadius: 0.5,
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           '$label ($count)',
           style: TextStyle(
             color: isSelected ? activeColor : AppColors.textMuted,
             fontSize: 10,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
           ),
         ),
       ),
@@ -168,11 +175,22 @@ class _CounterStatusPanelState extends State<CounterStatusPanel> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.bgCard,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
-          color: counter.isSlaBreached ? AppColors.statusDeactive.withValues(alpha: 0.5) : AppColors.borderSubtle,
+          color: counter.isSlaBreached
+              ? AppColors.statusDeactive.withValues(alpha: 0.6)
+              : AppColors.glassBorderLight,
           width: counter.isSlaBreached ? 1.5 : 1.0,
         ),
+        boxShadow: counter.isSlaBreached
+            ? [
+                BoxShadow(
+                  color: AppColors.statusDeactive.withValues(alpha: 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : AppShadows.subtle,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,16 +200,16 @@ class _CounterStatusPanelState extends State<CounterStatusPanel> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: AppColors.bgSurface,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: AppColors.borderSubtle),
+                  color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppRadius.xs),
+                  border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.35)),
                 ),
                 child: Text(
                   counter.counterNumber,
                   style: const TextStyle(
-                    color: AppColors.brandPrimary,
+                    color: AppColors.cyanGlow,
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     fontFamily: 'monospace',
@@ -210,7 +228,28 @@ class _CounterStatusPanelState extends State<CounterStatusPanel> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Icon(statusIcon, color: statusColor, size: 14),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: statusColor.withValues(alpha: 0.7),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(statusIcon, color: statusColor, size: 14),
+                ],
+              ),
             ],
           ),
 
@@ -224,10 +263,18 @@ class _CounterStatusPanelState extends State<CounterStatusPanel> {
                   child: Text(
                     counter.currentToken ?? '— — —',
                     style: TextStyle(
-                      color: counter.currentToken != null ? AppColors.textMain : AppColors.textDisabled,
+                      color: counter.currentToken != null ? AppColors.neonCyan : AppColors.textDisabled,
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 0.5,
+                      shadows: counter.currentToken != null
+                          ? [
+                              Shadow(
+                                color: AppColors.neonCyan.withValues(alpha: 0.4),
+                                blurRadius: 6,
+                              ),
+                            ]
+                          : null,
                     ),
                   ),
                 ),

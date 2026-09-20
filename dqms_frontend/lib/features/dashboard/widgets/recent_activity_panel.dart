@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
+import 'package:dqms_frontend/core/theme/app_decorations.dart';
+import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/features/dashboard/providers/dashboard_provider.dart';
 
 /// ============================================================================
-/// RECENT ACTIVITY PANEL — LIVE OPERATIONAL LOG STREAM
-/// Real-time stream of queue events, calls, SLA warnings, and status changes
+/// RECENT ACTIVITY PANEL — LIVE OPERATIONAL EVENT AUDIT
+/// Displays time-stamped activity log of calls, transfers, & completions
 /// ============================================================================
 class RecentActivityPanel extends StatelessWidget {
   final List<OperationalActivityEntry> activities;
@@ -16,13 +18,9 @@ class RecentActivityPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassContainer(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
+      borderRadius: AppRadius.card,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,

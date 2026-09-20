@@ -34,12 +34,20 @@ class AppRadius {
   static const double sm = 6.0;
   static const double md = 8.0;
   static const double lg = 12.0;
+  static const double squircle = 14.0;
+  static const double card = 18.0;
+  static const double hero = 24.0;
+  static const double sheet = 28.0;
   static const double pill = 999.0;
 
   static final BorderRadius borderXs = BorderRadius.circular(xs);
   static final BorderRadius borderSm = BorderRadius.circular(sm);
   static final BorderRadius borderMd = BorderRadius.circular(md);
   static final BorderRadius borderLg = BorderRadius.circular(lg);
+  static final BorderRadius borderSquircle = BorderRadius.circular(squircle);
+  static final BorderRadius borderCard = BorderRadius.circular(card);
+  static final BorderRadius borderHero = BorderRadius.circular(hero);
+  static final BorderRadius borderSheet = BorderRadius.circular(sheet);
   static final BorderRadius borderPill = BorderRadius.circular(pill);
 }
 
@@ -122,6 +130,40 @@ class AppShadows {
       ),
     ];
   }
+
+  /// Luxury Glass Card Shadow (Ambient diffuse shadow for translucent cards)
+  static const List<BoxShadow> glassCard = [
+    BoxShadow(
+      color: Color(0x0F000000),
+      blurRadius: 20,
+      offset: Offset(0, 8),
+      spreadRadius: -2,
+    ),
+    BoxShadow(
+      color: Color(0x14000000),
+      blurRadius: 8,
+      offset: Offset(0, 2),
+      spreadRadius: 0,
+    ),
+  ];
+
+  /// Glowing Queue Token 3D Aura Shadow (multi-tier elevation)
+  static List<BoxShadow> token3dGlow({Color glowColor = AppColors.electricBlue}) {
+    return [
+      BoxShadow(
+        color: glowColor.withValues(alpha: 0.35),
+        blurRadius: 28,
+        spreadRadius: 2,
+        offset: const Offset(0, 10),
+      ),
+      BoxShadow(
+        color: glowColor.withValues(alpha: 0.20),
+        blurRadius: 10,
+        spreadRadius: 0,
+        offset: const Offset(0, 4),
+      ),
+    ];
+  }
 }
 
 /// Motion Tokens (Fast, purposeful, 150ms-250ms transitions without delaying user)
@@ -152,6 +194,26 @@ class AppDecorations {
     ],
     stops: [0.0, 0.45, 1.0],
   );
+
+  /// Luxury Glassmorphism Surface Decoration
+  static BoxDecoration glassSurface({
+    Color? fillColor,
+    Color? borderColor,
+    double borderRadius = AppRadius.card,
+    List<BoxShadow>? shadows,
+    Gradient? gradient,
+  }) {
+    return BoxDecoration(
+      color: gradient == null ? (fillColor ?? AppColors.glassSurfaceDark) : null,
+      gradient: gradient,
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: Border.all(
+        color: borderColor ?? AppColors.glassBorderLight,
+        width: 1.0,
+      ),
+      boxShadow: shadows ?? AppShadows.glassCard,
+    );
+  }
 
   /// Sci-fi translucent glass panel decoration
   static BoxDecoration scifiGlass({

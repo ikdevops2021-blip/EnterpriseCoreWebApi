@@ -99,10 +99,53 @@ class AppTypography {
     color: AppColors.brandPrimary,
   );
 
+  static TextStyle tokenHero = GoogleFonts.inter(
+    fontSize: 48,
+    fontWeight: FontWeight.w900,
+    letterSpacing: -1.0,
+    color: Colors.white,
+  );
+
   static TextStyle tokenBadge = GoogleFonts.firaCode(
     fontSize: 14,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.5,
     color: AppColors.textMain,
+  );
+
+  // ---------------------------------------------------------------------------
+  // QUEUEPRO LUXURY CUSTOMER PORTAL TYPOGRAPHY
+  // ---------------------------------------------------------------------------
+  static TextStyle heroGreeting = GoogleFonts.inter(
+    fontSize: 22,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.4,
+    color: AppColors.textMain,
+  );
+
+  static TextStyle heroSubtitle = GoogleFonts.inter(
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textMuted,
+  );
+
+  static TextStyle sectionTitle = GoogleFonts.inter(
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
+    color: AppColors.textMain,
+  );
+
+  static TextStyle squircleLabel = GoogleFonts.inter(
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textMain,
+    height: 1.2,
+  );
+
+  static TextStyle pillLabel = GoogleFonts.inter(
+    fontSize: 11,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.3,
   );
 }
