@@ -45,6 +45,7 @@ public class EmailController : ApiControllerBase
     /// Fetches the active SMTP Email Configuration for an Organization.
     /// </summary>
     [HttpGet("settings")]
+    [HttpGet("config")]
     public async Task<IActionResult> GetEmailSettings([FromQuery] int organizationId = 1)
     {
         var settings = await _emailService.GetEmailSettingsAsync(organizationId);

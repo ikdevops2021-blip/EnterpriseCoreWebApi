@@ -10,6 +10,11 @@
 [Oo]bj/
 out/
 publish/
+dqms_frontend/.dart_tool/
+dqms_frontend/build/
+dqms_frontend/android/build/
+dqms_frontend/android/app/build/
+dqms_frontend/android/.gradle/
 
 ## Ignore OS / Log files
 *.log

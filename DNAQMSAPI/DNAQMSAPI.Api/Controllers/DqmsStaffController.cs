@@ -20,11 +20,14 @@ namespace DNAQMSAPI.Api.Controllers
 
         /// <summary>
         /// Issues a new token (Kiosk / Reception).
+        /// Supports both /api/v1/staff/issue-token and /api/v1/dqms/tickets
         /// </summary>
         [HttpPost("issue-token")]
+        [HttpPost("/api/v1/dqms/tickets")]
         public async Task<IActionResult> IssueToken([FromBody] IssueTokenRequestDto dto, [FromHeader(Name = "X-User-Id")] int userId = 1)
         {
-            var result = await _staffService.IssueTokenAsync(dto, userId);
+            var effectiveUserId = (dto?.StaffUserId > 0) ? dto.StaffUserId : (userId > 0 ? userId : 1);
+            var result = await _staffService.IssueTokenAsync(dto ?? new IssueTokenRequestDto(), effectiveUserId);
             return ApiResponse(result);
         }
 

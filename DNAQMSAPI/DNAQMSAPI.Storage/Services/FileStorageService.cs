@@ -126,10 +126,29 @@ public class FileStorageService : IFileStorageService
 
     private async Task<OrganizationStorageConfig?> GetStorageConfigAsync(int organizationId, string providerName)
     {
-        return await _dbFactory.QuerySingleAsync<OrganizationStorageConfig>(
-            "pr_GetOrganizationStorageConfig", 
-            new { OrganizationId = organizationId, ProviderName = providerName },
-            commandType: System.Data.CommandType.StoredProcedure);
+        try
+        {
+            var config = (await _dbFactory.QueryAsync<OrganizationStorageConfig>(
+                "pr_GetOrganizationStorageConfig", 
+                new { OrganizationId = organizationId, ProviderName = providerName },
+                commandType: System.Data.CommandType.StoredProcedure)).FirstOrDefault();
+            if (config != null) return config;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to fetch storage config for {ProviderName}", providerName);
+        }
+
+        if (string.Equals(providerName, "Local", StringComparison.OrdinalIgnoreCase))
+        {
+            return new OrganizationStorageConfig
+            {
+                OrganizationId = organizationId,
+                ProviderName = "Local",
+                IsActive = true
+            };
+        }
+        return null;
     }
 
     private async Task<StoredFile?> GetFileMetadataAsync(Guid fileId)

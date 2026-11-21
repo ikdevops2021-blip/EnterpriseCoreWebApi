@@ -118,22 +118,47 @@ public class NotificationService : INotificationService
             // Channel 3: SMS Queue
             if (template.SendSMS)
             {
-                var smsQueueId = Guid.NewGuid().ToString();
-                const string smsSql = @"
-                    INSERT INTO `SmsQueue` (
-                        QueueId, OrganizationId, RecipientPhoneNumber, Message, Status, RetryCount, MaxRetryCount, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted
-                    ) VALUES (
-                        @QueueId, @OrganizationId, @RecipientPhoneNumber, @Message, 0, 0, 3, @UID, CURRENT_TIMESTAMP, @UID, CURRENT_TIMESTAMP, 0
-                    )";
-
-                await _dbFactory.ExecuteAsync(smsSql, new
+                string? recipientPhone = null;
+                if (request.Parameters.TryGetValue("PhoneNumber", out var p1) && !string.IsNullOrWhiteSpace(p1))
+                    recipientPhone = p1;
+                else if (request.Parameters.TryGetValue("MobileNumber", out var p2) && !string.IsNullOrWhiteSpace(p2))
+                    recipientPhone = p2;
+                else if (request.Parameters.TryGetValue("RecipientPhoneNumber", out var p3) && !string.IsNullOrWhiteSpace(p3))
+                    recipientPhone = p3;
+                else
                 {
-                    QueueId = smsQueueId,
-                    OrganizationId = request.OrganizationId,
-                    RecipientPhoneNumber = targetUser.Email,
-                    Message = renderedTitle + ": " + renderedBody,
-                    UID = performedByUserId
-                });
+                    try
+                    {
+                        var contacts = await _dbFactory.QueryAsync<string>(
+                            "SELECT ContactValue FROM `UserContacts` WHERE UserId = @UserId AND IsDeleted = 0 AND IsActive = 1 ORDER BY IsPrimary DESC LIMIT 1",
+                            new { UserId = targetUser.Id });
+                        recipientPhone = contacts.FirstOrDefault();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to resolve contact number from UserContacts for UserId {UserId}", targetUser.Id);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(recipientPhone))
+                {
+                    var smsQueueId = Guid.NewGuid().ToString();
+                    const string smsSql = @"
+                        INSERT INTO `SmsQueue` (
+                            QueueId, OrganizationId, RecipientPhoneNumber, Message, Status, RetryCount, MaxRetryCount, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted
+                        ) VALUES (
+                            @QueueId, @OrganizationId, @RecipientPhoneNumber, @Message, 0, 0, 3, @UID, CURRENT_TIMESTAMP, @UID, CURRENT_TIMESTAMP, 0
+                        )";
+
+                    await _dbFactory.ExecuteAsync(smsSql, new
+                    {
+                        QueueId = smsQueueId,
+                        OrganizationId = request.OrganizationId,
+                        RecipientPhoneNumber = recipientPhone,
+                        Message = renderedTitle + ": " + renderedBody,
+                        UID = performedByUserId
+                    });
+                }
             }
         }
 

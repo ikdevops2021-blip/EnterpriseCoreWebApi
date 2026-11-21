@@ -42,8 +42,14 @@ class DqmsDrawer extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Text(title, style: AppTypography.titleMedium),
-                const Spacer(),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTypography.titleMedium,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
                 IconButton(
                   icon: const Icon(Icons.close_rounded, color: AppColors.textSubtle, size: 18),
                   onPressed: () => Navigator.of(context).pop(),

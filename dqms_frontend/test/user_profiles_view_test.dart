@@ -22,6 +22,12 @@ class _MockHttpClient extends Fake implements HttpClient {
   bool autoUncompress = true;
 
   @override
+  Duration idleTimeout = const Duration(seconds: 15);
+
+  @override
+  Duration? connectionTimeout;
+
+  @override
   Future<HttpClientRequest> getUrl(Uri url) async => _MockHttpRequest();
 
   @override
@@ -31,6 +37,27 @@ class _MockHttpClient extends Fake implements HttpClient {
 class _MockHttpRequest extends Fake implements HttpClientRequest {
   @override
   final HttpHeaders headers = _MockHttpHeaders();
+
+  @override
+  bool followRedirects = true;
+
+  @override
+  int maxRedirects = 5;
+
+  @override
+  bool persistentConnection = true;
+
+  @override
+  int contentLength = 0;
+
+  @override
+  bool bufferOutput = true;
+
+  @override
+  void add(List<int> data) {}
+
+  @override
+  void write(Object? obj) {}
 
   @override
   Future<HttpClientResponse> close() async => _MockHttpResponse();

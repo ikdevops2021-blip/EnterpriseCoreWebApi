@@ -26,6 +26,7 @@ class AdminWorkspaceScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
+  bool _isSidebarCollapsed = false;
 
   @override
   void initState() {
@@ -66,11 +67,17 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Full Height Left Sidebar Navigation (Desktop) — Responsive Abu Anwar Pattern
+            // Full Height Left Sidebar Navigation (Desktop) — Collapsible Clinical Rail
             if (isDesktop)
               SideMenu(
                 navItems: navItems,
                 activeIndex: activeIndex,
+                isCollapsed: _isSidebarCollapsed,
+                onToggleCollapse: () {
+                  setState(() {
+                    _isSidebarCollapsed = !_isSidebarCollapsed;
+                  });
+                },
               ),
 
             // Main Workspace Right Column (Top Header + Dynamic View Content)
@@ -101,7 +108,7 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
   Widget _buildTopCommandHeader(BuildContext context, String currentTitle, bool isDesktop) {
     return Container(
       height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: const BoxDecoration(
         color: AppColors.bgHeader,
         border: Border(bottom: BorderSide(color: AppColors.borderSubtle, width: 1)),
@@ -111,6 +118,24 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Desktop Sidebar Collapse / Expand Toggle
+            if (isDesktop) ...[
+              IconButton(
+                icon: Icon(
+                  _isSidebarCollapsed ? Icons.menu_rounded : Icons.menu_open_rounded,
+                  color: AppColors.cyanGlow,
+                  size: 20,
+                ),
+                tooltip: _isSidebarCollapsed ? 'Expand Sidebar (256px)' : 'Collapse Sidebar to Icon Rail (72px)',
+                onPressed: () {
+                  setState(() {
+                    _isSidebarCollapsed = !_isSidebarCollapsed;
+                  });
+                },
+              ),
+              const SizedBox(width: 8),
+            ],
+
             // Mobile / Tablet Drawer Toggle Button
             if (!isDesktop) ...[
               Builder(
@@ -122,42 +147,209 @@ class _AdminWorkspaceScreenState extends ConsumerState<AdminWorkspaceScreen> {
               ),
               const SizedBox(width: 8),
             ],
-            // Badge
+
+            // SignalR Live Stream Status Beacon
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.brandPrimary.withValues(alpha: 0.18),
-                border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.5)),
-                borderRadius: BorderRadius.circular(4),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.2),
-                    blurRadius: 6,
-                    spreadRadius: 0.5,
+                color: AppColors.statusActive.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.statusActive.withValues(alpha: 0.35)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: AppColors.statusActive,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.statusActive.withValues(alpha: 0.8),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Text(
+                    'SIGNALR LIVE',
+                    style: TextStyle(
+                      color: AppColors.statusActive,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // Workspace Badge (matching Stitch + test suite expectation)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3198DC).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: const Color(0xFF93CCFF).withValues(alpha: 0.4)),
               ),
               child: const Text(
                 'ADMIN WORKSPACE',
                 style: TextStyle(
-                  color: AppColors.cyanGlow,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 11,
-                  letterSpacing: 1.2,
+                  color: Color(0xFF93CCFF),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
                 ),
               ),
             ),
-            const SizedBox(width: 14),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textSubtle, size: 18),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
 
-            // Current Domain Breadcrumb
-            Text(
-              currentTitle,
-              style: const TextStyle(
-                color: AppColors.textMain,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
+            // Breadcrumb hierarchy matching Stitch: DQMS Enterprise > Admin > Security & Access > currentTitle
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'DQMS Enterprise',
+                  style: TextStyle(
+                    color: Color(0xFF93CCFF),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 6),
+                  child: Text('›', style: TextStyle(color: Color(0xFF89929B), fontSize: 13)),
+                ),
+                const Text(
+                  'Admin',
+                  style: TextStyle(
+                    color: Color(0xFFBFC7D2),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12.5,
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 6),
+                  child: Text('›', style: TextStyle(color: Color(0xFF89929B), fontSize: 13)),
+                ),
+                const Text(
+                  'Security & Access',
+                  style: TextStyle(
+                    color: Color(0xFFBFC7D2),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12.5,
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 6),
+                  child: Text('›', style: TextStyle(color: Color(0xFF89929B), fontSize: 13)),
+                ),
+                Text(
+                  currentTitle,
+                  style: const TextStyle(
+                    color: Color(0xFFE0E3E8),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 20),
+
+            // Top Search Input (matching Stitch: "Search profiles, tokens, c...")
+            Container(
+              width: 220,
+              height: 34,
+              decoration: BoxDecoration(
+                color: const Color(0xFF181C20),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: const Color(0xFF3F4850).withValues(alpha: 0.5)),
+              ),
+              child: const Row(
+                children: [
+                  SizedBox(width: 8),
+                  Icon(Icons.search_rounded, size: 16, color: Color(0xFF89929B)),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Search profiles, tokens, c...',
+                      style: TextStyle(color: Color(0xFF89929B), fontSize: 11.5),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 14),
+
+            // WebSocket Latency Pill (matching Stitch: "● WebSocket 9ms")
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00311F),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFF4EDEA3).withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4EDEA3),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF4EDEA3).withValues(alpha: 0.8),
+                          blurRadius: 5,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Text(
+                    'WebSocket 9ms',
+                    style: TextStyle(
+                      color: Color(0xFF4EDEA3),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // Tenant Context Pill (matching Stitch: "Tenant: Central Clinic Metropolis General Hospital")
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1C2024),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: const Color(0xFF3F4850).withValues(alpha: 0.5)),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.apartment_rounded, size: 13, color: Color(0xFF93CCFF)),
+                  SizedBox(width: 6),
+                  Text(
+                    'Tenant: Central Clinic Metropolis General Hospital',
+                    style: TextStyle(
+                      color: Color(0xFFE0E3E8),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(width: 14),

@@ -31,7 +31,7 @@ public class StorageController : ApiControllerBase
     }
 
     [HttpPost("upload")]
-    public async Task<IActionResult> UploadFile(IFormFile file, [FromQuery] int? organizationId, [FromQuery] string provider = "GoogleDrive")
+    public async Task<IActionResult> UploadFile(IFormFile file, [FromQuery] int? organizationId, [FromQuery] string provider = "Local")
     {
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded.");

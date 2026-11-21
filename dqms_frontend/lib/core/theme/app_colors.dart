@@ -9,54 +9,55 @@ class AppColors {
   AppColors._();
 
   // ---------------------------------------------------------------------------
-  // DARK CANVAS & SURFACE TOKENS (Default Operational Aesthetic)
+  // DARK CANVAS & SURFACE TOKENS (Stitch Clinical Design System)
   // ---------------------------------------------------------------------------
-  static const Color bgCanvas = Color(0xFF090D11);
-  static const Color bgSurface = Color(0xFF12171F);
-  static const Color bgSurfaceHover = Color(0xFF1A212B);
-  static const Color bgHeader = Color(0xFF0E131A);
-  static const Color bgCard = Color(0xFF141C26);
-  static const Color bgSubtle = Color(0xFF182230);
+  static const Color bgCanvas = Color(0xFF101418);
+  static const Color bgSurface = Color(0xFF181C20);
+  static const Color bgSurfaceHover = Color(0xFF262A2F);
+  static const Color bgHeader = Color(0xFF101418);
+  static const Color bgCard = Color(0xFF181C20);
+  static const Color bgSubtle = Color(0xFF262A2F);
 
   // ---------------------------------------------------------------------------
   // BORDER TOKENS
   // ---------------------------------------------------------------------------
-  static const Color borderSubtle = Color(0xFF222B36);
-  static const Color borderHighlight = Color(0xFF2F81F7);
-  static const Color borderFocus = Color(0xFF388BFD);
+  static const Color borderSubtle = Color(0xFF3F4850);
+  static const Color borderHighlight = Color(0xFF93CCFF);
+  static const Color borderFocus = Color(0xFF3198DC);
 
   // ---------------------------------------------------------------------------
   // BRAND & ACCENT TOKENS
   // ---------------------------------------------------------------------------
-  static const Color brandPrimary = Color(0xFF2F81F7);
-  static const Color brandPrimaryHover = Color(0xFF388BFD);
-  static const Color brandAccent = Color(0xFF58A6FF);
+  static const Color brandPrimary = Color(0xFF3198DC);
+  static const Color brandPrimaryHover = Color(0xFF93CCFF);
+  static const Color brandAccent = Color(0xFF93CCFF);
+  static const Color brandSecondary = Color(0xFFC0C1FF);
 
   // ---------------------------------------------------------------------------
   // NEON ACCENT TOKENS (Dark Mode Gradient Borders & Glowing Nodes)
   // ---------------------------------------------------------------------------
-  static const Color neonCyan = Color(0xFF00E5FF);
-  static const Color neonMagenta = Color(0xFFD946EF);
-  static const Color neonPurple = Color(0xFF8B5CF6);
-  static const Color neonEmerald = Color(0xFF10B981);
+  static const Color neonCyan = Color(0xFF93CCFF);
+  static const Color neonMagenta = Color(0xFFC0C1FF);
+  static const Color neonPurple = Color(0xFFC0C1FF);
+  static const Color neonEmerald = Color(0xFF4EDEA3);
   static const Color neonAmber = Color(0xFFF59E0B);
 
   // ---------------------------------------------------------------------------
   // SEMANTIC STATUS TOKENS
   // ---------------------------------------------------------------------------
-  static const Color statusActive = Color(0xFF238636);     // Active, Success, Live
-  static const Color statusDeactive = Color(0xFFDA3633);   // Canceled, Offline, Error
-  static const Color statusError = Color(0xFFDA3633);      // Error, Failed, Breach
-  static const Color statusWarning = Color(0xFFD29922);    // SLA Alert, Waiting, Hold
-  static const Color statusSpecial = Color(0xFF8957E5);    // Priority Tiers, VIP, Prefixes
-  static const Color statusInfo = Color(0xFF388BFD);       // Informational, Calling
+  static const Color statusActive = Color(0xFF4EDEA3);     // Active, Success, Live
+  static const Color statusDeactive = Color(0xFFFFB4AB);   // Canceled, Offline, Error
+  static const Color statusError = Color(0xFFFFB4AB);      // Error, Failed, Breach
+  static const Color statusWarning = Color(0xFFF59E0B);    // SLA Alert, Waiting, Hold
+  static const Color statusSpecial = Color(0xFFC0C1FF);    // Priority Tiers, VIP, Prefixes
+  static const Color statusInfo = Color(0xFF93CCFF);       // Informational, Calling
 
   // ---------------------------------------------------------------------------
   // TYPOGRAPHY TOKENS (Dark Mode High-Contrast Contrast Ratios)
   // ---------------------------------------------------------------------------
-  static const Color textMain = Color(0xFFF0F6FC);
-  static const Color textMuted = Color(0xFF8B949E);
-  static const Color textSubtle = Color(0xFF848D97);
+  static const Color textMain = Color(0xFFE0E3E8);
+  static const Color textMuted = Color(0xFF89929B);
+  static const Color textSubtle = Color(0xFFBFC7D2);
   static const Color textDisabled = Color(0xFF484F58);
 
   // ---------------------------------------------------------------------------

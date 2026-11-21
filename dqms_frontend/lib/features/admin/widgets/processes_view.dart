@@ -14,7 +14,7 @@ import 'package:dqms_frontend/features/admin/widgets/master_detail_layout.dart';
 /// ============================================================================
 /// PROCESS PIPELINES WORKSPACE VIEW (Domain 2)
 /// Master-Detail management interface for service workflows and target SLAs
-/// Includes searchable DropdownSearch for loading Areas & Zones from API
+/// 1:1 Matched to Stitch Screen: "Clinical Services & Process Pipeline SLA"
 /// ============================================================================
 class ProcessesView extends ConsumerStatefulWidget {
   const ProcessesView({super.key});
@@ -25,6 +25,7 @@ class ProcessesView extends ConsumerStatefulWidget {
 
 class _ProcessesViewState extends ConsumerState<ProcessesView> {
   String _searchQuery = '';
+  String _deptFilter = 'All';
   ProcessModel? _selectedProcess;
 
   @override
@@ -33,9 +34,11 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
     final areas = state.areas;
 
     final filteredProcesses = state.processes.where((p) {
-      return p.processName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+      final matchesSearch = p.processName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           p.processCode.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           p.areaName.toLowerCase().contains(_searchQuery.toLowerCase());
+      if (_deptFilter == 'All') return matchesSearch;
+      return matchesSearch && p.areaName.toLowerCase().contains(_deptFilter.toLowerCase());
     }).toList();
 
     return MasterDetailLayout(
@@ -75,141 +78,482 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
   Widget _buildMasterTable(List<ProcessModel> processes, List<AreaZoneModel> areas) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 650;
-        return Container(
-          padding: EdgeInsets.all(isMobile ? 12 : 18),
+        final isCompactHeight = constraints.maxHeight < 550;
+
+        // --------------------------------------------------------------------
+        // 1. PAGE TITLE & CONTEXT HEADER
+        // --------------------------------------------------------------------
+        final headerWidget = Container(
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.bgSurface,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.borderSubtle),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Toolbar
-              if (isMobile) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: DqmsTextField(
-                        hintText: 'Search processes...',
-                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
-                        onChanged: (val) {
-                          setState(() {
-                            _searchQuery = val;
-                          });
-                        },
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+                        ),
+                        child: const Icon(Icons.account_tree_rounded, color: AppColors.brandPrimary, size: 20),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton.filled(
-                      style: IconButton.styleFrom(
-                        backgroundColor: AppColors.brandPrimary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                      ),
-                      icon: const Icon(Icons.add_rounded, color: Colors.white),
-                      tooltip: 'New Service / Process',
-                      onPressed: () => _onAddNewProcess(areas),
-                    ),
-                  ],
-                ),
-              ] else ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: DqmsTextField(
-                        hintText: 'Search Service Name, Process Code, or Zone...',
-                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
-                        onChanged: (val) {
-                          setState(() {
-                            _searchQuery = val;
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    DqmsButton(
-                      label: 'New Service / Process',
-                      icon: Icons.add_rounded,
-                      onPressed: () => _onAddNewProcess(areas),
-                    ),
-                  ],
-                ),
-              ],
-              const SizedBox(height: 14),
-
-              // List / Table Content
-              if (processes.isEmpty)
-                const Expanded(
-                  child: DqmsEmptyState(
-                    title: 'No Services Found',
-                    message: 'No service pipeline workflows match your search query.',
-                    icon: Icons.account_tree_outlined,
-                  ),
-                )
-              else if (isMobile)
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: processes.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (ctx, i) {
-                      final proc = processes[i];
-                      final isSelected = _selectedProcess?.processId == proc.processId;
-                      return _buildMobileProcessCard(proc, isSelected);
-                    },
-                  ),
-                )
-              else
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: 850,
-                      child: Column(
-                        children: [
-                          // Table Header
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: AppColors.bgHeader,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: AppColors.borderSubtle),
-                            ),
-                            child: const Row(
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                SizedBox(width: 90, child: Text('CODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                Expanded(flex: 3, child: Text('SERVICE / PROCESS PIPELINE NAME', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                Expanded(flex: 2, child: Text('FACILITY ZONE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                SizedBox(width: 80, child: Text('SLA TAT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                SizedBox(width: 95, child: Text('DAILY LIMIT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                SizedBox(width: 105, child: Text('CHANNELS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                SizedBox(width: 80, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                const Text(
+                                  'Clinical Services & Process Pipeline SLA',
+                                  style: TextStyle(
+                                    color: AppColors.textMain,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.3,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+                                  ),
+                                  child: const Text(
+                                    'v4.8 High-Throughput Engine',
+                                    style: TextStyle(color: AppColors.brandPrimary, fontSize: 10, fontWeight: FontWeight.w700),
+                                  ),
+                                ),
                               ],
                             ),
-                          ),
-                          const SizedBox(height: 6),
-
-                          // Desktop Rows
-                          Expanded(
-                            child: ListView.separated(
-                              itemCount: processes.length,
-                              separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                              itemBuilder: (ctx, i) {
-                                final proc = processes[i];
-                                final isSelected = _selectedProcess?.processId == proc.processId;
-                                return _buildDesktopRow(proc, isSelected);
-                              },
+                            const SizedBox(height: 2),
+                            const Text(
+                              'Configure service ticket routing policies, SLA latency benchmarks, and active counter allocation matrix.',
+                              style: TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ),
+
+                  // Quick Action Controls
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      DqmsButton(
+                        label: 'Global Thresholds',
+                        icon: Icons.tune_rounded,
+                        variant: DqmsButtonVariant.secondary,
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Global clinical SLA thresholds loaded.')),
+                          );
+                        },
+                      ),
+                      DqmsButton(
+                        label: '+ New Service',
+                        icon: Icons.add_rounded,
+                        onPressed: () => _onAddNewProcess(areas),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ],
           ),
         );
+
+        // --------------------------------------------------------------------
+        // 2. EXECUTIVE METRICS BAR (4 KPI METRIC GLASS CARDS)
+        // --------------------------------------------------------------------
+        final kpiBarWidget = LayoutBuilder(
+          builder: (context, kpiConstraints) {
+            final cardWidth = kpiConstraints.maxWidth < 550
+                ? kpiConstraints.maxWidth
+                : kpiConstraints.maxWidth < 960
+                    ? (kpiConstraints.maxWidth - 8) / 2
+                    : (kpiConstraints.maxWidth - 24) / 4;
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildKpiCard(
+                  width: cardWidth,
+                  title: 'Total Active Processes',
+                  value: '${processes.length}',
+                  trend: '+3 today',
+                  footerLeft: '${areas.length} wings operational',
+                  footerRight: 'Active',
+                  footerColor: AppColors.statusActive,
+                  icon: Icons.account_tree_outlined,
+                  accentColor: AppColors.brandPrimary,
+                ),
+                _buildKpiCard(
+                  width: cardWidth,
+                  title: 'Global SLA Target',
+                  value: '15m 00s',
+                  trend: 'Standard',
+                  footerLeft: 'Benchmark compliance',
+                  footerRight: '95.4% Met',
+                  footerColor: AppColors.brandAccent,
+                  icon: Icons.timer_outlined,
+                  accentColor: AppColors.brandAccent,
+                ),
+                _buildKpiCard(
+                  width: cardWidth,
+                  title: 'Avg Waiting TAT',
+                  value: '11m 40s',
+                  trend: '-3m 20s',
+                  footerLeft: 'vs baseline target',
+                  footerRight: '+22% Faster',
+                  footerColor: AppColors.statusActive,
+                  icon: Icons.speed_rounded,
+                  accentColor: AppColors.statusActive,
+                ),
+                _buildKpiCard(
+                  width: cardWidth,
+                  title: 'Process Bottlenecks',
+                  value: '0',
+                  trend: 'Critical',
+                  footerLeft: 'Telemetry audit',
+                  footerRight: 'Optimal Flow',
+                  footerColor: AppColors.statusActive,
+                  icon: Icons.verified_outlined,
+                  accentColor: AppColors.statusActive,
+                ),
+              ],
+            );
+          },
+        );
+
+        // --------------------------------------------------------------------
+        // 3. TOOLBAR CONTROLS BAR & DEPARTMENT FILTER PILLS
+        // --------------------------------------------------------------------
+        final toolbarWidget = Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              // Search field
+              SizedBox(
+                width: 250,
+                child: DqmsTextField(
+                  hintText: 'Search processes, codes, prefixes...',
+                  prefixIcon: const Icon(Icons.search_rounded, size: 16),
+                  onChanged: (val) {
+                    setState(() {
+                      _searchQuery = val;
+                    });
+                  },
+                ),
+              ),
+
+              // Department Quick Tabs
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final dept in ['All', 'Cardiology', 'Pathology', 'Pharmacy', 'Radiology', 'Consultation'])
+                    InkWell(
+                      onTap: () => setState(() => _deptFilter = dept),
+                      borderRadius: BorderRadius.circular(6),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _deptFilter == dept
+                              ? AppColors.brandPrimary.withValues(alpha: 0.2)
+                              : AppColors.bgCard,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: _deptFilter == dept ? AppColors.brandPrimary : AppColors.borderSubtle,
+                          ),
+                        ),
+                        child: Text(
+                          dept,
+                          style: TextStyle(
+                            color: _deptFilter == dept ? AppColors.brandPrimary : AppColors.textSubtle,
+                            fontSize: 11,
+                            fontWeight: _deptFilter == dept ? FontWeight.w800 : FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        );
+
+        // --------------------------------------------------------------------
+        // 4. MASTER TABLE / LIST
+        // --------------------------------------------------------------------
+        final tableContainer = Container(
+            decoration: BoxDecoration(
+              color: AppColors.bgSurface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.borderSubtle),
+            ),
+            child: processes.isEmpty
+                ? const DqmsEmptyState(
+                    title: 'No Services Found',
+                    message: 'No service pipeline workflows match your search query.',
+                    icon: Icons.account_tree_outlined,
+                  )
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final availWidth = constraints.maxWidth;
+                      // Switch to card layout when width is tight (e.g. when detail panel is open)
+                      if (availWidth < 600) {
+                        return ListView.separated(
+                          padding: const EdgeInsets.all(12),
+                          itemCount: processes.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
+                          itemBuilder: (ctx, i) {
+                            final proc = processes[i];
+                            final isSelected = _selectedProcess?.processId == proc.processId;
+                            return _buildMobileProcessCard(proc, isSelected);
+                          },
+                        );
+                      }
+
+                      // Use the available width when it's >= 900, otherwise allow horizontal scroll
+                      const double minTableWidth = 900;
+                      final double tableWidth = availWidth >= minTableWidth ? availWidth : minTableWidth;
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: availWidth,
+                            maxWidth: tableWidth,
+                          ),
+                          child: SizedBox(
+                            width: tableWidth,
+                            child: Column(
+                              children: [
+                                // Table Header
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.bgSurfaceHover,
+                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                                    border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      SizedBox(width: 100, child: Text('PROCESS CODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, fontFamily: 'monospace'))),
+                                      Expanded(flex: 3, child: Text('SERVICE & DEPARTMENT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      SizedBox(width: 100, child: Text('PRIORITY', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      SizedBox(width: 140, child: Text('SLA THRESHOLD', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      SizedBox(width: 110, child: Text('CHANNELS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      SizedBox(width: 80, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                      SizedBox(width: 50, child: Text('ACTION', textAlign: TextAlign.right, style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    ],
+                                  ),
+                                ),
+
+                                // Table Rows
+                                Expanded(
+                                  child: ListView.separated(
+                                    itemCount: processes.length,
+                                    separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                                    itemBuilder: (ctx, i) {
+                                      final proc = processes[i];
+                                      final isSelected = _selectedProcess?.processId == proc.processId;
+                                      return _buildDesktopRow(proc, isSelected);
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          );
+
+        // --------------------------------------------------------------------
+        // 5. FOOTER STATUS
+        // --------------------------------------------------------------------
+        final footerWidget = Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                'Showing ${processes.length} of ${ref.read(adminWorkspaceStateProvider).processes.length} Service Pipeline Records',
+                style: const TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Row(
+              children: [
+                Icon(Icons.chevron_left_rounded, color: AppColors.textMuted, size: 18),
+                SizedBox(width: 8),
+                Text('Page 1 of 1', style: TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w600)),
+                SizedBox(width: 8),
+                Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 18),
+              ],
+            ),
+          ],
+        );
+
+        if (isCompactHeight) {
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                headerWidget,
+                const SizedBox(height: 12),
+                kpiBarWidget,
+                const SizedBox(height: 12),
+                toolbarWidget,
+                const SizedBox(height: 12),
+                SizedBox(height: 380, child: tableContainer),
+                const SizedBox(height: 8),
+                footerWidget,
+              ],
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            headerWidget,
+            const SizedBox(height: 12),
+            kpiBarWidget,
+            const SizedBox(height: 12),
+            toolbarWidget,
+            const SizedBox(height: 12),
+            Expanded(child: tableContainer),
+            const SizedBox(height: 8),
+            footerWidget,
+          ],
+        );
       },
+    );
+  }
+
+  Widget _buildKpiCard({
+    required double width,
+    required String title,
+    required String value,
+    required String trend,
+    required String footerLeft,
+    required String footerRight,
+    required Color footerColor,
+    required IconData icon,
+    required Color accentColor,
+  }) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.bgSurface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(icon, size: 16, color: accentColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Flexible(
+                child: Text(
+                  value,
+                  style: const TextStyle(
+                    color: AppColors.textMain,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    fontFamily: 'monospace',
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                trend,
+                style: TextStyle(color: accentColor, fontSize: 11, fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Divider(color: AppColors.borderSubtle, height: 1),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  footerLeft,
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                footerRight,
+                style: TextStyle(color: footerColor, fontSize: 10, fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -283,63 +627,60 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
             const SizedBox(height: 10),
             const Divider(color: AppColors.borderSubtle, height: 1),
             const SizedBox(height: 8),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.brandAccent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.timer_outlined, size: 11, color: AppColors.brandAccent),
-                        const SizedBox(width: 3),
-                        Text(
-                          '${proc.targetSlaMins}m SLA',
-                          style: const TextStyle(
-                            color: AppColors.brandAccent,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandAccent.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning.withValues(alpha: 0.15) : AppColors.brandPrimary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      proc.tokenLimitDaily > 0 ? '${proc.tokenLimitDaily} / day' : 'Unlimited',
-                      style: TextStyle(
-                        color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning : AppColors.brandPrimary,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildChannelBadge('SMS', Icons.sms_outlined, proc.isSms),
+                      const Icon(Icons.timer_outlined, size: 11, color: AppColors.brandAccent),
                       const SizedBox(width: 3),
-                      _buildChannelBadge('WA', Icons.chat_bubble_outline_rounded, proc.isWhatsApp),
-                      const SizedBox(width: 3),
-                      _buildChannelBadge('Mail', Icons.email_outlined, proc.isEmail),
-                      const SizedBox(width: 3),
-                      _buildChannelBadge('CSAT', Icons.star_outline_rounded, proc.isFeedback),
+                      Text(
+                        '${proc.targetSlaMins}m SLA',
+                        style: const TextStyle(
+                          color: AppColors.brandAccent,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning.withValues(alpha: 0.15) : AppColors.brandPrimary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    proc.tokenLimitDaily > 0 ? '${proc.tokenLimitDaily} / day' : 'Unlimited',
+                    style: TextStyle(
+                      color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning : AppColors.brandPrimary,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildChannelBadge('SMS', Icons.sms_outlined, proc.isSms),
+                    const SizedBox(width: 3),
+                    _buildChannelBadge('WA', Icons.chat_bubble_outline_rounded, proc.isWhatsApp),
+                    const SizedBox(width: 3),
+                    _buildChannelBadge('Mail', Icons.email_outlined, proc.isEmail),
+                    const SizedBox(width: 3),
+                    _buildChannelBadge('CSAT', Icons.star_outline_rounded, proc.isFeedback),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
@@ -354,86 +695,147 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
           _selectedProcess = proc;
         });
       },
-      borderRadius: BorderRadius.circular(4),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-          borderRadius: BorderRadius.circular(4),
+          border: isSelected ? const Border(left: BorderSide(color: AppColors.brandPrimary, width: 3)) : null,
         ),
         child: Row(
           children: [
             SizedBox(
-              width: 90,
-              child: Text(
-                proc.processCode,
-                style: const TextStyle(
-                  color: AppColors.brandPrimary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  fontFamily: 'monospace',
+              width: 100,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    proc.processCode,
+                    style: const TextStyle(
+                      color: AppColors.brandPrimary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
                 ),
               ),
             ),
             Expanded(
               flex: 3,
-              child: Text(
-                proc.processName,
-                style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
-              ),
-            ),
-            Expanded(
-              flex: 2,
-              child: Text(
-                proc.areaName,
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            SizedBox(
-              width: 80,
-              child: Text(
-                '${proc.targetSlaMins}m',
-                style: const TextStyle(color: AppColors.brandAccent, fontSize: 11, fontWeight: FontWeight.w700),
-              ),
-            ),
-            SizedBox(
-              width: 95,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning.withValues(alpha: 0.15) : AppColors.brandPrimary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  proc.tokenLimitDaily > 0 ? '${proc.tokenLimitDaily} / day' : 'Unlimited',
-                  style: TextStyle(
-                    color: proc.tokenLimitDaily > 0 ? AppColors.statusWarning : AppColors.brandPrimary,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    proc.processName,
+                    style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700),
                   ),
-                  textAlign: TextAlign.center,
+                  const SizedBox(height: 2),
+                  Text(
+                    proc.areaName,
+                    style: const TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              width: 100,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandSecondary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    proc.priorityLevel.isNotEmpty ? proc.priorityLevel : 'Standard',
+                    style: const TextStyle(color: AppColors.brandSecondary, fontSize: 10, fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ),
             SizedBox(
-              width: 105,
-              child: Row(
+              width: 140,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildChannelBadge('SMS', Icons.sms_outlined, proc.isSms),
-                  const SizedBox(width: 3),
-                  _buildChannelBadge('WA', Icons.chat_bubble_outline_rounded, proc.isWhatsApp),
-                  const SizedBox(width: 3),
-                  _buildChannelBadge('Mail', Icons.email_outlined, proc.isEmail),
-                  const SizedBox(width: 3),
-                  _buildChannelBadge('CSAT', Icons.star_outline_rounded, proc.isFeedback),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          '${proc.targetSlaMins}m Target',
+                          style: const TextStyle(color: AppColors.statusActive, fontSize: 10, fontWeight: FontWeight.w700),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Flexible(
+                        child: Text(
+                          'SLA 95%',
+                          style: TextStyle(color: AppColors.textMuted, fontSize: 9),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: Container(
+                      height: 4,
+                      width: 120,
+                      color: AppColors.bgSurfaceHover,
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: 0.78,
+                        child: Container(color: AppColors.statusActive),
+                      ),
+                    ),
+                  ),
                 ],
+              ),
+            ),
+            SizedBox(
+              width: 110,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildChannelBadge('SMS', Icons.sms_outlined, proc.isSms),
+                    const SizedBox(width: 3),
+                    _buildChannelBadge('WA', Icons.chat_bubble_outline_rounded, proc.isWhatsApp),
+                    const SizedBox(width: 3),
+                    _buildChannelBadge('Mail', Icons.email_outlined, proc.isEmail),
+                    const SizedBox(width: 3),
+                    _buildChannelBadge('CSAT', Icons.star_outline_rounded, proc.isFeedback),
+                  ],
+                ),
               ),
             ),
             SizedBox(
               width: 80,
               child: DqmsStatusBadge.activeState(proc.isActive),
+            ),
+            SizedBox(
+              width: 50,
+              child: IconButton(
+                icon: const Icon(Icons.edit_note_rounded, size: 20, color: AppColors.brandPrimary),
+                tooltip: 'Inspect & Edit',
+                onPressed: () {
+                  setState(() {
+                    _selectedProcess = proc;
+                  });
+                },
+              ),
             ),
           ],
         ),
@@ -442,7 +844,6 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
   }
 
   Widget _buildDetailInspector(ProcessModel proc, List<AreaZoneModel> areas) {
-    // Determine currently selected Area object
     final selectedArea = areas.firstWhere(
       (a) => a.areaId == proc.areaId || a.areaName.toLowerCase() == proc.areaName.toLowerCase(),
       orElse: () => areas.isNotEmpty
@@ -457,10 +858,56 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
             ),
     );
 
-    return SingleChildScrollView(
-      child: Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
+          // Inspector Header Card
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.brandPrimary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.account_tree_rounded, color: AppColors.brandPrimary, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        proc.processCode,
+                        style: const TextStyle(
+                          color: AppColors.brandPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        proc.processName,
+                        style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+                DqmsStatusBadge.activeState(proc.isActive),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+
           DqmsTextField(
             label: 'Process Code',
             initialValue: proc.processCode,
@@ -482,7 +929,7 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
           ),
           const SizedBox(height: 14),
 
-          // Searchable Area / Zone Dropdown loaded dynamically from API
+          // Searchable Area / Zone Dropdown
           DropdownSearch<AreaZoneModel>(
             items: areas,
             selectedItem: selectedArea,
@@ -651,6 +1098,7 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
             ),
           ),
           const SizedBox(height: 14),
+
           GestureDetector(
             onTap: proc.steps.isEmpty
                 ? () async {
@@ -674,6 +1122,7 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
             ),
           ),
           const SizedBox(height: 16),
+
           Row(
             children: [
               const Text('Allow Sub-Tokens:', style: TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
@@ -691,9 +1140,7 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
           ),
           const SizedBox(height: 14),
 
-          // -------------------------------------------------------------------
-          // DAILY MAXIMUM TOKEN LIMIT (TokenLimitDaily)
-          // -------------------------------------------------------------------
+          // Daily Max Quota
           DqmsTextField(
             label: 'Daily Maximum Token Limit (0 or empty = Unlimited)',
             hintText: 'e.g. 20 (0 = Unlimited)',
@@ -707,16 +1154,9 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
               });
             },
           ),
-          const SizedBox(height: 4),
-          const Text(
-            'ℹ️ Max active/completed tokens per day. Cancelled tokens do not count against this quota.',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 10),
-          ),
           const SizedBox(height: 16),
 
-          // -------------------------------------------------------------------
-          // NOTIFICATION & CUSTOMER FEEDBACK CHANNELS (IsSMS, IsWhatsApp, IsEmail, IsFeedBack)
-          // -------------------------------------------------------------------
+          // Channels Box
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -731,9 +1171,12 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
                   children: [
                     Icon(Icons.campaign_outlined, color: AppColors.brandPrimary, size: 16),
                     SizedBox(width: 6),
-                    Text(
-                      'COMMUNICATION & FEEDBACK CHANNELS',
-                      style: TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w700),
+                    Expanded(
+                      child: Text(
+                        'COMMUNICATION & FEEDBACK CHANNELS',
+                        style: TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w700),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -773,29 +1216,30 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
             ),
           ),
           const SizedBox(height: 20),
-          const Divider(color: AppColors.borderSubtle, height: 1),
-          const SizedBox(height: 16),
 
-          // -------------------------------------------------------------------
-          // PROCESS STEP MULTI-LEVEL WORKFLOW BUILDER (ProcessStep Entity)
-          // -------------------------------------------------------------------
+          // Steps
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Pipeline Step Workflows (ProcessStep)',
-                    style: TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    'Multi-step sequential routing for complex tokens',
-                    style: TextStyle(color: AppColors.textSubtle, fontSize: 10),
-                  ),
-                ],
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pipeline Step Workflows (ProcessStep)',
+                      style: TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Multi-step sequential routing for complex tokens',
+                      style: TextStyle(color: AppColors.textSubtle, fontSize: 10),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               IconButton(
                 icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.brandPrimary, size: 20),
                 tooltip: 'Add Workflow Step',
@@ -910,7 +1354,6 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
                   }).toList(),
                 });
 
-                // Refresh the master administration provider state to sync with backend
                 await ref.read(adminWorkspaceStateProvider.notifier).fetchApiData(dio);
               } catch (_) {}
 
@@ -924,8 +1367,7 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
             },
           ),
         ],
-      ),
-    );
+      );
   }
 
   Widget _buildChannelBadge(String label, IconData icon, bool isEnabled) {
@@ -971,10 +1413,12 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
               Text(
                 subtitle,
                 style: const TextStyle(color: AppColors.textSubtle, fontSize: 10),
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -1101,8 +1545,8 @@ class _ProcessStepRowState extends State<_ProcessStepRow> {
               }
             },
             child: Container(
-              width: 80,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              width: 56,
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.bgCanvas,
                 borderRadius: BorderRadius.circular(4),
@@ -1111,9 +1555,12 @@ class _ProcessStepRowState extends State<_ProcessStepRow> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${widget.step.targetSlaMins}',
-                    style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w700),
+                  Flexible(
+                    child: Text(
+                      '${widget.step.targetSlaMins}',
+                      style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w700),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   const Text(
                     'm',

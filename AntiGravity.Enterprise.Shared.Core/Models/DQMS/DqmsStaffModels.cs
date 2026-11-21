@@ -34,6 +34,7 @@ namespace AntiGravity.Enterprise.Shared.Core.Models.DQMS
         public int PriorityTier { get; set; } = 19001; // e_PriorityTier.Standard
         public string? CustomerName { get; set; }
         public string? CustomerPhone { get; set; }
+        public int StaffUserId { get; set; } = 1;
     }
 
     public class CallNextTokenRequestDto
@@ -42,6 +43,7 @@ namespace AntiGravity.Enterprise.Shared.Core.Models.DQMS
         public int LocationId { get; set; } = 1;
         public int CounterId { get; set; } = 1;
         public int ProcessId { get; set; } = 1;
+        public int StaffUserId { get; set; } = 1;
     }
 
     public class UpdateTokenStatusRequestDto

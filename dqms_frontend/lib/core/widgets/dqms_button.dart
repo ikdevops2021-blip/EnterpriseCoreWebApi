@@ -139,13 +139,16 @@ class _DqmsButtonState extends State<DqmsButton> {
               Icon(widget.icon, size: widget.isCompact ? 14 : 16, color: fg),
               const SizedBox(width: 6),
             ],
-            Text(
-              widget.label,
-              style: AppTypography.titleSmall.copyWith(
-                color: fg,
-                fontSize: widget.isCompact ? 12 : 13,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.2,
+            Flexible(
+              child: Text(
+                widget.label,
+                style: AppTypography.titleSmall.copyWith(
+                  color: fg,
+                  fontSize: widget.isCompact ? 12 : 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             if (widget.trailingIcon != null) ...[

@@ -22,12 +22,20 @@ namespace DNAQMSAPI.Api.Controllers
 
         /// <summary>
         /// Retrieves executive performance and queue SLA report breakdown.
-        /// POST /api/v1/dqms/reports/summary
+        /// Supports POST and GET at /api/v1/dqms/reports/summary and /api/v1/reports/summary
         /// </summary>
         [HttpPost("summary")]
-        public async Task<IActionResult> GetExecutiveReportSummary([FromBody] DqmsReportRequestDto request)
+        [HttpGet("summary")]
+        [HttpGet("/api/v1/reports/summary")]
+        [HttpPost("/api/v1/reports/summary")]
+        public async Task<IActionResult> GetExecutiveReportSummary([FromBody] DqmsReportRequestDto? request, [FromQuery] int? organizationId, [FromQuery] int? locationId)
         {
-            var result = await _reportsService.GetExecutiveReportSummaryAsync(request ?? new DqmsReportRequestDto());
+            var dto = request ?? new DqmsReportRequestDto
+            {
+                OrganizationId = organizationId ?? 1,
+                LocationId = locationId ?? 1
+            };
+            var result = await _reportsService.GetExecutiveReportSummaryAsync(dto);
             return ApiResponse(result);
         }
 

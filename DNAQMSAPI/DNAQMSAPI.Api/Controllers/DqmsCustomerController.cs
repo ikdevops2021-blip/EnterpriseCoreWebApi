@@ -31,12 +31,21 @@ namespace DNAQMSAPI.Api.Controllers
         /// <summary>
         /// Public endpoint for Mobile Web Ticket Status Tracking.
         /// Customers scan QR code or open link to see position ahead & estimated wait time.
+        /// Supports either numeric tokenId or alphanumeric tokenNumber (e.g. A-108).
         /// </summary>
-        [HttpGet("ticket-status/{tokenId:int}")]
-        public async Task<IActionResult> GetTicketStatus(int tokenId)
+        [HttpGet("ticket-status/{identifier}")]
+        public async Task<IActionResult> GetTicketStatus(string identifier)
         {
-            var result = await _customerService.GetPublicTokenStatusAsync(tokenId);
-            return ApiResponse(result);
+            if (int.TryParse(identifier, out int tokenId))
+            {
+                var result = await _customerService.GetPublicTokenStatusAsync(tokenId);
+                return ApiResponse(result);
+            }
+            else
+            {
+                var result = await _customerService.GetPublicTokenStatusByNumberAsync(identifier);
+                return ApiResponse(result);
+            }
         }
     }
 }

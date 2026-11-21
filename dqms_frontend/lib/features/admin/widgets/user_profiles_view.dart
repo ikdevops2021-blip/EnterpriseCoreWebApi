@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:dqms_frontend/core/config/app_config.dart';
 import 'package:dqms_frontend/core/network/dio_provider.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
-import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
 import 'package:dqms_frontend/core/widgets/dqms_status_badge.dart';
+import 'package:dqms_frontend/core/widgets/dqms_dropdown.dart';
+import 'package:dqms_frontend/core/widgets/dqms_selection_controls.dart';
 import 'package:dqms_frontend/features/admin/widgets/master_detail_layout.dart';
 
 /// User Profile Model matching .NET Entity (User.cs + LocationAndUserProfiles.cs)
@@ -27,6 +27,7 @@ class UserProfileModel {
   final String mobileNumber;
   final int roleId;
   final String roleName;
+  final String department;
   final bool isActive;
 
   // Address Entity Fields (UserAddress.cs)
@@ -62,6 +63,7 @@ class UserProfileModel {
     required this.mobileNumber,
     this.roleId = 1,
     required this.roleName,
+    this.department = 'Emergency Medicine',
     required this.isActive,
     this.addressTypeId = 4003,
     required this.addressTypeName,
@@ -94,6 +96,7 @@ class UserProfileModel {
     String? mobileNumber,
     int? roleId,
     String? roleName,
+    String? department,
     bool? isActive,
     int? addressTypeId,
     String? addressTypeName,
@@ -125,6 +128,7 @@ class UserProfileModel {
       mobileNumber: mobileNumber ?? this.mobileNumber,
       roleId: roleId ?? this.roleId,
       roleName: roleName ?? this.roleName,
+      department: department ?? this.department,
       isActive: isActive ?? this.isActive,
       addressTypeId: addressTypeId ?? this.addressTypeId,
       addressTypeName: addressTypeName ?? this.addressTypeName,
@@ -279,7 +283,41 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
   CoreConfigParameter? _selectedState;
   CoreConfigParameter? _selectedCity;
 
+  String _selectedRoleFilter = 'All Roles (148)';
+
   List<UserProfileModel> _users = [
+    const UserProfileModel(
+      userId: 8841,
+      userCode: '#DQMS-8841',
+      titleId: 2007,
+      titleName: 'Dr.',
+      firstName: 'Eleanor',
+      lastName: 'Vance, MD',
+      displayName: 'Dr. Eleanor Vance, MD',
+      genderId: 1002,
+      genderName: 'Female',
+      profileImageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=256',
+      email: 'e.vance@metrogeneral.org',
+      mobileNumber: '+1 555 019 8841',
+      roleId: 2,
+      roleName: 'Clinical Lead',
+      department: 'Emergency Medicine',
+      isActive: true,
+      addressTypeId: 4003,
+      addressTypeName: 'Office / Work',
+      addressLine1: 'Metropolis General Hospital, Wing A',
+      addressLine2: 'Station Alpha-04',
+      postalCode: '10001',
+      countryName: 'United States',
+      stateName: 'New York',
+      cityName: 'New York City',
+      contactTypeId: 5001,
+      contactTypeName: 'Work Phone',
+      relationshipTypeId: 16001,
+      relationshipTypeName: 'Self',
+      isEmergencyContact: true,
+      isVerifiedContact: true,
+    ),
     const UserProfileModel(
       userId: 1,
       userCode: 'admin@dqms.org',
@@ -287,14 +325,15 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
       titleName: 'Dr.',
       firstName: 'System',
       lastName: 'Admin',
-      displayName: 'System Admin',
+      displayName: 'Dr. System Admin',
       genderId: 1001,
       genderName: 'Male',
       profileImageUrl: 'https://cdn.dqms.org/avatars/admin.png',
       email: 'admin@dqms.org',
       mobileNumber: '+1 800 555 0199',
       roleId: 1,
-      roleName: 'SuperAdmin',
+      roleName: 'System Admin',
+      department: 'Executive Operations',
       isActive: true,
       addressTypeId: 4003,
       addressTypeName: 'Office / Work',
@@ -312,6 +351,102 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
       isVerifiedContact: true,
     ),
     const UserProfileModel(
+      userId: 4920,
+      userCode: '#DQMS-4920',
+      titleId: 2004,
+      titleName: 'Nurse',
+      firstName: 'David',
+      lastName: 'Kim',
+      displayName: 'Nurse David Kim',
+      genderId: 1001,
+      genderName: 'Male',
+      profileImageUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=256',
+      email: 'd.kim@metrogeneral.org',
+      mobileNumber: '+1 555 019 4920',
+      roleId: 3,
+      roleName: 'Triage Reception',
+      department: 'Oncology / Triage',
+      isActive: true,
+      addressTypeId: 4003,
+      addressTypeName: 'Office / Work',
+      addressLine1: 'Metropolis General Hospital, Wing B',
+      addressLine2: 'Triage Desk 02',
+      postalCode: '10001',
+      countryName: 'United States',
+      stateName: 'New York',
+      cityName: 'New York City',
+      contactTypeId: 5001,
+      contactTypeName: 'Work Phone',
+      relationshipTypeId: 16001,
+      relationshipTypeName: 'Self',
+      isEmergencyContact: false,
+      isVerifiedContact: true,
+    ),
+    const UserProfileModel(
+      userId: 3102,
+      userCode: '#DQMS-3102',
+      titleId: 2005,
+      titleName: 'Teller',
+      firstName: 'Sarah',
+      lastName: 'Jenkins',
+      displayName: 'Teller Sarah Jenkins',
+      genderId: 1002,
+      genderName: 'Female',
+      profileImageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=256',
+      email: 's.jenkins@metrogeneral.org',
+      mobileNumber: '+1 555 019 3102',
+      roleId: 4,
+      roleName: 'Counter Teller',
+      department: 'Central Billing & Records',
+      isActive: true,
+      addressTypeId: 4003,
+      addressTypeName: 'Office / Work',
+      addressLine1: 'Metropolis General Hospital, Ground Floor',
+      addressLine2: 'Counter 04',
+      postalCode: '10001',
+      countryName: 'United States',
+      stateName: 'New York',
+      cityName: 'New York City',
+      contactTypeId: 5001,
+      contactTypeName: 'Work Phone',
+      relationshipTypeId: 16001,
+      relationshipTypeName: 'Self',
+      isEmergencyContact: false,
+      isVerifiedContact: true,
+    ),
+    const UserProfileModel(
+      userId: 9042,
+      userCode: '#DQMS-9042',
+      titleId: 2007,
+      titleName: 'Dr.',
+      firstName: 'Ahmed',
+      lastName: 'Rahman',
+      displayName: 'Dr. Ahmed Rahman',
+      genderId: 1001,
+      genderName: 'Male',
+      profileImageUrl: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=256',
+      email: 'a.rahman@metrogeneral.org',
+      mobileNumber: '+1 555 019 9042',
+      roleId: 2,
+      roleName: 'Clinical Lead',
+      department: 'Cardiology Bay 1',
+      isActive: true,
+      addressTypeId: 4003,
+      addressTypeName: 'Office / Work',
+      addressLine1: 'Metropolis General Hospital, Wing C',
+      addressLine2: 'Bay 1',
+      postalCode: '10001',
+      countryName: 'United States',
+      stateName: 'New York',
+      cityName: 'New York City',
+      contactTypeId: 5001,
+      contactTypeName: 'Work Phone',
+      relationshipTypeId: 16001,
+      relationshipTypeName: 'Self',
+      isEmergencyContact: false,
+      isVerifiedContact: true,
+    ),
+    const UserProfileModel(
       userId: 2,
       userCode: 'alex2026',
       titleId: 2003,
@@ -326,6 +461,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
       mobileNumber: '+1 800 555 0142',
       roleId: 2,
       roleName: 'Enterprise Admin',
+      department: 'IT Administration',
       isActive: true,
       addressTypeId: 4003,
       addressTypeName: 'Office / Work',
@@ -342,41 +478,13 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
       isEmergencyContact: false,
       isVerifiedContact: true,
     ),
-    const UserProfileModel(
-      userId: 3,
-      userCode: 'maria.chen',
-      titleId: 2004,
-      titleName: 'Ms.',
-      firstName: 'Maria',
-      lastName: 'Chen',
-      displayName: 'Maria Chen',
-      genderId: 1002,
-      genderName: 'Female',
-      profileImageUrl: 'https://cdn.dqms.org/avatars/maria.png',
-      email: 'maria.chen@dqms.org',
-      mobileNumber: '+1 800 555 0188',
-      roleId: 3,
-      roleName: 'Counter Operator',
-      isActive: true,
-      addressTypeId: 4001,
-      addressTypeName: 'Residential',
-      addressLine1: '42 Wallaby Way',
-      postalCode: '2000',
-      countryName: 'Australia',
-      stateName: 'New South Wales',
-      cityName: 'Sydney',
-      contactTypeId: 5001,
-      contactTypeName: 'Mobile',
-      relationshipTypeId: 16001,
-      relationshipTypeName: 'Self',
-      isEmergencyContact: true,
-      isVerifiedContact: true,
-    ),
   ];
 
   @override
   void initState() {
     super.initState();
+    _selectedRoleFilter = 'All Roles (148)';
+    _searchQuery = '';
     _userCodeCtrl = TextEditingController();
     _firstNameCtrl = TextEditingController();
     _lastNameCtrl = TextEditingController();
@@ -769,213 +877,641 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
 
   @override
   Widget build(BuildContext context) {
+    final roleFilter = _selectedRoleFilter;
+    final query = _searchQuery;
+    final q = query.toLowerCase();
+
     final filteredUsers = _users.where((u) {
-      final q = _searchQuery.toLowerCase();
-      return u.userCode.toLowerCase().contains(q) ||
-          u.calculatedFullName.toLowerCase().contains(q) ||
-          u.email.toLowerCase().contains(q) ||
-          u.roleName.toLowerCase().contains(q);
+      final code = u.userCode.toLowerCase();
+      final name = u.calculatedFullName.toLowerCase();
+      final email = u.email.toLowerCase();
+      final role = u.roleName.toLowerCase();
+      final dept = u.department.toLowerCase();
+
+      final matchesQuery = code.contains(q) ||
+          name.contains(q) ||
+          email.contains(q) ||
+          role.contains(q) ||
+          dept.contains(q);
+
+      if (roleFilter.startsWith('Clinical Lead')) {
+        return matchesQuery && (u.roleName == 'Clinical Lead');
+      } else if (roleFilter.startsWith('System Admin')) {
+        return matchesQuery && (u.roleName == 'System Admin' || u.roleName == 'SuperAdmin');
+      } else if (roleFilter.startsWith('Counter Teller')) {
+        return matchesQuery && (u.roleName == 'Counter Teller' || u.roleName == 'Counter Operator');
+      }
+      return matchesQuery;
     }).toList();
 
-    return MasterDetailLayout(
-      masterWidget: _buildMasterTable(filteredUsers),
-      detailWidget: _selectedUser != null
-          ? _buildDetailInspector(_selectedUser!)
-          : null,
-      detailTitle: _selectedUser != null ? 'User Profile Inspector — ${_selectedUser!.calculatedFullName}' : 'Inspector',
-      onCloseDetail: () => setState(() => _selectedUser = null),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 1. Top Clinical Page Header & Action Bar (from Stitch)
+        _buildPageHeader(),
+        const SizedBox(height: 14),
+
+        // 2. The 4 Hero KPI Metric Cards (from Stitch)
+        _buildKpiMetricsGrid(),
+        const SizedBox(height: 14),
+
+        // 3. Master Detail Workspace Split
+        Expanded(
+          child: MasterDetailLayout(
+            masterWidget: _buildMasterTable(filteredUsers),
+            detailWidget: _selectedUser != null
+                ? _buildDetailInspector(_selectedUser!)
+                : null,
+            detailTitle: _selectedUser != null ? 'Record Inspector — ${_selectedUser!.calculatedFullName}' : 'Inspector',
+            onCloseDetail: () => setState(() => _selectedUser = null),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildMasterTable(List<UserProfileModel> users) {
+  /// Top Page Header & Action Bar (matching Stitch: Title + v4.8 Badge + Action Buttons)
+  Widget _buildPageHeader() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 650;
+        final isMobile = constraints.maxWidth < 1180;
 
-        return Column(
+        final titleBlock = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (isMobile) ...[
-              TextField(
-                onChanged: (val) => setState(() => _searchQuery = val),
-                style: const TextStyle(color: AppColors.textMain, fontSize: 13),
-                decoration: InputDecoration(
-                  hintText: 'Search UserCode, Name, Email, or Role...',
-                  hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-                  prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSubtle, size: 20),
-                  filled: true,
-                  fillColor: AppColors.bgSurface,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.borderSubtle),
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 10,
+              runSpacing: 6,
+              children: [
+                const Text(
+                  'User Profiles & Access Control (RBAC)',
+                  style: TextStyle(
+                    color: Color(0xFFE0E3E8),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.4,
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: DqmsButton(
-                  label: 'Create User Account',
-                  icon: Icons.person_add_rounded,
-                  onPressed: () => _showCreateUserModal(context),
-                ),
-              ),
-            ] else ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      onChanged: (val) => setState(() => _searchQuery = val),
-                      style: const TextStyle(color: AppColors.textMain, fontSize: 13),
-                      decoration: InputDecoration(
-                        hintText: 'Search UserCode, Full Name, Email, or Role...',
-                        hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-                        prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSubtle, size: 20),
-                        filled: true,
-                        fillColor: AppColors.bgSurface,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: AppColors.borderSubtle),
-                        ),
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00311F),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF4EDEA3).withValues(alpha: 0.4)),
+                  ),
+                  child: const Text(
+                    'Database Avatar Studio v4.8 Active',
+                    style: TextStyle(
+                      color: Color(0xFF4EDEA3),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  DqmsButton(
-                    label: 'Create User Account',
-                    icon: Icons.person_add_rounded,
-                    onPressed: () => _showCreateUserModal(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 3),
+            const Text(
+              'Manage institutional staff records, database BLOB avatars, physical counter station bindings, and granular capability matrix.',
+              style: TextStyle(color: Color(0xFF89929B), fontSize: 11.5),
+            ),
+          ],
+        );
+
+        final actionButtons = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            OutlinedButton.icon(
+              icon: const Icon(Icons.sync_rounded, size: 14, color: Color(0xFFE0E3E8)),
+              label: const Text('Sync Directory (LDAP/Azure AD)', style: TextStyle(color: Color(0xFFE0E3E8), fontSize: 11.5, fontWeight: FontWeight.w600)),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF3F4850)),
+                backgroundColor: const Color(0xFF181C20),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              ),
+              onPressed: () {},
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.file_download_outlined, size: 14, color: Color(0xFFE0E3E8)),
+              label: const Text('Export Audit CSV', style: TextStyle(color: Color(0xFFE0E3E8), fontSize: 11.5, fontWeight: FontWeight.w600)),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF3F4850)),
+                backgroundColor: const Color(0xFF181C20),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              ),
+              onPressed: () {},
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.person_add_rounded, size: 15, color: Color(0xFF002C47)),
+              label: const Text('Create User Account', style: TextStyle(color: Color(0xFF002C47), fontSize: 11.5, fontWeight: FontWeight.w800)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3198DC),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                elevation: 3,
+              ),
+              onPressed: () => _showCreateUserModal(context),
+            ),
+          ],
+        );
+
+        if (isMobile) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              titleBlock,
+              const SizedBox(height: 10),
+              SingleChildScrollView(scrollDirection: Axis.horizontal, child: actionButtons),
+            ],
+          );
+        }
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(child: titleBlock),
+            const SizedBox(width: 12),
+            actionButtons,
+          ],
+        );
+      },
+    );
+  }
+
+  /// 4 Hero KPI Metric Cards (matching Stitch design)
+  Widget _buildKpiMetricsGrid() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 800;
+        final cardWidth = isMobile ? (constraints.maxWidth - 10) / 2 : (constraints.maxWidth - 36) / 4;
+
+        final cards = [
+          _buildKpiCard(
+            title: 'TOTAL CLINICAL USERS',
+            value: '148',
+            valueBadge: 'Active',
+            valueBadgeColor: const Color(0xFF4EDEA3),
+            subtext1: '+6 provisioned this week',
+            subtext2: '98.4% online',
+            icon: Icons.group_rounded,
+            accentColor: const Color(0xFF93CCFF),
+            width: cardWidth,
+          ),
+          _buildKpiCard(
+            title: 'ALLOCATED STATION DESKS',
+            value: '34',
+            valueBadge: 'Bound / 38 Total',
+            valueBadgeColor: const Color(0xFF93CCFF),
+            subtext1: '4 desks currently unmapped',
+            subtext2: 'Alpha-04 live',
+            icon: Icons.desktop_windows_rounded,
+            accentColor: const Color(0xFF4EDEA3),
+            width: cardWidth,
+          ),
+          _buildKpiCard(
+            title: 'ELEVATED PRIVILEGES',
+            value: '12',
+            valueBadge: 'Admin & Leads',
+            valueBadgeColor: const Color(0xFFB0B2FF),
+            subtext1: 'MFA enforced: 100%',
+            subtext2: 'RBAC Strict',
+            icon: Icons.shield_rounded,
+            accentColor: const Color(0xFFC0C1FF),
+            width: cardWidth,
+          ),
+          _buildKpiCard(
+            title: 'AVG ACTIVE SESSION',
+            value: '4h 12m',
+            valueBadge: 'Normal',
+            valueBadgeColor: const Color(0xFF4EDEA3),
+            subtext1: 'Idle timeout: 30 mins',
+            subtext2: 'Tokens synced',
+            icon: Icons.schedule_rounded,
+            accentColor: const Color(0xFF93CCFF),
+            width: cardWidth,
+          ),
+        ];
+
+        return Wrap(
+          spacing: 12,
+          runSpacing: 10,
+          children: cards,
+        );
+      },
+    );
+  }
+
+  Widget _buildKpiCard({
+    required String title,
+    required String value,
+    required String valueBadge,
+    required Color valueBadgeColor,
+    required String subtext1,
+    required String subtext2,
+    required IconData icon,
+    required Color accentColor,
+    required double width,
+  }) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF181C20),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF3F4850).withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Color(0xFF89929B),
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
+                ),
+              ),
+              Icon(icon, size: 15, color: accentColor.withValues(alpha: 0.8)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                value,
+                style: const TextStyle(
+                  color: Color(0xFFE0E3E8),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.4,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: valueBadgeColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  valueBadge,
+                  style: TextStyle(
+                    color: valueBadgeColor,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w700,
                   ),
-                ],
+                ),
               ),
             ],
-            const SizedBox(height: 12),
-            Expanded(
-              child: isMobile
-                  ? ListView.separated(
-                      itemCount: users.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 8),
-                      itemBuilder: (ctx, i) {
-                        final u = users[i];
-                        final isSelected = _selectedUser?.userId == u.userId;
-                        return _buildMobileUserCard(u, isSelected);
-                      },
-                    )
-                  : SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        width: 850,
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: AppColors.bgHeader,
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: AppColors.borderSubtle),
-                              ),
-                              child: const Row(
-                                children: [
-                                  SizedBox(width: 130, child: Text('USER CODE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                  Expanded(flex: 3, child: Text('FULL NAME & TITLE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                  Expanded(flex: 3, child: Text('PRIMARY EMAIL & MOBILE', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                  Expanded(flex: 2, child: Text('ROLE ASSIGNMENT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                  SizedBox(width: 90, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Expanded(
-                              child: ListView.separated(
-                                itemCount: users.length,
-                                separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                                itemBuilder: (ctx, i) {
-                                  final u = users[i];
-                                  final isSelected = _selectedUser?.userId == u.userId;
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  subtext1,
+                  style: const TextStyle(color: Color(0xFF89929B), fontSize: 9.5),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Text('•', style: TextStyle(color: Color(0xFF3F4850), fontSize: 9.5)),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  subtext2,
+                  style: TextStyle(color: valueBadgeColor, fontSize: 9.5, fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-                                  return InkWell(
-                                    onTap: () => _onUserSelected(u),
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                      decoration: BoxDecoration(
-                                        color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 130,
-                                            child: Row(
-                                              children: [
-                                                CircleAvatar(
-                                                  radius: 14,
-                                                  backgroundColor: AppColors.bgSubtle,
-                                                  backgroundImage: (u.profileImageUrl != null && u.profileImageUrl!.isNotEmpty)
-                                                      ? NetworkImage(u.profileImageUrl!)
-                                                      : null,
-                                                  child: (u.profileImageUrl == null || u.profileImageUrl!.isEmpty)
-                                                      ? const Icon(Icons.person, size: 16, color: AppColors.textMuted)
-                                                      : null,
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Expanded(
-                                                  child: Text(
-                                                    u.userCode,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: const TextStyle(color: AppColors.brandPrimary, fontSize: 12, fontWeight: FontWeight.w800, fontFamily: 'monospace'),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 3,
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(u.calculatedFullName, style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700)),
-                                                const SizedBox(height: 2),
-                                                Text('Gender: ${u.genderName}', style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
-                                              ],
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 3,
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(u.email, style: const TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600)),
-                                                const SizedBox(height: 2),
-                                                Text(u.mobileNumber, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
-                                              ],
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 2,
-                                            child: Text(u.roleName, style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
-                                          ),
-                                          SizedBox(
-                                            width: 90,
-                                            child: DqmsStatusBadge.activeState(u.isActive),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
+  /// Master Clinical Staff Table (matching Stitch layout & role pills)
+  Widget _buildMasterTable(List<UserProfileModel> users) {
+    final roleTabs = ['All Roles (148)', 'Clinical Lead (18)', 'System Admin (12)', 'Counter Teller (84)'];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Filters Row: Search Input + Status Dropdown
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF181C20),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFF3F4850).withValues(alpha: 0.5)),
+                    ),
+                    child: TextField(
+                      onChanged: (val) => setState(() => _searchQuery = val),
+                      style: const TextStyle(color: Color(0xFFE0E3E8), fontSize: 12),
+                      decoration: const InputDecoration(
+                        hintText: 'Search by name, staff ID DQMS-..., or clinical',
+                        hintStyle: TextStyle(color: Color(0xFF89929B), fontSize: 11.5),
+                        prefixIcon: Icon(Icons.search_rounded, color: Color(0xFF89929B), size: 18),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  height: 38,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF181C20),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFF3F4850).withValues(alpha: 0.5)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.filter_list_rounded, size: 14, color: Color(0xFF89929B)),
+                      SizedBox(width: 6),
+                      Text('Active / Online', style: TextStyle(color: Color(0xFFE0E3E8), fontSize: 11.5, fontWeight: FontWeight.w600)),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_drop_down_rounded, size: 18, color: Color(0xFF89929B)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // Role Filter Pill Tabs (from Stitch)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: roleTabs.map((tab) {
+                  final isSelected = _selectedRoleFilter == tab;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: InkWell(
+                      onTap: () => setState(() => _selectedRoleFilter = tab),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFF3198DC) : const Color(0xFF181C20),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected ? const Color(0xFF93CCFF) : const Color(0xFF3F4850).withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: Text(
+                          tab,
+                          style: TextStyle(
+                            color: isSelected ? const Color(0xFF002C47) : const Color(0xFFBFC7D2),
+                            fontSize: 11,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Dense Clinical Staff Table Container
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF181C20),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF3F4850).withValues(alpha: 0.4)),
+                ),
+                child: constraints.maxWidth < 650
+                    ? ListView.separated(
+                        padding: const EdgeInsets.all(8),
+                        itemCount: users.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 8),
+                        itemBuilder: (ctx, i) {
+                          final u = users[i];
+                          final isSelected = _selectedUser?.userId == u.userId;
+                          return _buildMobileUserCard(u, isSelected);
+                        },
+                      )
+                    : Column(
+                        children: [
+                          // Table Header Bar (Uppercase headers matching tests and Stitch)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF101418),
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                              border: Border(bottom: BorderSide(color: Color(0xFF3F4850), width: 0.5)),
+                            ),
+                            child: const Row(
+                              children: [
+                                SizedBox(width: 140, child: Text('USER CODE', style: TextStyle(color: Color(0xFF89929B), fontSize: 10.5, fontWeight: FontWeight.w700, letterSpacing: 0.4))),
+                                Expanded(flex: 3, child: Text('FULL NAME & TITLE', style: TextStyle(color: Color(0xFF89929B), fontSize: 10.5, fontWeight: FontWeight.w700, letterSpacing: 0.4))),
+                                Expanded(flex: 2, child: Text('ROLE ASSIGNMENT', style: TextStyle(color: Color(0xFF89929B), fontSize: 10.5, fontWeight: FontWeight.w700, letterSpacing: 0.4))),
+                                Expanded(flex: 3, child: Text('PRIMARY EMAIL & MOBILE', style: TextStyle(color: Color(0xFF89929B), fontSize: 10.5, fontWeight: FontWeight.w700, letterSpacing: 0.4))),
+                                SizedBox(width: 80, child: Text('STATUS', style: TextStyle(color: Color(0xFF89929B), fontSize: 10.5, fontWeight: FontWeight.w700, letterSpacing: 0.4))),
+                              ],
+                            ),
+                          ),
+
+                          // Table Rows
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: users.length,
+                              separatorBuilder: (_, _) => const Divider(color: Color(0xFF262A2F), height: 1),
+                              itemBuilder: (ctx, i) {
+                                final u = users[i];
+                                final isSelected = _selectedUser?.userId == u.userId;
+
+                                return InkWell(
+                                  onTap: () => _onUserSelected(u),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? const Color(0xFF3198DC).withValues(alpha: 0.12) : Colors.transparent,
+                                      border: isSelected ? const Border(left: BorderSide(color: Color(0xFF93CCFF), width: 3)) : null,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        // Staff Member Column (Avatar + Code)
+                                        SizedBox(
+                                          width: 140,
+                                          child: Row(
+                                            children: [
+                                              CircleAvatar(
+                                                radius: 14,
+                                                backgroundColor: const Color(0xFF262A2F),
+                                                backgroundImage: (u.profileImageUrl != null && u.profileImageUrl!.isNotEmpty)
+                                                    ? (u.profileImageUrl!.startsWith('data:')
+                                                        ? MemoryImage(base64Decode(u.profileImageUrl!.split(',').last)) as ImageProvider
+                                                        : NetworkImage(u.profileImageUrl!))
+                                                    : null,
+                                                child: (u.profileImageUrl == null || u.profileImageUrl!.isEmpty)
+                                                    ? const Icon(Icons.person, size: 14, color: Color(0xFF89929B))
+                                                    : null,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  u.userCode,
+                                                  style: const TextStyle(
+                                                    color: Color(0xFF93CCFF),
+                                                    fontSize: 11.5,
+                                                    fontWeight: FontWeight.w700,
+                                                    fontFamily: 'monospace',
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        // Name & Department
+                                        Expanded(
+                                          flex: 3,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                u.calculatedFullName,
+                                                style: const TextStyle(
+                                                  color: Color(0xFFE0E3E8),
+                                                  fontSize: 12.5,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                u.department,
+                                                style: const TextStyle(color: Color(0xFF89929B), fontSize: 10.5),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        // Role Pill Badge
+                                        Expanded(
+                                          flex: 2,
+                                          child: Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: _getRoleBadgeColor(u.roleName).withValues(alpha: 0.15),
+                                                borderRadius: BorderRadius.circular(4),
+                                                border: Border.all(color: _getRoleBadgeColor(u.roleName).withValues(alpha: 0.4)),
+                                              ),
+                                              child: Text(
+                                                u.roleName,
+                                                style: TextStyle(
+                                                  color: _getRoleBadgeColor(u.roleName),
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+                                        // Email & Mobile
+                                        Expanded(
+                                          flex: 3,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                u.email,
+                                                style: const TextStyle(color: Color(0xFFBFC7D2), fontSize: 11),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                u.mobileNumber,
+                                                style: const TextStyle(color: Color(0xFF89929B), fontSize: 10),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        // Active Status Dot
+                                        SizedBox(
+                                          width: 80,
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: 6,
+                                                height: 6,
+                                                decoration: BoxDecoration(
+                                                  color: u.isActive ? const Color(0xFF4EDEA3) : const Color(0xFFFFB4AB),
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    if (u.isActive)
+                                                      const BoxShadow(
+                                                        color: Color(0xFF4EDEA3),
+                                                        blurRadius: 4,
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                u.isActive ? 'Active' : 'Inactive',
+                                                style: TextStyle(
+                                                  color: u.isActive ? const Color(0xFF4EDEA3) : const Color(0xFFFFB4AB),
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ],
         );
       },
     );
+  }
+
+  Color _getRoleBadgeColor(String role) {
+    if (role.contains('Clinical') || role.contains('Lead')) return const Color(0xFF93CCFF);
+    if (role.contains('Triage') || role.contains('Reception')) return const Color(0xFF4EDEA3);
+    if (role.contains('Counter') || role.contains('Teller')) return const Color(0xFFC0C1FF);
+    return const Color(0xFFFFDAD6);
   }
 
   Widget _buildMobileUserCard(UserProfileModel u, bool isSelected) {
@@ -985,10 +1521,10 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+          color: isSelected ? const Color(0xFF3198DC).withValues(alpha: 0.12) : const Color(0xFF181C20),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle,
+            color: isSelected ? const Color(0xFF93CCFF) : const Color(0xFF3F4850).withValues(alpha: 0.4),
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
@@ -999,31 +1535,41 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
               children: [
                 CircleAvatar(
                   radius: 16,
-                  backgroundColor: AppColors.bgSubtle,
+                  backgroundColor: const Color(0xFF262A2F),
                   backgroundImage: (u.profileImageUrl != null && u.profileImageUrl!.isNotEmpty)
-                      ? NetworkImage(u.profileImageUrl!)
+                      ? (u.profileImageUrl!.startsWith('data:')
+                          ? MemoryImage(base64Decode(u.profileImageUrl!.split(',').last)) as ImageProvider
+                          : NetworkImage(u.profileImageUrl!))
                       : null,
                   child: (u.profileImageUrl == null || u.profileImageUrl!.isEmpty)
-                      ? const Icon(Icons.person, size: 18, color: AppColors.textMuted)
+                      ? const Icon(Icons.person, size: 18, color: Color(0xFF89929B))
                       : null,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Text(u.userCode, style: const TextStyle(color: AppColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w800, fontFamily: 'monospace')),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(u.calculatedFullName, style: const TextStyle(color: Color(0xFFE0E3E8), fontSize: 13.5, fontWeight: FontWeight.w700)),
+                      Text(u.userCode, style: const TextStyle(color: Color(0xFF93CCFF), fontSize: 11.5, fontFamily: 'monospace', fontWeight: FontWeight.w600)),
+                    ],
+                  ),
                 ),
                 DqmsStatusBadge.activeState(u.isActive),
               ],
             ),
             const SizedBox(height: 8),
-            Text(u.calculatedFullName, style: const TextStyle(color: AppColors.textMain, fontSize: 14, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 4),
-            Text(u.email, style: const TextStyle(color: AppColors.brandAccent, fontSize: 12)),
-            const SizedBox(height: 4),
             Row(
               children: [
-                Text(u.roleName, style: const TextStyle(color: AppColors.textSubtle, fontSize: 12, fontWeight: FontWeight.w600)),
-                const Spacer(),
-                const Icon(Icons.chevron_right, color: AppColors.textMuted, size: 18),
+                const Icon(Icons.badge_outlined, size: 14, color: Color(0xFF89929B)),
+                const SizedBox(width: 4),
+                Text(u.roleName, style: const TextStyle(color: Color(0xFFE0E3E8), fontSize: 12, fontWeight: FontWeight.w600)),
+                const SizedBox(width: 12),
+                const Icon(Icons.email_outlined, size: 14, color: Color(0xFF89929B)),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(u.email, style: const TextStyle(color: Color(0xFF93CCFF), fontSize: 12), overflow: TextOverflow.ellipsis),
+                ),
               ],
             ),
           ],
@@ -1097,97 +1643,15 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
     );
     final hasSelection = selected.parameterId > 0;
 
-    return DropdownSearch<CoreConfigParameter>(
+    return DqmsSearchableDropdown<CoreConfigParameter>(
+      label: label,
       items: options,
       selectedItem: hasSelection ? selected : null,
       itemAsString: (p) => p.parameterName,
       filterFn: (p, filter) => p.parameterName.toLowerCase().contains(filter.toLowerCase()),
       compareFn: (a, b) => a.parameterId == b.parameterId,
       onChanged: onChanged,
-      dropdownBuilder: (ctx, item) {
-        if (item == null) {
-          return const Text('— Select —', style: TextStyle(color: AppColors.textMuted, fontSize: 12));
-        }
-        final leading = _buildParamLeading(item, size: 16);
-        return Row(
-          children: [
-            if (leading != null) ...[leading, const SizedBox(width: 8)],
-            Expanded(
-              child: Text(
-                item.parameterName,
-                style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        );
-      },
-      dropdownDecoratorProps: DropDownDecoratorProps(
-        dropdownSearchDecoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(color: AppColors.textSubtle, fontSize: 12, fontWeight: FontWeight.w600),
-          filled: true,
-          fillColor: AppColors.bgSubtle,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppColors.borderSubtle),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppColors.borderSubtle),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppColors.brandPrimary, width: 1.5),
-          ),
-        ),
-      ),
-      popupProps: PopupProps.menu(
-        showSearchBox: options.length > 5,
-        searchFieldProps: const TextFieldProps(
-          decoration: InputDecoration(
-            hintText: 'Search...',
-            hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 12),
-            filled: true,
-            fillColor: AppColors.bgSubtle,
-            prefixIcon: Icon(Icons.search, color: AppColors.textSubtle, size: 18),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            border: OutlineInputBorder(),
-          ),
-          style: TextStyle(color: AppColors.textMain, fontSize: 12),
-        ),
-        containerBuilder: (ctx, child) => Container(
-          decoration: BoxDecoration(
-            color: AppColors.bgSurface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.borderSubtle),
-          ),
-          child: child,
-        ),
-        itemBuilder: (ctx, item, isSelected) {
-          final leading = _buildParamLeading(item);
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.15) : null,
-            child: Row(
-              children: [
-                if (leading != null) ...[leading, const SizedBox(width: 10)],
-                Expanded(
-                  child: Text(
-                    item.parameterName,
-                    style: TextStyle(
-                      color: isSelected ? AppColors.brandPrimary : AppColors.textMain,
-                      fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+      leadingBuilder: (item) => _buildParamLeading(item, size: 14),
     );
   }
 
@@ -1197,24 +1661,32 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
     required List<Widget> children,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderSubtle),
+        color: const Color(0xFF181C20),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF3F4850).withValues(alpha: 0.35)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: AppColors.brandPrimary),
+              Icon(icon, size: 16, color: const Color(0xFF93CCFF)),
               const SizedBox(width: 8),
-              Text(title, style: const TextStyle(color: AppColors.textMain, fontSize: 14, fontWeight: FontWeight.w700)),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Color(0xFFE0E3E8),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.2,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           ...children,
         ],
       ),
@@ -1226,128 +1698,309 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header Profile Hero Card ──
+          // ── Stitch RECORD INSPECTOR Top Bar ──
           Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.borderSubtle),
+              color: const Color(0xFF181C20),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: const Color(0xFF3F4850).withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
-                // Avatar with Camera Upload Badge
-                Stack(
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3198DC).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: const Color(0xFF93CCFF).withValues(alpha: 0.5)),
+                  ),
+                  child: const Text(
+                    'RECORD INSPECTOR',
+                    style: TextStyle(
+                      color: Color(0xFF93CCFF),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  user.userCode,
+                  style: const TextStyle(
+                    color: Color(0xFF89929B),
+                    fontSize: 11,
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                DqmsSwitch(
+                  value: user.isActive,
+                  activeText: 'Active',
+                  inactiveText: 'Inactive',
+                  onChanged: (val) {
+                    setState(() {
+                      _selectedUser = user.copyWith(isActive: val);
+                      final idx = _users.indexWhere((u) => u.userId == user.userId);
+                      if (idx != -1) _users[idx] = _selectedUser!;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // ── Stitch Database Avatar Studio Hero Card ──
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF181C20),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFF3F4850).withValues(alpha: 0.4)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.brandPrimary, width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.brandPrimary.withValues(alpha: 0.25),
-                            blurRadius: 12,
-                            spreadRadius: 2,
+                    const Icon(Icons.hub_outlined, size: 16, color: Color(0xFF93CCFF)),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Database Avatar Studio',
+                            style: TextStyle(
+                              color: Color(0xFFE0E3E8),
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.2,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            'Direct VARBINARY(MAX) sync & live preview',
+                            style: TextStyle(color: Color(0xFF89929B), fontSize: 10.5),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                      child: ClipOval(
-                        child: _isUploadingAvatar
-                            ? const Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.brandAccent))
-                            : (user.profileImageUrl != null && user.profileImageUrl!.isNotEmpty)
-                                ? Image.network(
-                                    user.profileImageUrl!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => const Icon(Icons.person, size: 36, color: AppColors.textMuted),
-                                  )
-                                : const Icon(Icons.person, size: 36, color: AppColors.textMuted),
-                      ),
                     ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => _pickAndUploadAvatar(user),
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(
-                              color: AppColors.brandPrimary,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.camera_alt_rounded, size: 14, color: Colors.white),
-                          ),
-                        ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4EDEA3).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: const Color(0xFF4EDEA3).withValues(alpha: 0.4)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle_outline, size: 10, color: Color(0xFF4EDEA3)),
+                          SizedBox(width: 4),
+                          Text('SYNCED', style: TextStyle(color: Color(0xFF4EDEA3), fontSize: 9.5, fontWeight: FontWeight.w700)),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 16),
+
+                // Glowing Avatar Hero with Camera Upload Badge
+                Center(
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      Text(user.calculatedFullName, style: const TextStyle(color: AppColors.textMain, fontSize: 16, fontWeight: FontWeight.w800)),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(4),
+                      // Outer glow ring
+                      Container(
+                        width: 84,
+                        height: 84,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFF3198DC).withValues(alpha: 0.6), width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF3198DC).withValues(alpha: 0.3),
+                              blurRadius: 16,
+                              spreadRadius: 2,
                             ),
-                            child: Text(user.roleName, style: const TextStyle(color: AppColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w700)),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(user.userCode, style: const TextStyle(color: AppColors.textMuted, fontSize: 12, fontFamily: 'monospace')),
-                        ],
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 6),
+                      // Avatar Image
+                      Container(
+                        width: 76,
+                        height: 76,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFF93CCFF), width: 1.5),
+                        ),
+                        child: ClipOval(
+                          child: _isUploadingAvatar
+                              ? const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF93CCFF)))
+                              : (user.profileImageUrl != null && user.profileImageUrl!.isNotEmpty)
+                                  ? (user.profileImageUrl!.startsWith('data:')
+                                      ? Image.memory(base64Decode(user.profileImageUrl!.split(',').last), fit: BoxFit.cover)
+                                      : Image.network(
+                                          user.profileImageUrl!.startsWith('http')
+                                              ? user.profileImageUrl!
+                                              : '${AppConfig.apiBaseUrl}${user.profileImageUrl}',
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, _, _) => const Icon(Icons.person, size: 36, color: Color(0xFF89929B)),
+                                        ))
+                                  : const Icon(Icons.person, size: 36, color: Color(0xFF89929B)),
+                        ),
+                      ),
+                      // Camera icon badge
+                      Positioned(
+                        bottom: 2,
+                        right: 2,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => _pickAndUploadAvatar(user),
+                            borderRadius: BorderRadius.circular(14),
+                            child: Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF3198DC),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: const Color(0xFF101418), width: 2),
+                              ),
+                              child: const Icon(Icons.camera_alt_rounded, size: 13, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Name & Code underneath
+                Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        user.calculatedFullName,
+                        style: const TextStyle(color: Color(0xFFE0E3E8), fontSize: 14, fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${user.roleName} • ${user.userCode}',
+                        style: const TextStyle(color: Color(0xFF89929B), fontSize: 11, fontFamily: 'monospace'),
+                      ),
+                      const SizedBox(height: 8),
                       InkWell(
                         onTap: () => _pickAndUploadAvatar(user),
                         child: const Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.cloud_upload_outlined, size: 14, color: AppColors.brandAccent),
+                            Icon(Icons.camera_alt_outlined, size: 12, color: Color(0xFF93CCFF)),
                             SizedBox(width: 4),
-                            Text('Change Profile Photo', style: TextStyle(color: AppColors.brandAccent, fontSize: 12, fontWeight: FontWeight.w600)),
+                            Text(
+                              'Change Profile Photo',
+                              style: TextStyle(color: Color(0xFF93CCFF), fontSize: 11, fontWeight: FontWeight.w700),
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
                 ),
-                // Active Switch
-                Column(
-                  children: [
-                    Switch(
-                      value: user.isActive,
-                      activeThumbColor: AppColors.statusActive,
-                      onChanged: (val) {
-                        setState(() {
-                          _selectedUser = user.copyWith(isActive: val);
-                          final idx = _users.indexWhere((u) => u.userId == user.userId);
-                          if (idx != -1) _users[idx] = _selectedUser!;
-                        });
-                      },
+                const SizedBox(height: 14),
+
+                // Technical database metadata tags
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF101418),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFF262A2F)),
+                  ),
+                  child: const Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('ENCODING', style: TextStyle(color: Color(0xFF89929B), fontSize: 9.5, fontWeight: FontWeight.w700)),
+                          Text('BASE64 / RAW BLOB', style: TextStyle(color: Color(0xFFBFC7D2), fontSize: 9.5, fontFamily: 'monospace', fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('ALLOCATION LIMIT', style: TextStyle(color: Color(0xFF89929B), fontSize: 9.5, fontWeight: FontWeight.w700)),
+                          Text('2.0 MB MAX', style: TextStyle(color: Color(0xFFBFC7D2), fontSize: 9.5, fontFamily: 'monospace', fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('STORAGE TABLE', style: TextStyle(color: Color(0xFF89929B), fontSize: 9.5, fontWeight: FontWeight.w700)),
+                          Text('dbo.UserProfiles [Avatar]', style: TextStyle(color: Color(0xFF93CCFF), fontSize: 9.5, fontFamily: 'monospace', fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Drag and drop upload dropzone box
+                InkWell(
+                  onTap: () => _pickAndUploadAvatar(user),
+                  borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF101418),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFF3198DC).withValues(alpha: 0.4)),
                     ),
-                    Text(user.isActive ? 'Active' : 'Inactive', style: TextStyle(color: user.isActive ? AppColors.statusActive : AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w600)),
-                  ],
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.cloud_upload_outlined, size: 18, color: Color(0xFF93CCFF)),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Drop new clinical portrait or browse files',
+                                style: TextStyle(color: Color(0xFFE0E3E8), fontSize: 11, fontWeight: FontWeight.w700),
+                              ),
+                              Text(
+                                'Supported formats: PNG, JPG, WEBP (Max 2MB)',
+                                style: TextStyle(color: Color(0xFF89929B), fontSize: 9.5),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
 
-          // ── Card 1: Identity & System Role ──
+          // ── Card 1: Identity & System Role (Compact) ──
           _buildSectionCard(
             title: 'Identity & Role',
             icon: Icons.badge_outlined,
@@ -1357,11 +2010,12 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                 controller: _userCodeCtrl,
                 onChanged: (val) => _selectedUser = _selectedUser?.copyWith(userCode: val),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 8),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
-                    width: 140,
+                    width: 110,
                     child: _buildConfigDropdown(
                       label: 'Title',
                       options: _titleOptions,
@@ -1371,7 +2025,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: DqmsTextField(
                       label: 'First Name',
@@ -1379,7 +2033,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                       onChanged: (val) => _selectedUser = _selectedUser?.copyWith(firstName: val),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: DqmsTextField(
                       label: 'Last Name',
@@ -1389,8 +2043,9 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 8),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: _buildConfigDropdown(
@@ -1402,7 +2057,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: _buildConfigDropdown(
                       label: 'Assigned Role',
@@ -1415,7 +2070,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 8),
               DqmsTextField(
                 label: 'Primary Login Email',
                 controller: _emailCtrl,
@@ -1424,12 +2079,13 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
             ],
           ),
 
-          // ── Card 2: Primary Address ──
+          // ── Card 2: Primary Address (Compact) ──
           _buildSectionCard(
             title: 'Primary Address',
             icon: Icons.location_on_outlined,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: _buildConfigDropdown(
@@ -1441,7 +2097,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: DqmsTextField(
                       label: 'Postal Code',
@@ -1451,20 +2107,21 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               DqmsTextField(
                 label: 'Address Line 1',
                 controller: _addressLine1Ctrl,
                 onChanged: (val) => _selectedUser = _selectedUser?.copyWith(addressLine1: val),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               DqmsTextField(
                 label: 'Address Line 2 (Optional)',
                 controller: _addressLine2Ctrl,
                 onChanged: (val) => _selectedUser = _selectedUser?.copyWith(addressLine2: val),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: _buildConfigDropdown(
@@ -1490,7 +2147,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: _buildConfigDropdown(
                       label: 'State / Province',
@@ -1513,7 +2170,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: _buildConfigDropdown(
                       label: 'City',
@@ -1536,12 +2193,13 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
             ],
           ),
 
-          // ── Card 3: Contact & Emergency Profile ──
+          // ── Card 3: Contact & Emergency Profile (Compact) ──
           _buildSectionCard(
             title: 'Contact & Emergency Info',
             icon: Icons.contact_phone_outlined,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: _buildConfigDropdown(
@@ -1553,7 +2211,7 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: _buildConfigDropdown(
                       label: 'Relationship',
@@ -1566,39 +2224,29 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               DqmsTextField(
                 label: 'Primary Phone / Mobile',
                 controller: _mobileNumberCtrl,
                 onChanged: (val) => _selectedUser = _selectedUser?.copyWith(mobileNumber: val),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 8),
               Wrap(
-                spacing: 16,
-                runSpacing: 8,
+                spacing: 12,
+                runSpacing: 6,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Checkbox(
-                        value: user.isEmergencyContact,
-                        activeColor: AppColors.brandPrimary,
-                        onChanged: (val) => setState(() => _selectedUser = user.copyWith(isEmergencyContact: val ?? false)),
-                      ),
-                      const Text('Emergency Contact', style: TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600)),
-                    ],
+                  DqmsCheckbox(
+                    value: user.isEmergencyContact,
+                    label: 'Emergency Contact',
+                    activeColor: AppColors.brandPrimary,
+                    onChanged: (val) => setState(() => _selectedUser = user.copyWith(isEmergencyContact: val ?? false)),
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Checkbox(
-                        value: user.isVerifiedContact,
-                        activeColor: AppColors.statusActive,
-                        onChanged: (val) => setState(() => _selectedUser = user.copyWith(isVerifiedContact: val ?? false)),
-                      ),
-                      const Text('Verified Contact', style: TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600)),
-                    ],
+                  DqmsCheckbox(
+                    value: user.isVerifiedContact,
+                    label: 'Verified Contact',
+                    activeColor: AppColors.statusActive,
+                    onChanged: (val) => setState(() => _selectedUser = user.copyWith(isVerifiedContact: val ?? false)),
                   ),
                 ],
               ),
@@ -1611,12 +2259,21 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              DqmsButton(
-                label: _isSavingUser ? 'Saving...' : 'Save Full User Profile',
-                icon: Icons.save_rounded,
-                isLoading: _isSavingUser,
-                isFullWidth: true,
-                onPressed: _saveUserProfile,
+              ElevatedButton.icon(
+                onPressed: _isSavingUser ? null : _saveUserProfile,
+                icon: _isSavingUser
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF002C47)))
+                    : const Icon(Icons.save_rounded, size: 16, color: Color(0xFF002C47)),
+                label: Text(
+                  _isSavingUser ? 'Saving...' : 'Save Full User Profile',
+                  style: const TextStyle(color: Color(0xFF002C47), fontSize: 13, fontWeight: FontWeight.w800),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3198DC),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                  elevation: 2,
+                ),
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
@@ -1624,16 +2281,23 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Password reset link dispatched to ${user.email}.'),
-                      backgroundColor: AppColors.brandPrimary,
+                      backgroundColor: const Color(0xFF3198DC),
                     ),
                   );
                 },
-                icon: const Icon(Icons.lock_reset_rounded, size: 16, color: AppColors.textSubtle),
-                label: const Text('Reset Password', style: TextStyle(color: AppColors.textSubtle, fontSize: 12)),
+                icon: const Icon(Icons.lock_reset_rounded, size: 16, color: Color(0xFFBFC7D2)),
+                label: const Text('Reset Password', style: TextStyle(color: Color(0xFFBFC7D2), fontSize: 12, fontWeight: FontWeight.w600)),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.borderSubtle),
+                  side: const BorderSide(color: Color(0xFF3F4850)),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  'Audit ID: #DQMS-AU-${user.userId} • Direct sync to Enterprise SQL',
+                  style: const TextStyle(color: Color(0xFF89929B), fontSize: 10, fontFamily: 'monospace'),
                 ),
               ),
             ],
@@ -1686,85 +2350,49 @@ class _UserProfilesViewState extends ConsumerState<UserProfilesView> {
                   ),
                   const SizedBox(height: 12),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 140,
-                        child: DropdownSearch<CoreConfigParameter>(
+                        width: 110,
+                        child: DqmsSearchableDropdown<CoreConfigParameter>(
+                          label: 'Title',
                           items: _titleOptions,
                           selectedItem: selectedTitle,
                           itemAsString: (p) => p.parameterName,
                           compareFn: (a, b) => a.parameterId == b.parameterId,
                           filterFn: (p, filter) => p.parameterName.toLowerCase().contains(filter.toLowerCase()),
                           onChanged: (p) => setDialogState(() => selectedTitle = p),
-                          dropdownDecoratorProps: const DropDownDecoratorProps(
-                            dropdownSearchDecoration: InputDecoration(
-                              labelText: 'Title',
-                              labelStyle: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w600),
-                              filled: true,
-                              fillColor: AppColors.bgSubtle,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          popupProps: PopupProps.menu(
-                            showSearchBox: true,
-                            containerBuilder: (ctx, child) => Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.bgSurface,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: AppColors.borderSubtle),
-                              ),
-                              child: child,
-                            ),
-                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       Expanded(child: DqmsTextField(label: 'First Name *', controller: firstNameCtrl)),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       Expanded(child: DqmsTextField(label: 'Last Name *', controller: lastNameCtrl)),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: DropdownSearch<CoreConfigParameter>(
+                        child: DqmsSearchableDropdown<CoreConfigParameter>(
+                          label: 'Gender',
                           items: _genderOptions,
                           selectedItem: selectedGender,
                           itemAsString: (p) => p.parameterName,
                           compareFn: (a, b) => a.parameterId == b.parameterId,
                           onChanged: (p) => setDialogState(() => selectedGender = p),
-                          dropdownDecoratorProps: const DropDownDecoratorProps(
-                            dropdownSearchDecoration: InputDecoration(
-                              labelText: 'Gender',
-                              labelStyle: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w600),
-                              filled: true,
-                              fillColor: AppColors.bgSubtle,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       Expanded(
-                        child: DropdownSearch<CoreConfigParameter>(
+                        child: DqmsSearchableDropdown<CoreConfigParameter>(
+                          label: 'Assigned Role',
                           items: _roleOptions,
                           selectedItem: selectedRole,
                           itemAsString: (p) => p.parameterName,
                           compareFn: (a, b) => a.parameterId == b.parameterId,
                           onChanged: (r) => setDialogState(() => selectedRole = r),
-                          dropdownDecoratorProps: const DropDownDecoratorProps(
-                            dropdownSearchDecoration: InputDecoration(
-                              labelText: 'Assigned Role',
-                              labelStyle: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w600),
-                              filled: true,
-                              fillColor: AppColors.bgSubtle,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
                         ),
                       ),
                     ],

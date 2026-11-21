@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/enums/dqms_enums.dart';
 import '../../../core/models/staff_models.dart';
+import '../../../core/theme/app_colors.dart';
 import '../providers/staff_providers.dart';
 import '../providers/staff_session_provider.dart';
 
@@ -14,22 +15,22 @@ import '../providers/staff_session_provider.dart';
 /// Aesthetic: High-Speed Counter Command Station | Hotkeys: Space, F1-F7
 /// ============================================================================
 class OperatorTheme {
-  static const Color bgCanvas = Color(0xFF090D11);
-  static const Color bgSurface = Color(0xFF12171F);
-  static const Color bgCard = Color(0xFF1A222D);
+  static const Color bgCanvas = AppColors.bgCanvas;
+  static const Color bgSurface = AppColors.bgSurface;
+  static const Color bgCard = AppColors.bgCard;
 
-  static const Color borderSubtle = Color(0xFF222B36);
-  static const Color borderHighlight = Color(0xFF2F81F7);
+  static const Color borderSubtle = AppColors.borderSubtle;
+  static const Color borderHighlight = AppColors.brandPrimary;
 
-  static const Color actionCall = Color(0xFF238636);
-  static const Color actionRecall = Color(0xFFD29922);
-  static const Color actionServe = Color(0xFF2F81F7);
-  static const Color actionHold = Color(0xFF8957E5);
-  static const Color actionCancel = Color(0xFFDA3633);
+  static const Color actionCall = AppColors.statusActive;
+  static const Color actionRecall = AppColors.statusWarning;
+  static const Color actionServe = AppColors.brandPrimary;
+  static const Color actionHold = AppColors.brandSecondary;
+  static const Color actionCancel = AppColors.statusError;
 
-  static const Color textMain = Color(0xFFF0F6FC);
-  static const Color textMuted = Color(0xFF8B949E);
-  static const Color textSubtle = Color(0xFF6E7681);
+  static const Color textMain = AppColors.textMain;
+  static const Color textMuted = AppColors.textMuted;
+  static const Color textSubtle = AppColors.textSubtle;
 }
 
 /// ============================================================================

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
+import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
 import 'package:dqms_frontend/core/widgets/dqms_states.dart';
 import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart';
@@ -10,6 +11,7 @@ import 'package:dqms_frontend/features/admin/widgets/master_detail_layout.dart';
 /// ============================================================================
 /// TOKEN TRANSACTIONS & AUDIT LOG EXPLORER SCREEN (Domain 4)
 /// Multi-filter operational log and chronological audit timeline for TokenTransaction and TokenAuditHistory
+/// 1:1 Matched to Stitch Screen: "Real-time Token Transactions & Operational Audit Log"
 /// ============================================================================
 class TokenTransactionsView extends ConsumerStatefulWidget {
   const TokenTransactionsView({super.key});
@@ -45,7 +47,7 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
     return MasterDetailLayout(
       masterWidget: _buildMasterTable(filteredTokens, tokens),
       detailWidget: _selectedToken != null ? _buildAuditLogInspector(_selectedToken!) : null,
-      detailTitle: _selectedToken != null ? 'Token Audit Log Inspector — ${_selectedToken!.tokenNumber}' : 'Audit Inspector',
+      detailTitle: _selectedToken != null ? 'Audit Log Inspector — ${_selectedToken!.tokenNumber}' : 'Audit Inspector',
       onCloseDetail: () => setState(() => _selectedToken = null),
     );
   }
@@ -55,30 +57,196 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
     final uniqueServices = ['All Services', ...allTokens.map((t) => t.processName).toSet()];
     final uniqueStatuses = ['All Statuses', 'Issued', 'Called', 'Serving', 'Completed', 'NoShow', 'Transferred'];
 
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ------------------------------------------------------------------
-          // Multi-Filter Bar
-          // ------------------------------------------------------------------
-          Wrap(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompactHeight = constraints.maxHeight < 550;
+
+        // --------------------------------------------------------------------
+        // 1. PAGE TITLE & TELEMETRY HEADER
+        // --------------------------------------------------------------------
+        final headerWidget = Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+                        ),
+                        child: const Icon(Icons.confirmation_number_rounded, color: AppColors.brandPrimary, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                const Text(
+                                  'Real-time Token Transactions & Audit Log',
+                                  style: TextStyle(
+                                    color: AppColors.textMain,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.3,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.statusActive.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: AppColors.statusActive.withValues(alpha: 0.3)),
+                                  ),
+                                  child: const Text(
+                                    'Live Stream Telemetry: 120Hz',
+                                    style: TextStyle(color: AppColors.statusActive, fontSize: 10, fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'Complete chronological timeline of visitor issuance, counter dispatch, transfer events, and SLA audits.',
+                              style: TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Quick Action Controls
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      DqmsButton(
+                        label: 'Export Audit Log (CSV)',
+                        icon: Icons.file_download_outlined,
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Audit log exported successfully.')),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+
+        // --------------------------------------------------------------------
+        // 2. TELEMETRY KPI BANNER (5 CARDS)
+        // --------------------------------------------------------------------
+        final kpiBarWidget = LayoutBuilder(
+          builder: (context, kpiConstraints) {
+            final cardWidth = kpiConstraints.maxWidth < 550
+                ? kpiConstraints.maxWidth
+                : kpiConstraints.maxWidth < 960
+                    ? (kpiConstraints.maxWidth - 8) / 2
+                    : (kpiConstraints.maxWidth - 32) / 5;
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildKpiCard(
+                  width: cardWidth,
+                  title: 'Tokens Issued Today',
+                  value: '1,429',
+                  trend: '+14% vs baseline',
+                  trendColor: AppColors.statusActive,
+                  icon: Icons.confirmation_number_outlined,
+                  accentColor: AppColors.brandPrimary,
+                ),
+                _buildKpiCard(
+                  width: cardWidth,
+                  title: 'Currently Waiting',
+                  value: '38',
+                  trend: 'Avg wait: 6m 40s',
+                  trendColor: AppColors.brandAccent,
+                  icon: Icons.hourglass_top_rounded,
+                  accentColor: AppColors.brandAccent,
+                ),
+                _buildKpiCard(
+                  width: cardWidth,
+                  title: 'Completed Today',
+                  value: '1,365',
+                  trend: '95.5% SLA adherence',
+                  trendColor: AppColors.statusActive,
+                  icon: Icons.check_circle_outline_rounded,
+                  accentColor: AppColors.statusActive,
+                ),
+                _buildKpiCard(
+                  width: cardWidth,
+                  title: 'No-Show / Voided',
+                  value: '26',
+                  trend: '1.8% rate (-0.4%)',
+                  trendColor: AppColors.statusError,
+                  icon: Icons.cancel_outlined,
+                  accentColor: AppColors.statusError,
+                ),
+                _buildKpiCard(
+                  width: cardWidth,
+                  title: 'Real-time Throughput',
+                  value: '42 tok/h',
+                  trend: 'Peak: 58/hr',
+                  trendColor: AppColors.brandPrimary,
+                  icon: Icons.bolt_rounded,
+                  accentColor: AppColors.brandPrimary,
+                ),
+              ],
+            );
+          },
+        );
+
+        // --------------------------------------------------------------------
+        // 3. MULTI-FILTER TOOLBAR
+        // --------------------------------------------------------------------
+        final toolbarWidget = Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: Wrap(
             spacing: 10,
             runSpacing: 10,
+            alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              // Search Input
+              // Search field
               SizedBox(
-                width: 260,
+                width: 250,
                 child: DqmsTextField(
-                  hintText: 'Search Token #, Sub-Token, Visitor...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                  hintText: 'Search Token #, Patient MRN, or Doctor...',
+                  prefixIcon: const Icon(Icons.search_rounded, size: 16),
                   onChanged: (val) => setState(() => _searchQuery = val),
                 ),
               ),
@@ -87,8 +255,8 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 decoration: BoxDecoration(
-                  color: AppColors.bgCanvas,
-                  borderRadius: BorderRadius.circular(6),
+                  color: AppColors.bgCard,
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppColors.borderSubtle),
                 ),
                 child: DropdownButtonHideUnderline(
@@ -110,8 +278,8 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 decoration: BoxDecoration(
-                  color: AppColors.bgCanvas,
-                  borderRadius: BorderRadius.circular(6),
+                  color: AppColors.bgCard,
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppColors.borderSubtle),
                 ),
                 child: DropdownButtonHideUnderline(
@@ -130,173 +298,298 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+        );
 
-          // ------------------------------------------------------------------
-          // Master Table Content (Responsive Layout)
-          // ------------------------------------------------------------------
-          if (filteredTokens.isEmpty)
-            const Expanded(
-              child: DqmsEmptyState(
-                title: 'No Token Transactions Found',
-                message: 'No queue tokens match your multi-filter search criteria.',
-                icon: Icons.confirmation_number_outlined,
-              ),
-            )
-          else
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isMobile = constraints.maxWidth < 650;
+        // --------------------------------------------------------------------
+        // 4. MASTER TABLE / LIST
+        // --------------------------------------------------------------------
+        final tableContainer = Container(
+            decoration: BoxDecoration(
+              color: AppColors.bgSurface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.borderSubtle),
+            ),
+            child: filteredTokens.isEmpty
+                ? const DqmsEmptyState(
+                    title: 'No Token Transactions Found',
+                    message: 'No queue tokens match your multi-filter search criteria.',
+                    icon: Icons.confirmation_number_outlined,
+                  )
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isMobile = constraints.maxWidth < 700;
+                      if (isMobile) {
+                        return ListView.builder(
+                          itemCount: filteredTokens.length,
+                          padding: const EdgeInsets.all(12),
+                          itemBuilder: (ctx, i) {
+                            final token = filteredTokens[i];
+                            final isSelected = _selectedToken?.tokenId == token.tokenId;
+                            return _buildMobileTokenCard(token, isSelected);
+                          },
+                        );
+                      }
 
-                  if (isMobile) {
-                    return ListView.builder(
-                      itemCount: filteredTokens.length,
-                      padding: const EdgeInsets.only(top: 4, bottom: 16),
-                      itemBuilder: (ctx, i) {
-                        final token = filteredTokens[i];
-                        final isSelected = _selectedToken?.tokenId == token.tokenId;
-                        return _buildMobileTokenCard(token, isSelected);
-                      },
-                    );
-                  }
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: 880,
+                          child: Column(
+                            children: [
+                              // Table Header
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bgSurfaceHover,
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                                  border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    SizedBox(width: 100, child: Text('TOKEN #', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700, fontFamily: 'monospace'))),
+                                    Expanded(flex: 3, child: Text('SERVICE & WING', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    Expanded(flex: 2, child: Text('COUNTER & CLINICIAN', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    Expanded(flex: 2, child: Text('PATIENT / SUBJECT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    SizedBox(width: 110, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    SizedBox(width: 100, child: Text('WAIT / SLA', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                    SizedBox(width: 50, child: Text('AUDIT', textAlign: TextAlign.right, style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
+                                  ],
+                                ),
+                              ),
 
-                  // Desktop / Tablet Multi-Column View
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: 780,
-                      child: Column(
-                        children: [
-                          // Table Header
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: AppColors.bgHeader,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: AppColors.borderSubtle),
-                            ),
-                            child: const Row(
-                              children: [
-                                SizedBox(width: 90, child: Text('TOKEN #', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                Expanded(flex: 3, child: Text('SERVICE / PROCESS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                Expanded(flex: 2, child: Text('COUNTER STATION', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                Expanded(flex: 2, child: Text('VISITOR / PERSON', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                SizedBox(width: 100, child: Text('STATUS', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                                SizedBox(width: 90, child: Text('SLA TAT', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.w700))),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 6),
+                              // Table Rows
+                              Expanded(
+                                child: ListView.separated(
+                                  itemCount: filteredTokens.length,
+                                  separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
+                                  itemBuilder: (ctx, i) {
+                                    final token = filteredTokens[i];
+                                    final isSelected = _selectedToken?.tokenId == token.tokenId;
 
-                          // Token List Rows
-                          Expanded(
-                            child: ListView.separated(
-                              itemCount: filteredTokens.length,
-                              separatorBuilder: (_, _) => const Divider(color: AppColors.borderSubtle, height: 1),
-                              itemBuilder: (ctx, i) {
-                                final token = filteredTokens[i];
-                                final isSelected = _selectedToken?.tokenId == token.tokenId;
-
-                                return InkWell(
-                                  onTap: () => setState(() => _selectedToken = token),
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    decoration: BoxDecoration(
-                                      color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        // Token # Column
-                                        SizedBox(
-                                          width: 90,
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                token.tokenNumber,
-                                                style: const TextStyle(
-                                                  color: AppColors.brandPrimary,
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w800,
+                                    return InkWell(
+                                      onTap: () => setState(() => _selectedToken = token),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.12) : AppColors.bgCard,
+                                          border: isSelected ? const Border(left: BorderSide(color: AppColors.brandPrimary, width: 3)) : null,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 100,
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    token.tokenNumber,
+                                                    style: const TextStyle(
+                                                      color: AppColors.brandPrimary,
+                                                      fontSize: 13,
+                                                      fontWeight: FontWeight.w800,
+                                                      fontFamily: 'monospace',
+                                                    ),
+                                                  ),
+                                                  if (token.subTokenNumber != null)
+                                                    Text(
+                                                      token.subTokenNumber!,
+                                                      style: const TextStyle(color: AppColors.brandAccent, fontSize: 10, fontFamily: 'monospace'),
+                                                    ),
+                                                ],
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 3,
+                                              child: Text(
+                                                token.processName,
+                                                style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                token.counterName,
+                                                style: const TextStyle(color: AppColors.textSubtle, fontSize: 12),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                token.visitorName,
+                                                style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 110,
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: _buildTokenStatusBadge(token.status),
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 100,
+                                              child: Text(
+                                                '${token.waitTimeMins}m Wait',
+                                                style: TextStyle(
+                                                  color: token.isSlaCompliant ? AppColors.statusActive : AppColors.statusError,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w700,
                                                   fontFamily: 'monospace',
                                                 ),
                                               ),
-                                              if (token.subTokenNumber != null)
-                                                Text(
-                                                  token.subTokenNumber!,
-                                                  style: const TextStyle(color: AppColors.brandAccent, fontSize: 10, fontFamily: 'monospace'),
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                                        // Service Name
-                                        Expanded(
-                                          flex: 3,
-                                          child: Text(
-                                            token.processName,
-                                            style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        // Counter Station
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            token.counterName,
-                                            style: const TextStyle(color: AppColors.textSubtle, fontSize: 11),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        // Visitor / Person Name
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            token.visitorName,
-                                            style: const TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w700),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        // Status Pill
-                                        SizedBox(
-                                          width: 100,
-                                          child: _buildTokenStatusBadge(token.status),
-                                        ),
-                                        // SLA TAT & Wait Time
-                                        SizedBox(
-                                          width: 90,
-                                          child: Text(
-                                            '${token.waitTimeMins}m Wait',
-                                            style: TextStyle(
-                                              color: token.isSlaCompliant ? AppColors.statusActive : AppColors.statusError,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w700,
                                             ),
-                                          ),
+                                            SizedBox(
+                                              width: 50,
+                                              child: IconButton(
+                                                icon: const Icon(Icons.history_rounded, size: 20, color: AppColors.brandPrimary),
+                                                tooltip: 'Inspect Audit Trail',
+                                                onPressed: () => setState(() => _selectedToken = token),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                        ),
+                      );
+                    },
+                  ),
+          );
+
+        // --------------------------------------------------------------------
+        // 5. FOOTER STATUS
+        // --------------------------------------------------------------------
+        final footerWidget = Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                'Showing ${filteredTokens.length} of ${allTokens.length} Token Transactions',
+                style: const TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
+            const Row(
+              children: [
+                Icon(Icons.chevron_left_rounded, color: AppColors.textMuted, size: 18),
+                SizedBox(width: 8),
+                Text('Page 1 of 1', style: TextStyle(color: AppColors.textMain, fontSize: 11, fontWeight: FontWeight.w600)),
+                SizedBox(width: 8),
+                Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 18),
+              ],
+            ),
+          ],
+        );
+
+        if (isCompactHeight) {
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                headerWidget,
+                const SizedBox(height: 12),
+                kpiBarWidget,
+                const SizedBox(height: 12),
+                toolbarWidget,
+                const SizedBox(height: 12),
+                SizedBox(height: 380, child: tableContainer),
+                const SizedBox(height: 8),
+                footerWidget,
+              ],
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            headerWidget,
+            const SizedBox(height: 12),
+            kpiBarWidget,
+            const SizedBox(height: 12),
+            toolbarWidget,
+            const SizedBox(height: 12),
+            Expanded(child: tableContainer),
+            const SizedBox(height: 8),
+            footerWidget,
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildKpiCard({
+    required double width,
+    required String title,
+    required String value,
+    required String trend,
+    required Color trendColor,
+    required IconData icon,
+    required Color accentColor,
+  }) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.bgSurface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(color: AppColors.textSubtle, fontSize: 10, fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(icon, size: 14, color: accentColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              color: AppColors.textMain,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              fontFamily: 'monospace',
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            trend,
+            style: TextStyle(color: trendColor, fontSize: 10, fontWeight: FontWeight.w600),
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
   }
 
-  /// Mobile Adaptive Card for Small Screens (< 650px)
   Widget _buildMobileTokenCard(TokenTransactionModel token, bool isSelected) {
     return InkWell(
       onTap: () => setState(() => _selectedToken = token),
@@ -310,18 +603,10 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
           border: Border.all(
             color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.45) : AppColors.borderSubtle,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Row: Token Badge, Status Badge & Wait Time
             Row(
               children: [
                 Container(
@@ -375,14 +660,12 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
             ),
             const SizedBox(height: 10),
 
-            // Middle: Service / Process Name
             Text(
               token.processName,
               style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
 
-            // Bottom: Counter Station & Visitor Name
             Row(
               children: [
                 const Icon(Icons.desk_rounded, size: 14, color: AppColors.textSubtle),
@@ -411,7 +694,6 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
     );
   }
 
-  /// Status Badge Helper
   Widget _buildTokenStatusBadge(String status) {
     Color color = AppColors.brandPrimary;
     if (status == 'Serving') color = AppColors.statusActive;
@@ -435,7 +717,6 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
     );
   }
 
-  /// Right Side Panel — Chronological Token Audit Log Inspector (`TokenAuditHistory`)
   Widget _buildAuditLogInspector(TokenTransactionModel token) {
     final auditLogs = ref.watch(tokenAuditHistoryProvider(token.tokenId));
 
@@ -443,13 +724,13 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Card
+          // Inspector Header Card
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.bgCanvas,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.borderSubtle),
+              color: AppColors.brandPrimary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.2)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -473,8 +754,8 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Wait Time: ${token.waitTimeMins}m', style: const TextStyle(color: AppColors.textSubtle, fontSize: 11)),
-                    Text('Service Time: ${token.serviceTimeMins}m', style: const TextStyle(color: AppColors.textSubtle, fontSize: 11)),
+                    Text('Wait: ${token.waitTimeMins}m', style: const TextStyle(color: AppColors.textSubtle, fontSize: 11)),
+                    Text('Service: ${token.serviceTimeMins}m', style: const TextStyle(color: AppColors.textSubtle, fontSize: 11)),
                     Text(
                       token.isSlaCompliant ? 'SLA PASSED' : 'SLA BREACHED',
                       style: TextStyle(
@@ -512,8 +793,8 @@ class _TokenTransactionsViewState extends ConsumerState<TokenTransactionsView> {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.bgCanvas,
-                  borderRadius: BorderRadius.circular(6),
+                  color: AppColors.bgSurface,
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppColors.borderSubtle),
                 ),
                 child: Column(

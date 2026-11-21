@@ -3,6 +3,7 @@ using AntiGravity.Enterprise.Shared.Core.Models;
 using DNAQMSAPI.Application.DTOs;
 using DNAQMSAPI.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DNAQMSAPI.Api.Controllers;
@@ -20,18 +21,23 @@ public class AuthController : ApiControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
     {
+        if (request == null || string.IsNullOrWhiteSpace(request.Identifier) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest(AntiGravity.Enterprise.Shared.Core.Models.ApiResponse<object>.Fail("Identifier and Password are required."));
+        }
+
         try
         {
-            var result = await _userService.LoginAsync(request?.Identifier ?? "admin", request?.Password ?? "password");
+            var result = await _userService.LoginAsync(request.Identifier, request.Password);
+            if (!result.Success)
+            {
+                return Unauthorized(result);
+            }
             return ApiResponse(result);
         }
         catch (Exception ex)
         {
-            return ApiResponse(AntiGravity.Enterprise.Shared.Core.Models.ApiResponse<object>.Ok(new {
-                Token = "MOCK_ENTERPRISE_JWT_TOKEN_QA_VERIFIED",
-                User = new { UserId = 1, Username = request?.Identifier ?? "qa_admin", Role = "Admin" },
-                Notice = $"Database notice ({ex.Message})"
-            }, "Login processed successfully."));
+            return StatusCode(StatusCodes.Status500InternalServerError, AntiGravity.Enterprise.Shared.Core.Models.ApiResponse<object>.Fail($"Authentication server error: {ex.Message}"));
         }
     }
 
@@ -39,18 +45,23 @@ public class AuthController : ApiControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
     {
+        if (request == null)
+        {
+            return BadRequest(AntiGravity.Enterprise.Shared.Core.Models.ApiResponse<object>.Fail("Registration payload is required."));
+        }
+
         try
         {
             var result = await _userService.RegisterAsync(request);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
             return ApiResponse(result);
         }
         catch (Exception ex)
         {
-            return ApiResponse(AntiGravity.Enterprise.Shared.Core.Models.ApiResponse<object>.Ok(new {
-                UserId = 101,
-                Email = request?.Email ?? "qa@dqms.org",
-                Notice = $"Database notice ({ex.Message})"
-            }, "User registered successfully."));
+            return StatusCode(StatusCodes.Status500InternalServerError, AntiGravity.Enterprise.Shared.Core.Models.ApiResponse<object>.Fail($"Registration server error: {ex.Message}"));
         }
     }
 }

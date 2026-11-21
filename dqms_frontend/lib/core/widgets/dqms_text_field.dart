@@ -21,6 +21,10 @@ class DqmsTextField extends StatefulWidget {
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final bool enabled;
+  final bool isCompact;
+  final double? height;
+  final EdgeInsetsGeometry? contentPadding;
+  final TextStyle? style;
 
   const DqmsTextField({
     super.key,
@@ -37,6 +41,10 @@ class DqmsTextField extends StatefulWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
+    this.isCompact = true,
+    this.height,
+    this.contentPadding,
+    this.style,
   });
 
   @override
@@ -45,11 +53,23 @@ class DqmsTextField extends StatefulWidget {
 
 class _DqmsTextFieldState extends State<DqmsTextField> {
   late TextEditingController _effectiveController;
+  late FocusNode _focusNode;
+  bool _isFocused = false;
 
   @override
   void initState() {
     super.initState();
     _effectiveController = widget.controller ?? TextEditingController(text: widget.initialValue);
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      if (mounted) setState(() => _isFocused = _focusNode.hasFocus);
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,6 +91,90 @@ class _DqmsTextFieldState extends State<DqmsTextField> {
   @override
   Widget build(BuildContext context) {
     final effectiveHint = widget.hint ?? widget.hintText;
+    final isSingleLine = widget.maxLines == 1;
+    final double fieldHeight = widget.isCompact
+        ? (widget.height ?? AppSpacing.formFieldHeight)
+        : (widget.height ?? 40.0);
+    final hasError = widget.errorText != null && widget.errorText!.isNotEmpty;
+
+    Widget inputContainer = Container(
+      height: isSingleLine ? fieldHeight : null,
+      constraints: !isSingleLine ? BoxConstraints(minHeight: fieldHeight) : null,
+      padding: EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: isSingleLine ? 0 : 8,
+      ),
+      decoration: BoxDecoration(
+        color: widget.enabled ? AppColors.bgCanvas : AppColors.bgCanvas.withValues(alpha: 0.5),
+        borderRadius: AppRadius.borderSm,
+        border: Border.all(
+          color: hasError
+              ? AppColors.statusDeactive
+              : (_isFocused ? AppColors.borderFocus : AppColors.borderSubtle),
+          width: _isFocused ? 1.5 : 1.0,
+        ),
+        boxShadow: _isFocused
+            ? [
+                BoxShadow(
+                  color: AppColors.brandPrimary.withValues(alpha: 0.2),
+                  blurRadius: 4,
+                  spreadRadius: 0.5,
+                ),
+              ]
+            : null,
+      ),
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: isSingleLine ? 3.5 : 0.0,
+          ),
+          child: Row(
+          children: [
+            if (widget.prefixIcon != null) ...[
+              widget.prefixIcon!,
+              const SizedBox(width: 6),
+            ],
+            Expanded(
+              child: TextField(
+                focusNode: _focusNode,
+                controller: _effectiveController,
+                obscureText: widget.obscureText,
+                maxLines: widget.maxLines,
+                keyboardType: widget.keyboardType,
+                onChanged: widget.onChanged,
+                enabled: widget.enabled,
+                textAlignVertical: TextAlignVertical.center,
+                style: (widget.style ?? AppTypography.bodyMedium).copyWith(
+                  color: widget.enabled ? AppColors.textMain : AppColors.textDisabled,
+                  fontSize: widget.isCompact ? 12.0 : 13.5,
+                ),
+                decoration: InputDecoration(
+                  isCollapsed: isSingleLine,
+                  isDense: true,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                  hintText: effectiveHint,
+                  hintStyle: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textSubtle,
+                    fontSize: widget.isCompact ? 12.0 : 13.5,
+                  ),
+                ),
+              ),
+            ),
+            if (widget.suffixIcon != null) ...[
+              const SizedBox(width: 6),
+              widget.suffixIcon!,
+            ],
+          ],
+        ),
+      ),
+    ),
+  );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,57 +185,30 @@ class _DqmsTextFieldState extends State<DqmsTextField> {
             widget.label,
             style: AppTypography.kpiLabel.copyWith(
               color: AppColors.textMuted,
-              fontSize: 12,
+              fontSize: widget.isCompact ? 11 : 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.2,
             ),
           ),
-          const SizedBox(height: AppSpacing.xs),
+          SizedBox(height: widget.isCompact ? 3.0 : AppSpacing.xs),
         ],
         Semantics(
           label: widget.label.isNotEmpty ? widget.label : effectiveHint,
           hint: effectiveHint,
           textField: true,
-          child: TextField(
-            controller: _effectiveController,
-            obscureText: widget.obscureText,
-            maxLines: widget.maxLines,
-            keyboardType: widget.keyboardType,
-            onChanged: widget.onChanged,
-            enabled: widget.enabled,
-            style: AppTypography.bodyMedium.copyWith(
-              color: widget.enabled ? AppColors.textMain : AppColors.textDisabled,
-            ),
-            decoration: InputDecoration(
-              hintText: effectiveHint,
-              errorText: widget.errorText,
-              hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSubtle),
-              filled: true,
-              fillColor: widget.enabled ? AppColors.bgCanvas : AppColors.bgCanvas.withValues(alpha: 0.5),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              prefixIcon: widget.prefixIcon,
-              suffixIcon: widget.suffixIcon,
-              border: OutlineInputBorder(
-                borderRadius: AppRadius.borderSm,
-                borderSide: const BorderSide(color: AppColors.borderSubtle),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: AppRadius.borderSm,
-                borderSide: const BorderSide(color: AppColors.borderSubtle),
-              ),
-              disabledBorder: OutlineInputBorder(
-                borderRadius: AppRadius.borderSm,
-                borderSide: const BorderSide(color: AppColors.borderSubtle),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: AppRadius.borderSm,
-                borderSide: const BorderSide(color: AppColors.borderFocus, width: 1.5),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: AppRadius.borderSm,
-                borderSide: const BorderSide(color: AppColors.statusDeactive),
-              ),
+          child: inputContainer,
+        ),
+        if (hasError) ...[
+          const SizedBox(height: 2),
+          Text(
+            widget.errorText!,
+            style: const TextStyle(
+              color: AppColors.statusDeactive,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w500,
             ),
           ),
-        ),
+        ],
       ],
     );
   }

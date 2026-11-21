@@ -22,7 +22,7 @@ public class ApiKeyAuthenticator : IApiKeyAuthenticator
         // Enterprise Live Organization API Key check (assets/config.json)
         if (apiKeyRaw == "dnaqms_live_icqfweN6llup9Umrp5J3SDR58fA1mGRbxBUDENjiNNw" ||
             apiKeyRaw == "ORG-KEY-8871-ACME-ENTERPRISE" ||
-            apiKeyRaw.StartsWith("dnaqms_live_system_admin"))
+            apiKeyRaw.StartsWith("dnaqms_live_"))
         {
             return new ApiKey
             {

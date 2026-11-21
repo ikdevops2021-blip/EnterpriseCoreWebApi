@@ -9,6 +9,7 @@ namespace DNAQMSAPI.Infrastructure.Services
     {
         Task<ApiResponse<IEnumerable<DisplayBoardItemModel>>> GetPublicDisplayBoardAsync(int organizationId, int locationId, int? areaId);
         Task<ApiResponse<PublicTokenStatusModel>> GetPublicTokenStatusAsync(int tokenId);
+        Task<ApiResponse<PublicTokenStatusModel>> GetPublicTokenStatusByNumberAsync(string tokenNumber);
     }
 
     public class DqmsCustomerService : IDqmsCustomerService
@@ -63,6 +64,25 @@ namespace DNAQMSAPI.Infrastructure.Services
                 }
 
                 return ApiResponse<PublicTokenStatusModel>.Fail("Token not found or already completed.");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<PublicTokenStatusModel>.Fail($"Status notice ({ex.Message})");
+            }
+        }
+
+        public async Task<ApiResponse<PublicTokenStatusModel>> GetPublicTokenStatusByNumberAsync(string tokenNumber)
+        {
+            try
+            {
+                const string sql = "SELECT Id FROM TokenTransaction WHERE TokenNumber = @TokenNumber AND IsDeleted = 0 ORDER BY Id DESC LIMIT 1";
+                var tokenId = (await _dbFactory.QueryAsync<int?>(sql, new { TokenNumber = tokenNumber })).FirstOrDefault();
+                if (tokenId.HasValue && tokenId.Value > 0)
+                {
+                    return await GetPublicTokenStatusAsync(tokenId.Value);
+                }
+
+                return ApiResponse<PublicTokenStatusModel>.Fail($"Token '{tokenNumber}' not found or already completed.");
             }
             catch (Exception ex)
             {

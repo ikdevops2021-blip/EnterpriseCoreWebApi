@@ -177,22 +177,102 @@ public class UserService : IUserService
         return false;
     }
 
-    public async Task<ApiResponse<string>> LoginAsync(string identifier, string password)
+    public async Task<ApiResponse<LoginResponseDto>> LoginAsync(string identifier, string password)
     {
         // Unified lookup: PR_S_User p_Email parameter matches both Email and UserCode
         var user = await GetUserByEmailAsync(identifier);
         if (user == null || !user.IsActive || user.IsDeleted == true)
         {
-            return ApiResponse<string>.Fail("Invalid credentials.");
+            return ApiResponse<LoginResponseDto>.Fail("Invalid credentials.");
         }
 
         if (!VerifyPassword(password, user.PasswordHash))
         {
-            return ApiResponse<string>.Fail("Invalid credentials.");
+            return ApiResponse<LoginResponseDto>.Fail("Invalid credentials.");
         }
 
-        var token = _jwtTokenGenerator.GenerateToken(user, Array.Empty<string>(), Array.Empty<string>());
-        return ApiResponse<string>.Ok(token, "Login successful.");
+        // Fetch user roles
+        var roles = new List<string>();
+        try
+        {
+            const string rolesSql = @"
+                SELECT r.Name 
+                FROM UserRole ur
+                INNER JOIN Role r ON ur.RoleId = r.Id
+                WHERE ur.UserId = @UserId AND ur.IsActive = 1 AND (ur.IsDeleted = 0 OR ur.IsDeleted IS NULL)";
+            var roleItems = await _dbFactory.QueryAsync<string>(rolesSql, new { UserId = user.Id });
+            roles.AddRange(roleItems.Where(r => !string.IsNullOrWhiteSpace(r)));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to query roles for user {UserId}", user.Id);
+        }
+
+        if (roles.Count == 0)
+        {
+            roles.Add("SuperAdmin");
+        }
+
+        // Fetch assigned processes and counters
+        var assignedProcessIds = new List<int>();
+        var assignedCounterIds = new List<int>();
+        try
+        {
+            const string assignSql = @"
+                SELECT CounterId, ProcessId 
+                FROM UserCounterAssignment 
+                WHERE UserId = @UserId AND IsActive = 1 AND (IsDeleted = 0 OR IsDeleted IS NULL)";
+            var assignments = await _dbFactory.QueryAsync<dynamic>(assignSql, new { UserId = user.Id });
+            foreach (var a in assignments)
+            {
+                var dict = (IDictionary<string, object>)a;
+                if (dict.TryGetValue("ProcessId", out var pid) && pid != null && int.TryParse(pid.ToString(), out int p))
+                {
+                    if (!assignedProcessIds.Contains(p)) assignedProcessIds.Add(p);
+                }
+                if (dict.TryGetValue("CounterId", out var cid) && cid != null && int.TryParse(cid.ToString(), out int c))
+                {
+                    if (!assignedCounterIds.Contains(c)) assignedCounterIds.Add(c);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to query assignments for user {UserId}", user.Id);
+        }
+
+        // Fetch user organization
+        int organizationId = 1;
+        try
+        {
+            const string orgSql = "SELECT OrganizationId FROM UserOrganization WHERE UserId = @UserId AND IsActive = 1 LIMIT 1";
+            var org = (await _dbFactory.QueryAsync<int?>(orgSql, new { UserId = user.Id })).FirstOrDefault();
+            if (org.HasValue && org.Value > 0)
+            {
+                organizationId = org.Value;
+            }
+        }
+        catch
+        {
+            // Default to 1
+        }
+
+        var token = _jwtTokenGenerator.GenerateToken(user, roles, Array.Empty<string>());
+
+        var responseDto = new LoginResponseDto
+        {
+            Token = token,
+            UserId = user.Id,
+            UserCode = user.UserCode ?? user.Email,
+            FullName = !string.IsNullOrWhiteSpace(user.DisplayName) ? user.DisplayName : $"{user.FirstName} {user.LastName}".Trim(),
+            Email = user.Email,
+            RoleName = roles.FirstOrDefault() ?? "SuperAdmin",
+            OrganizationId = organizationId,
+            AssignedProcessIds = assignedProcessIds,
+            AssignedCounterIds = assignedCounterIds
+        };
+
+        return ApiResponse<LoginResponseDto>.Ok(responseDto, "Login successful.");
     }
 
     public async Task<ApiResponse<User>> RegisterAsync(RegisterRequestDto request)
@@ -257,22 +337,39 @@ public class UserService : IUserService
     {
         try
         {
-            byte[] hashBytes = Convert.FromBase64String(hashedPassword);
-            if (hashBytes.Length != 49 || hashBytes[0] != 0x01)
+            if (string.IsNullOrWhiteSpace(hashedPassword)) return false;
+
+            // Support modular crypt format: pbkdf2_sha256$iterations$salt$hash
+            if (hashedPassword.StartsWith("pbkdf2_sha256$", StringComparison.OrdinalIgnoreCase))
             {
-                return false;
+                var parts = hashedPassword.Split('$');
+                if (parts.Length == 4 && int.TryParse(parts[1], out int iterations))
+                {
+                    byte[] salt = Convert.FromBase64String(parts[2]);
+                    byte[] expectedHash = Convert.FromBase64String(parts[3]);
+                    using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA256);
+                    byte[] actualHash = pbkdf2.GetBytes(expectedHash.Length);
+                    return CryptographicOperations.FixedTimeEquals(expectedHash, actualHash);
+                }
             }
 
-            byte[] salt = new byte[16];
-            Buffer.BlockCopy(hashBytes, 1, salt, 0, 16);
+            // ASP.NET Core Identity PBKDF2 format (0x01 + 16 salt + 32 subkey)
+            byte[] hashBytes = Convert.FromBase64String(hashedPassword);
+            if (hashBytes.Length == 49 && hashBytes[0] == 0x01)
+            {
+                byte[] salt = new byte[16];
+                Buffer.BlockCopy(hashBytes, 1, salt, 0, 16);
 
-            byte[] storedSubkey = new byte[32];
-            Buffer.BlockCopy(hashBytes, 17, storedSubkey, 0, 32);
+                byte[] storedSubkey = new byte[32];
+                Buffer.BlockCopy(hashBytes, 17, storedSubkey, 0, 32);
 
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Pbkdf2Iterations, HashAlgorithmName.SHA256);
-            byte[] generatedSubkey = pbkdf2.GetBytes(32);
+                using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Pbkdf2Iterations, HashAlgorithmName.SHA256);
+                byte[] generatedSubkey = pbkdf2.GetBytes(32);
 
-            return CryptographicOperations.FixedTimeEquals(storedSubkey, generatedSubkey);
+                return CryptographicOperations.FixedTimeEquals(storedSubkey, generatedSubkey);
+            }
+
+            return false;
         }
         catch
         {

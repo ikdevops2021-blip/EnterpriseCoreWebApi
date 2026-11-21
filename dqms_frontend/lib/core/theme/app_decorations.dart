@@ -24,6 +24,7 @@ class AppSpacing {
   static const double compactGutter = 8.0;
   static const double denseRowHeight = 36.0;
   static const double compactButtonHeight = 32.0;
+  static const double formFieldHeight = 34.0;
 }
 
 /// Border Radius Tokens (Consistent, subtle rounded corners — no giant rounded cards)
