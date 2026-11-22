@@ -1,0 +1,93 @@
+{
+  "timestamp": "2026-11-22 14:37:04",
+  "target_url": "http://localhost:8085",
+  "api_url": "http://localhost:5026",
+  "flows": [
+    {
+      "flow": "API Auth Verification",
+      "status": "PASS",
+      "details": "Genuine JWT received: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...",
+      "screenshot": null
+    },
+    {
+      "flow": "FLOW 1: Login UI Render",
+      "status": "PASS",
+      "details": "Page rendered successfully. Title: 'DQMS - Digital Queue Management System'",
+      "screenshot": "e:\\MySourceCodes\\AntiGravity_Projects\\WebAPIs\\antigravity-enterprise\\qa_screenshots\\01_login_screen.png"
+    },
+    {
+      "flow": "FLOW 2: Admin Dashboard",
+      "status": "PASS",
+      "details": "Dashboard view rendered with sidebar navigation and metrics",
+      "screenshot": "e:\\MySourceCodes\\AntiGravity_Projects\\WebAPIs\\antigravity-enterprise\\qa_screenshots\\02_dashboard_overview.png"
+    },
+    {
+      "flow": "FLOW 3: Areas & Zones Admin",
+      "status": "PASS",
+      "details": "Areas list loaded with 5 zones",
+      "screenshot": "e:\\MySourceCodes\\AntiGravity_Projects\\WebAPIs\\antigravity-enterprise\\qa_screenshots\\03_admin_areas.png"
+    },
+    {
+      "flow": "FLOW 4: Processes & Services Admin",
+      "status": "PASS",
+      "details": "Processes table loaded with clinical triage categories",
+      "screenshot": "e:\\MySourceCodes\\AntiGravity_Projects\\WebAPIs\\antigravity-enterprise\\qa_screenshots\\04_admin_processes.png"
+    },
+    {
+      "flow": "FLOW 5: Teller Counters Admin",
+      "status": "PASS",
+      "details": "4 operational counters displayed",
+      "screenshot": "e:\\MySourceCodes\\AntiGravity_Projects\\WebAPIs\\antigravity-enterprise\\qa_screenshots\\05_admin_counters.png"
+    },
+    {
+      "flow": "FLOW 6: Display Templates Admin",
+      "status": "PASS",
+      "details": "Display templates grid loaded with 3 pre-seeded themes",
+      "screenshot": "e:\\MySourceCodes\\AntiGravity_Projects\\WebAPIs\\antigravity-enterprise\\qa_screenshots\\06_admin_display_templates.png"
+    },
+    {
+      "flow": "FLOW 7: User Profiles Admin",
+      "status": "PASS",
+      "details": "Staff user directory and role allocations rendered",
+      "screenshot": "e:\\MySourceCodes\\AntiGravity_Projects\\WebAPIs\\antigravity-enterprise\\qa_screenshots\\07_admin_user_profiles.png"
+    },
+    {
+      "flow": "FLOW 8: Customer Kiosk",
+      "status": "PASS",
+      "details": "Self-service kiosk displayed with touch categories and issue button",
+      "screenshot": "e:\\MySourceCodes\\AntiGravity_Projects\\WebAPIs\\antigravity-enterprise\\qa_screenshots\\08b_kiosk_ticket_issued.png"
+    },
+    {
+      "flow": "FLOW 9: TV Display Board",
+      "status": "PASS",
+      "details": "Overhead 4K display active with NOW CALLING ticket grid & counter routing",
+      "screenshot": "e:\\MySourceCodes\\AntiGravity_Projects\\WebAPIs\\antigravity-enterprise\\qa_screenshots\\09b_tv_display_after_poll.png"
+    },
+    {
+      "flow": "FLOW 10: Staff Teller Console",
+      "status": "PASS",
+      "details": "Teller counter console operational with queue status and action triggers",
+      "screenshot": "e:\\MySourceCodes\\AntiGravity_Projects\\WebAPIs\\antigravity-enterprise\\qa_screenshots\\10b_staff_counter_action_executed.png"
+    },
+    {
+      "flow": "FLOW 11: Mobile Ticket Tracking",
+      "status": "PASS",
+      "details": "Mobile customer tracking rendered responsively on 390x844 viewport",
+      "screenshot": "e:\\MySourceCodes\\AntiGravity_Projects\\WebAPIs\\antigravity-enterprise\\qa_screenshots\\11_customer_mobile_tracking.png"
+    },
+    {
+      "flow": "FLOW 12: Appointments Calendar",
+      "status": "PASS",
+      "details": "Appointments booking calendar and schedule view rendered",
+      "screenshot": "e:\\MySourceCodes\\AntiGravity_Projects\\WebAPIs\\antigravity-enterprise\\qa_screenshots\\12_appointments_calendar.png"
+    },
+    {
+      "flow": "Console Quality Audit",
+      "status": "PASS",
+      "details": "Zero severe JavaScript runtime exceptions detected",
+      "screenshot": null
+    }
+  ],
+  "console_log_count": 1,
+  "severe_errors": []
+}
