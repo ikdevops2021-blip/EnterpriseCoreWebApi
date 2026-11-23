@@ -52,6 +52,41 @@ namespace DNAQMSAPI.Api.Controllers
         }
 
         /// <summary>
+        /// Forwards a token along the N-level pipeline (Step N -> Step N+1, cross-process handoff, or sub-token generation).
+        /// </summary>
+        [HttpPost("forward-token")]
+        [HttpPost("forward")]
+        [HttpPost("/api/v1/dqms/tickets/forward")]
+        public async Task<IActionResult> ForwardToken([FromBody] ForwardTokenRequestDto dto, [FromHeader(Name = "X-User-Id")] int userId = 1)
+        {
+            var effectiveUserId = (dto?.StaffUserId > 0) ? dto.StaffUserId : (userId > 0 ? userId : 1);
+            var result = await _staffService.ForwardTokenAsync(dto ?? new ForwardTokenRequestDto(), effectiveUserId);
+            return ApiResponse(result);
+        }
+
+        /// <summary>
+        /// Retrieves the complete N-level lifecycle journey, steps, and sub-tokens for a token.
+        /// </summary>
+        [HttpGet("token/{tokenId}/workflow")]
+        [HttpGet("/api/v1/dqms/tickets/{tokenId}/workflow")]
+        public async Task<IActionResult> GetTokenWorkflow(int tokenId, [FromQuery] string? tokenNumber)
+        {
+            var result = await _staffService.GetTokenWorkflowHistoryAsync(tokenId, tokenNumber);
+            return ApiResponse(result);
+        }
+
+        /// <summary>
+        /// Retrieves the sequential step catalog for a process or all processes.
+        /// </summary>
+        [HttpGet("process/{processId}/steps")]
+        [HttpGet("steps")]
+        public async Task<IActionResult> GetProcessSteps(int? processId)
+        {
+            var result = await _staffService.GetProcessStepsAsync(processId);
+            return ApiResponse(result);
+        }
+
+        /// <summary>
         /// Gets current active token and waiting queue list for counter station.
         /// </summary>
         [HttpGet("queue")]

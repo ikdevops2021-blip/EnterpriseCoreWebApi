@@ -19,7 +19,7 @@ for /f "tokens=2 delims=," %%a in ('wmic process where "name='dotnet.exe' and co
 
 :: 3. Start DNAQMSAPI Web Server in a new window
 echo [INFO] Launching Web API on http://localhost:5026 ...
-start "DNAQMSAPI Server" dotnet run --project "%~dp0DNAQMSAPI\DNAQMSAPI.Api\DNAQMSAPI.Api.csproj"
+dotnet run --project "%~dp0DNAQMSAPI\\DNAQMSAPI.Api\\DNAQMSAPI.Api.csproj"
 
 timeout /t 3 /nobreak >nul
 echo [SUCCESS] Web API startup initiated. Swagger UI available at http://localhost:5026/swagger

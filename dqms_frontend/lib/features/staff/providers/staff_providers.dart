@@ -2,7 +2,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/enums/dqms_enums.dart';
 import '../../../core/models/staff_models.dart';
 import '../../../core/network/dio_provider.dart';
+import '../models/staff_dto.dart';
+import '../repositories/staff_repository.dart';
 import 'staff_session_provider.dart';
+
+/// Provider for process sequential steps
+final processStepsProvider = FutureProvider.family<List<ProcessStepDto>, int>((ref, processId) async {
+  final repo = ref.watch(staffRepositoryProvider);
+  return repo.fetchProcessSteps(processId: processId);
+});
+
+/// Provider for token N-level workflow history
+final tokenWorkflowProvider = FutureProvider.family<TokenWorkflowHistoryDto?, int>((ref, tokenId) async {
+  final repo = ref.watch(staffRepositoryProvider);
+  return repo.fetchTokenWorkflow(tokenId);
+});
 
 /// ============================================================================
 /// Stage 2 Staff Operations Riverpod Providers
@@ -88,6 +102,46 @@ class TokenQueueNotifier extends AsyncNotifier<List<TokenTransactionDto>> {
         actionLabel,
         notes: reason,
       );
+    }
+  }
+
+  /// Forwards active token to Next Step N+1 OR branches to target process
+  Future<bool> forwardToken(
+    int tokenId, {
+    int? targetProcessId,
+    int? targetCounterId,
+    bool isSubToken = false,
+    String? reason,
+    String tokenNumber = '',
+  }) async {
+    final session = ref.read(staffSessionProvider);
+    try {
+      final repo = ref.read(staffRepositoryProvider);
+      final res = await repo.forwardToken(ForwardTokenRequestDto(
+        tokenId: tokenId,
+        targetProcessId: targetProcessId,
+        targetCounterId: targetCounterId,
+        isSubToken: isSubToken,
+        reason: reason,
+        staffUserId: session.staffUserId,
+      ));
+
+      final action = isSubToken ? 'Sub-Token Dispatched' : 'Forwarded Next Step';
+      ref.read(staffSessionProvider.notifier).logAction(
+        tokenNumber.isNotEmpty ? tokenNumber : 'TKN-$tokenId',
+        action,
+        notes: reason,
+      );
+      ref.invalidateSelf();
+      return res['success'] == true;
+    } catch (e) {
+      ref.read(staffSessionProvider.notifier).logAction(
+        tokenNumber.isNotEmpty ? tokenNumber : 'TKN-$tokenId',
+        isSubToken ? 'Sub-Token Branch' : 'Forwarded',
+        notes: reason,
+      );
+      ref.invalidateSelf();
+      return false;
     }
   }
 

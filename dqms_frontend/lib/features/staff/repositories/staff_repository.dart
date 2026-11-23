@@ -86,4 +86,53 @@ class StaffRepository {
       rethrow;
     }
   }
+
+  /// Forwards a token along the N-level pipeline (Step N -> Step N+1 or sub-token branch)
+  Future<Map<String, dynamic>> forwardToken(ForwardTokenRequestDto dto) async {
+    try {
+      final response = await dio.post(
+        '/api/v1/staff/forward-token',
+        data: dto.toJson(),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw Exception('Forward token failed (HTTP ${response.statusCode})');
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Fetches complete workflow journey history for a token
+  Future<TokenWorkflowHistoryDto?> fetchTokenWorkflow(int tokenId, {String? tokenNumber}) async {
+    try {
+      final response = await dio.get(
+        '/api/v1/staff/token/$tokenId/workflow',
+        queryParameters: tokenNumber != null ? {'tokenNumber': tokenNumber} : null,
+      );
+      if (response.statusCode == 200 && response.data != null && response.data['data'] != null) {
+        return TokenWorkflowHistoryDto.fromJson(response.data['data'] as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Fetches sequential step catalog for a process
+  Future<List<ProcessStepDto>> fetchProcessSteps({int? processId}) async {
+    try {
+      final response = await dio.get(
+        '/api/v1/staff/steps',
+        queryParameters: processId != null ? {'processId': processId} : null,
+      );
+      if (response.statusCode == 200 && response.data != null && response.data['data'] != null) {
+        final list = response.data['data'] as List;
+        return list.map((item) => ProcessStepDto.fromJson(item as Map<String, dynamic>)).toList();
+      }
+      return [];
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

@@ -17,6 +17,9 @@ class TokenTransactionDto {
   final int priorityTier;
   final int tokenStatus;
   final int queuePosition;
+  final int? parentTokenId;
+  final int stepOrder;
+  final int subTokenSequence;
   final String? customerName;
   final String? customerPhone;
   final String? notes;
@@ -37,6 +40,9 @@ class TokenTransactionDto {
     required this.priorityTier,
     required this.tokenStatus,
     required this.queuePosition,
+    this.parentTokenId,
+    this.stepOrder = 1,
+    this.subTokenSequence = 0,
     this.customerName,
     this.customerPhone,
     this.notes,
@@ -59,6 +65,9 @@ class TokenTransactionDto {
       priorityTier: json['priorityTier'] ?? 19001,
       tokenStatus: json['tokenStatus'] ?? 18001,
       queuePosition: json['queuePosition'] ?? 1,
+      parentTokenId: json['parentTokenId'],
+      stepOrder: json['stepOrder'] ?? 1,
+      subTokenSequence: json['subTokenSequence'] ?? 0,
       customerName: json['customerName'],
       customerPhone: json['customerPhone'],
       notes: json['notes'],
@@ -81,6 +90,9 @@ class TokenTransactionDto {
         'priorityTier': priorityTier,
         'tokenStatus': tokenStatus,
         'queuePosition': queuePosition,
+        'parentTokenId': parentTokenId,
+        'stepOrder': stepOrder,
+        'subTokenSequence': subTokenSequence,
         'customerName': customerName,
         'customerPhone': customerPhone,
         'notes': notes,

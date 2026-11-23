@@ -9,6 +9,8 @@ import '../../../core/models/staff_models.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/staff_providers.dart';
 import '../providers/staff_session_provider.dart';
+import '../repositories/staff_repository.dart';
+import '../models/staff_dto.dart';
 
 /// ============================================================================
 /// DQMS ENTERPRISE DESIGN TOKENS (Per UI_UX_DESIGN_SPEC.md)
@@ -77,8 +79,12 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
         queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.completed, tokenNumber: activeToken.tokenNumber).then((_) {
           queueNotifier.callNextToken();
         });
+      } else if (event.logicalKey == LogicalKeyboardKey.f6 && activeToken != null) {
+        _openForwardingDialog(activeToken);
       } else if (event.logicalKey == LogicalKeyboardKey.f7 && activeToken != null) {
         queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.canceled, reason: 'No show / Canceled', tokenNumber: activeToken.tokenNumber);
+      } else if (event.logicalKey == LogicalKeyboardKey.f8 && activeToken != null) {
+        _openWorkflowTimeline(activeToken);
       }
     }
   }
@@ -361,6 +367,34 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
                 ),
               ),
               const Spacer(),
+              if (token.subTokenSequence > 0) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.purpleAccent),
+                  ),
+                  child: Text(
+                    'SUB-TOKEN #${token.subTokenSequence}',
+                    style: const TextStyle(color: Colors.purpleAccent, fontSize: 11, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.teal.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.tealAccent),
+                ),
+                child: Text(
+                  'PIPELINE STEP ${token.stepOrder}',
+                  style: const TextStyle(color: Colors.tealAccent, fontSize: 11, fontWeight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(width: 8),
               _buildPriorityBadge(token.priorityTier),
             ],
           ),
@@ -380,6 +414,13 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
                   Text(token.customerName ?? 'Walk-in Customer', style: const TextStyle(color: OperatorTheme.textMain, fontSize: 20, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
                   Text(token.customerPhone ?? 'No Phone Provided', style: const TextStyle(color: OperatorTheme.textMuted, fontSize: 14)),
+                  if (token.notes != null && token.notes!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'Handoff Notes: ${token.notes}',
+                      style: const TextStyle(color: Colors.amberAccent, fontSize: 12, fontStyle: FontStyle.italic),
+                    ),
+                  ],
                 ],
               ),
             ],
@@ -412,7 +453,9 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
             _buildActionButton('F5', 'Complete & Call Next', OperatorTheme.actionServe, Icons.check_circle_rounded, activeToken != null ? () {
               queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.completed, tokenNumber: activeToken.tokenNumber).then((_) => queueNotifier.callNextToken());
             } : null, isPrimary: true),
+            _buildActionButton('F6', 'Forward / Next Step', Colors.tealAccent.shade400, Icons.fast_forward_rounded, activeToken != null ? () => _openForwardingDialog(activeToken) : null),
             _buildActionButton('F7', 'Cancel', OperatorTheme.actionCancel, Icons.cancel_outlined, activeToken != null ? () => queueNotifier.updateTokenStatus(activeToken.id, e_TokenStatus.canceled, reason: 'No Show', tokenNumber: activeToken.tokenNumber) : null),
+            _buildActionButton('F8', 'Journey History', const Color(0xFFB388FF), Icons.timeline_rounded, activeToken != null ? () => _openWorkflowTimeline(activeToken) : null),
           ],
         ),
       ],
@@ -667,6 +710,361 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
               Navigator.pop(ctx);
             },
             child: const Text('Issue Token'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// N-Level Pipeline Forwarding & Sub-Token Dialog
+  void _openForwardingDialog(TokenTransactionDto token) async {
+    final repo = ref.read(staffRepositoryProvider);
+    final steps = await repo.fetchProcessSteps(processId: token.processId);
+    final nextStep = steps.where((s) => s.stepOrder == token.stepOrder + 1).firstOrNull;
+
+    final reasonCtrl = TextEditingController();
+    bool isSubToken = false;
+    int? selectedTargetProcessId;
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: OperatorTheme.bgSurface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: const BorderSide(color: Colors.tealAccent),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.alt_route_rounded, color: Colors.tealAccent),
+              const SizedBox(width: 10),
+              Text(
+                'Forward & Pipeline Routing — ${token.tokenNumber}',
+                style: const TextStyle(color: OperatorTheme.textMain, fontWeight: FontWeight.w700, fontSize: 16),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: 480,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.teal.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.teal.withValues(alpha: 0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Current Journey Step: ${token.stepOrder} of ${steps.isNotEmpty ? steps.length : 4}',
+                            style: const TextStyle(color: Colors.tealAccent, fontWeight: FontWeight.w700, fontSize: 12)),
+                        const SizedBox(height: 4),
+                        Text(
+                          nextStep != null
+                              ? 'Next Sequential Step: ${nextStep.stepName}'
+                              : 'Final Step Reached (or cross-process branch)',
+                          style: const TextStyle(color: OperatorTheme.textMain, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Switch(
+                        value: isSubToken,
+                        activeThumbColor: Colors.purpleAccent,
+                        onChanged: (val) {
+                          setDialogState(() {
+                            isSubToken = val;
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isSubToken ? 'Parallel Sub-Token Mode (Branch)' : 'Sequential Handoff Mode',
+                              style: TextStyle(
+                                color: isSubToken ? Colors.purpleAccent : OperatorTheme.textMain,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                            Text(
+                              isSubToken
+                                  ? 'Dispatches linked sub-ticket (e.g. Lab/Pharmacy) while parent token stays active'
+                                  : 'Completes current counter step and queues customer for Step ${token.stepOrder + 1}',
+                              style: const TextStyle(color: OperatorTheme.textMuted, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Branch to Target Department (Optional):',
+                      style: TextStyle(color: OperatorTheme.textSubtle, fontSize: 12, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 6),
+                  DropdownButtonFormField<int>(
+                    initialValue: selectedTargetProcessId,
+                    dropdownColor: OperatorTheme.bgSurface,
+                    style: const TextStyle(color: OperatorTheme.textMain, fontSize: 13),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: OperatorTheme.bgCanvas,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: OperatorTheme.borderSubtle)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    hint: Text(
+                      isSubToken
+                          ? 'Select sub-token destination (e.g. Lab, Pharmacy)'
+                          : 'Auto: Next Step in Pipeline (${nextStep?.stepName ?? "Step ${token.stepOrder + 1}"})',
+                      style: const TextStyle(color: OperatorTheme.textMuted, fontSize: 12),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 1, child: Text('PROC-101: Comprehensive Patient Registration & Triage')),
+                      DropdownMenuItem(value: 2, child: Text('PROC-201: Executive Health Screening Workflow')),
+                      DropdownMenuItem(value: 3, child: Text('PROC-301: Express Fast-Track Billing & Cashier')),
+                      DropdownMenuItem(value: 4, child: Text('PROC-401: VIP Specialist Consultation')),
+                      DropdownMenuItem(value: 5, child: Text('PROC-501: Prescription Dispensing & Pharmacy Advisory')),
+                    ],
+                    onChanged: (val) {
+                      setDialogState(() {
+                        selectedTargetProcessId = val;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: reasonCtrl,
+                    style: const TextStyle(color: OperatorTheme.textMain, fontSize: 13),
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: 'Clinical / Routing Remarks',
+                      labelStyle: const TextStyle(color: OperatorTheme.textMuted),
+                      hintText: 'e.g. Triage vitals normal. Handoff to Doctor Desk.',
+                      hintStyle: const TextStyle(color: OperatorTheme.textSubtle, fontSize: 12),
+                      filled: true,
+                      fillColor: OperatorTheme.bgCanvas,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: OperatorTheme.borderSubtle)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: OperatorTheme.textMuted)),
+            ),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isSubToken ? Colors.purpleAccent : Colors.tealAccent.shade700,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              ),
+              icon: Icon(isSubToken ? Icons.call_split_rounded : Icons.fast_forward_rounded, size: 18),
+              label: Text(isSubToken ? 'Dispatch Sub-Token' : 'Forward to Next Step'),
+              onPressed: () async {
+                final success = await ref.read(tokenQueueProvider.notifier).forwardToken(
+                  token.id,
+                  targetProcessId: selectedTargetProcessId,
+                  isSubToken: isSubToken,
+                  reason: reasonCtrl.text.trim().isNotEmpty ? reasonCtrl.text.trim() : null,
+                  tokenNumber: token.tokenNumber,
+                );
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        success
+                            ? (isSubToken ? 'Sub-token dispatched successfully' : 'Token forwarded to next pipeline step')
+                            : 'Workflow routing executed',
+                      ),
+                      backgroundColor: Colors.teal,
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Full N-Level Journey Timeline Stepper Dialog
+  void _openWorkflowTimeline(TokenTransactionDto token) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: OperatorTheme.bgSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: Color(0xFFB388FF)),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.timeline_rounded, color: Color(0xFFB388FF)),
+            const SizedBox(width: 10),
+            Text(
+              'Patient Journey Lifecycle — ${token.tokenNumber}',
+              style: const TextStyle(color: OperatorTheme.textMain, fontWeight: FontWeight.w700, fontSize: 16),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: 560,
+          height: 440,
+          child: FutureBuilder<TokenWorkflowHistoryDto?>(
+            future: ref.read(staffRepositoryProvider).fetchTokenWorkflow(token.id),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator(color: Colors.tealAccent));
+              }
+
+              final history = snapshot.data;
+              if (history == null || history.steps.isEmpty) {
+                return const Center(
+                  child: Text('No workflow history records found.', style: TextStyle(color: OperatorTheme.textMuted)),
+                );
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.purple.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Customer: ${history.customerName ?? "Walk-in"}',
+                            style: const TextStyle(color: OperatorTheme.textMain, fontWeight: FontWeight.w700, fontSize: 13)),
+                        Text('Service: ${history.processCode}',
+                            style: const TextStyle(color: Colors.purpleAccent, fontWeight: FontWeight.w700, fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Sequential Pipeline Steps:',
+                      style: TextStyle(color: OperatorTheme.textSubtle, fontSize: 12, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: history.steps.length,
+                      separatorBuilder: (_, _) => const Divider(color: OperatorTheme.borderSubtle, height: 16),
+                      itemBuilder: (context, idx) {
+                        final step = history.steps[idx];
+                        final isDone = step.tokenStatus == 18007 || step.tokenStatus == 18008;
+                        final isCurrent = step.tokenStatus == 18003 || step.tokenStatus == 18004;
+
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 14,
+                              backgroundColor: isDone
+                                  ? Colors.teal
+                                  : (isCurrent ? Colors.amber.shade700 : OperatorTheme.borderSubtle),
+                              child: Text(
+                                '${step.stepOrder}',
+                                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(step.stepName,
+                                            style: const TextStyle(color: OperatorTheme.textMain, fontWeight: FontWeight.w700, fontSize: 13)),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: isDone ? Colors.teal.withValues(alpha: 0.2) : Colors.amber.withValues(alpha: 0.2),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          step.statusName,
+                                          style: TextStyle(
+                                            color: isDone ? Colors.tealAccent : Colors.amberAccent,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Counter: ${step.counterNumber ?? "Enqueued"} | Target TAT: ${step.targetTATMinutes}m | Elapsed: ${step.durationSeconds}s',
+                                    style: const TextStyle(color: OperatorTheme.textMuted, fontSize: 11),
+                                  ),
+                                  if (step.notes != null && step.notes!.isNotEmpty) ...[
+                                    const SizedBox(height: 2),
+                                    Text('Notes: ${step.notes}', style: const TextStyle(color: OperatorTheme.textSubtle, fontSize: 11, fontStyle: FontStyle.italic)),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  if (history.subTokens.isNotEmpty) ...[
+                    const Divider(color: OperatorTheme.borderSubtle),
+                    const Text('Branching Sub-Tokens:',
+                        style: TextStyle(color: Colors.purpleAccent, fontSize: 12, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 6),
+                    ...history.subTokens.map(
+                      (st) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.subdirectory_arrow_right_rounded, color: Colors.purpleAccent, size: 16),
+                            const SizedBox(width: 6),
+                            Text(st.tokenNumber, style: const TextStyle(color: Colors.purpleAccent, fontWeight: FontWeight.w700, fontSize: 12)),
+                            const SizedBox(width: 10),
+                            Expanded(child: Text(st.processName, style: const TextStyle(color: OperatorTheme.textMuted, fontSize: 12))),
+                            Text(st.statusName, style: const TextStyle(color: Colors.tealAccent, fontSize: 11)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB388FF), foregroundColor: Colors.black),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close Journey View', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

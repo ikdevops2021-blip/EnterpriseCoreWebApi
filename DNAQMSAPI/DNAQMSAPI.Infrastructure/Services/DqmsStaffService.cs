@@ -12,6 +12,9 @@ namespace DNAQMSAPI.Infrastructure.Services
         Task<ApiResponse<object>> IssueTokenAsync(IssueTokenRequestDto dto, int userId);
         Task<ApiResponse<object>> CallNextTokenAsync(CallNextTokenRequestDto dto, int userId);
         Task<ApiResponse<object>> UpdateTokenStatusAsync(UpdateTokenStatusRequestDto dto, int userId);
+        Task<ApiResponse<object>> ForwardTokenAsync(ForwardTokenRequestDto dto, int userId);
+        Task<ApiResponse<TokenWorkflowHistoryDto>> GetTokenWorkflowHistoryAsync(int tokenId, string? tokenNumber);
+        Task<ApiResponse<IEnumerable<ProcessStepDto>>> GetProcessStepsAsync(int? processId);
         Task<ApiResponse<IEnumerable<TokenTransactionModel>>> GetTokenQueueAsync(int organizationId, int locationId, int processId, int counterId);
     }
 
@@ -119,6 +122,102 @@ namespace DNAQMSAPI.Infrastructure.Services
             catch (Exception ex)
             {
                 return ApiResponse<object>.Fail($"Database notice: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<object>> ForwardTokenAsync(ForwardTokenRequestDto dto, int userId)
+        {
+            try
+            {
+                var effectiveUserId = dto.StaffUserId > 0 ? dto.StaffUserId : (userId > 0 ? userId : 1);
+                var parameters = new
+                {
+                    p_TokenId = dto.TokenId,
+                    p_TargetProcessId = dto.TargetProcessId,
+                    p_TargetCounterId = dto.TargetCounterId,
+                    p_IsSubToken = dto.IsSubToken ? (byte)1 : (byte)0,
+                    p_Reason = dto.Reason,
+                    p_UserId = effectiveUserId
+                };
+
+                var result = await _dbFactory.QuerySingleAsync<dynamic>(
+                    "PR_IU_ForwardToken",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                if (result != null && (int)result.ErrNo == 0)
+                {
+                    return ApiResponse<object>.Ok(new
+                    {
+                        tokenId = (int)result.ID,
+                        tokenNumber = (string)result.TokenNumber,
+                        processId = (int)result.ProcessId,
+                        stepOrder = (int)result.StepOrder,
+                        stepName = (string)result.StepName,
+                        isSubToken = dto.IsSubToken
+                    }, (string)result.ErrMsg);
+                }
+
+                return ApiResponse<object>.Fail((string)result?.ErrMsg ?? "Failed to forward token.");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<object>.Fail($"Database notice: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<TokenWorkflowHistoryDto>> GetTokenWorkflowHistoryAsync(int tokenId, string? tokenNumber)
+        {
+            try
+            {
+                var parameters = new
+                {
+                    p_TokenId = tokenId,
+                    p_TokenNumber = tokenNumber ?? string.Empty
+                };
+
+                using var grid = await _dbFactory.QueryMultipleAsync("PR_S_TokenWorkflowHistory", parameters);
+                var header = await grid.ReadFirstOrDefaultAsync<TokenWorkflowHistoryDto>();
+                if (header == null)
+                {
+                    return ApiResponse<TokenWorkflowHistoryDto>.Fail("Token workflow journey not found.");
+                }
+
+                var steps = (await grid.ReadAsync<TokenWorkflowStepDto>()) ?? Enumerable.Empty<TokenWorkflowStepDto>();
+                var subTokens = (await grid.ReadAsync<SubTokenDto>()) ?? Enumerable.Empty<SubTokenDto>();
+
+                header.Steps = steps.ToList();
+                header.SubTokens = subTokens.ToList();
+
+                return ApiResponse<TokenWorkflowHistoryDto>.Ok(header);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<TokenWorkflowHistoryDto>.Fail($"Failed to load workflow history: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<IEnumerable<ProcessStepDto>>> GetProcessStepsAsync(int? processId)
+        {
+            try
+            {
+                var parameters = new
+                {
+                    p_ProcessId = processId ?? 0
+                };
+
+                var steps = await _dbFactory.QueryAsync<ProcessStepDto>(
+                    "PR_S_ProcessSteps",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                return ApiResponse<IEnumerable<ProcessStepDto>>.Ok(steps ?? Enumerable.Empty<ProcessStepDto>());
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<IEnumerable<ProcessStepDto>>.Ok(Enumerable.Empty<ProcessStepDto>(), $"Steps notice: {ex.Message}");
             }
         }
 
