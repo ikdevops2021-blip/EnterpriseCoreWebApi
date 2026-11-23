@@ -6,6 +6,7 @@ import 'package:dqms_frontend/core/theme/app_decorations.dart';
 import 'package:dqms_frontend/core/theme/app_typography.dart';
 import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
 import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
+import 'package:dqms_frontend/core/widgets/language_selector_dropdown.dart';
 import 'package:dqms_frontend/features/customer/providers/customer_providers.dart';
 
 /// ============================================================================
@@ -146,6 +147,8 @@ class WaitingRoomTvScreen extends ConsumerWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 16),
+            const LanguageSelectorDropdown(),
           ],
         ),
       ),

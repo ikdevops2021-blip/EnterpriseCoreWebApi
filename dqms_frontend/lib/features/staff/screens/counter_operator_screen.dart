@@ -7,8 +7,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/enums/dqms_enums.dart';
 import '../../../core/models/staff_models.dart';
 import '../../../core/theme/app_colors.dart';
-import 'package:universal_printer/universal_printer.dart';
-import 'package:dqms_frontend/packages/universal_printer/lib/src/models/token_print_helper.dart';
 import '../providers/staff_providers.dart';
 import '../providers/staff_session_provider.dart';
 import '../repositories/staff_repository.dart';
@@ -223,23 +221,6 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
           ElevatedButton.icon(
             icon: const Icon(Icons.confirmation_number_outlined, size: 16),
             label: const Text('Issue New Token'),
-            onPressed: () => _showIssueTokenDialog(),
-          ),
-          const SizedBox(width: 8),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.print, size: 16),
-            label: const Text('Print Token'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: OperatorTheme.bgCard,
-              foregroundColor: OperatorTheme.textMain,
-            ),
-            onPressed: () async {
-              // Example token; in real use, retrieve the current token or generate one.
-              final token = "TOKEN-${DateTime.now().millisecondsSinceEpoch}";
-              final doc = TokenPrintHelper.createTokenDocument(token);
-              await UniversalPrinterService().printDocument(doc);
-            },
-          )
             style: ElevatedButton.styleFrom(
               backgroundColor: OperatorTheme.bgCard,
               foregroundColor: OperatorTheme.textMain,

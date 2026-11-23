@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/config/app_config.dart';
 import 'core/theme/app_theme.dart';
+import 'core/localization/locale_provider.dart';
 
 // Screens & Views Imports
 import 'features/auth/screens/login_screen.dart';
@@ -27,6 +29,7 @@ import 'features/admin/widgets/token_transactions_view.dart';
 
 import 'features/customer/kiosk/screens/kiosk_screen.dart';
 import 'features/customer/mobile/screens/mobile_tracker_screen.dart';
+import 'features/customer/mobile/screens/public_mobile_tracker_screen.dart';
 import 'features/customer/appointment/screens/appointment_booking_screen.dart';
 import 'features/customer/appointment/screens/appointments_calendar_screen.dart';
 import 'features/customer/tv/screens/waiting_room_tv_screen.dart';
@@ -147,6 +150,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const MobileTrackerScreen(),
       ),
       GoRoute(
+        path: '/track/:identifier',
+        builder: (context, state) {
+          final identifier = state.pathParameters['identifier'] ?? '1';
+          return PublicMobileTrackerScreen(identifier: identifier);
+        },
+      ),
+      GoRoute(
+        path: '/track',
+        builder: (context, state) {
+          final identifier = state.uri.queryParameters['t'] ?? '1';
+          return PublicMobileTrackerScreen(identifier: identifier);
+        },
+      ),
+      GoRoute(
         path: '/appointment',
         builder: (context, state) => const AppointmentBookingScreen(),
       ),
@@ -172,6 +189,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthenticated = authState.isAuthenticated;
       final path = state.uri.path;
       final isLoggingIn = path == '/login';
+      final isPublicRoute = path.startsWith('/track') || path == '/tv' || path == '/kiosk';
+
+      // Allow public customer screens without login
+      if (isPublicRoute) return null;
 
       if (!isAuthenticated && !isLoggingIn) return '/login';
 
@@ -210,6 +231,7 @@ class DqmsApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final currentLocale = ref.watch(localeProvider);
 
     return MaterialApp.router(
       title: 'DQMS - Digital Queue Management System',
@@ -218,6 +240,10 @@ class DqmsApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark, // Default Command Center Dark Aesthetic
       routerConfig: router,
+      // Dynamic Localization configuration with SharedPreferences persistence
+      locale: currentLocale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
     );
   }
 }

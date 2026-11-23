@@ -8,6 +8,7 @@ import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
 import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
+import 'package:dqms_frontend/core/widgets/ticket_qr_pass_widget.dart';
 import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart';
 import 'package:dqms_frontend/features/customer/providers/customer_experience_provider.dart';
 
@@ -932,21 +933,10 @@ class _KioskScreenState extends ConsumerState<KioskScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // QR Code Card
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.qr_code_2_rounded, color: Colors.black, size: 90),
+                // Dynamic Mobile PWA Virtual Queue QR Pass
+                TicketQrPassWidget(
+                  tokenNumber: state.generatedTokenNumber,
+                  size: 140,
                 ),
                 const SizedBox(height: 10),
                 const Text(

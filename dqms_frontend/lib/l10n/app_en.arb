@@ -1,0 +1,57 @@
+{
+  "@@locale": "en",
+  "appTitle": "DQMS Enterprise",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "commandCenter": "Command Center",
+  "counterStation": "Counter Station",
+  "waitingRoomTV": "Waiting Room TV",
+  "selfServiceKiosk": "Self-Service Kiosk",
+  "mobileTracker": "Mobile Tracker",
+  "ticketNumber": "Ticket Number",
+  "serviceName": "Service",
+  "counter": "Counter",
+  "status": "Status",
+  "priority": "Priority",
+  "issued": "Issued",
+  "waitTime": "Wait Time",
+  "actions": "Actions",
+  "callNext": "Call Next Ticket",
+  "recall": "Recall",
+  "hold": "Hold Ticket",
+  "forward": "Forward / Route",
+  "complete": "Complete Service",
+  "cancel": "Cancel Ticket",
+  "issueTicket": "Issue Walk-in Ticket",
+  "printTicket": "Print Ticket",
+  "activeTicket": "Active Serving Ticket",
+  "waitingQueue": "Waiting Queue",
+  "noActiveTicket": "No Active Ticket Being Served",
+  "noWaitingTickets": "No customers waiting in queue",
+  "stepProgress": "Step {current} of {total}: {stepName}",
+  "@stepProgress": {
+    "description": "Pipeline step progress string",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" },
+      "stepName": { "type": "String" }
+    }
+  },
+  "callingAnnouncement": "Token {tokenNumber}, please proceed to {counterName}",
+  "@callingAnnouncement": {
+    "description": "Text to speech calling announcement",
+    "placeholders": {
+      "tokenNumber": { "type": "String" },
+      "counterName": { "type": "String" }
+    }
+  },
+  "statusQueued": "Queued",
+  "statusWaiting": "Waiting",
+  "statusCalling": "Calling",
+  "statusActive": "Active",
+  "statusHold": "On Hold",
+  "statusCanceled": "Canceled",
+  "statusCompleted": "Completed",
+  "statusForwarded": "Forwarded"
+}
