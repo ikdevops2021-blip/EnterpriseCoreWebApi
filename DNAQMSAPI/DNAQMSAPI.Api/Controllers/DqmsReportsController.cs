@@ -49,5 +49,55 @@ namespace DNAQMSAPI.Api.Controllers
             var bytes = await _reportsService.ExportQueueDataCsvAsync(request ?? new DqmsReportRequestDto());
             return File(bytes, "text/csv", $"dqms_queue_analytics_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv");
         }
+
+        /// <summary>
+        /// Retrieves Turnaround Time (TAT) variance analysis and statistical dispersion metrics.
+        /// GET /api/v1/dqms/reports/tat-variance or POST /api/v1/dqms/reports/tat-variance
+        /// </summary>
+        [HttpPost("tat-variance")]
+        [HttpGet("tat-variance")]
+        [HttpGet("/api/v1/dqms/analytics/tat-variance")]
+        public async Task<IActionResult> GetTatVarianceReport(
+            [FromBody] DqmsTatVarianceFilterDto? filter,
+            [FromQuery] int? organizationId,
+            [FromQuery] int? locationId,
+            [FromQuery] int? processId,
+            [FromQuery] int? areaId)
+        {
+            var dto = filter ?? new DqmsTatVarianceFilterDto
+            {
+                OrganizationId = organizationId ?? 1,
+                LocationId = locationId ?? 1,
+                ProcessId = processId,
+                AreaId = areaId
+            };
+            var result = await _reportsService.GetTatVarianceReportAsync(dto);
+            return ApiResponse(result);
+        }
+
+        /// <summary>
+        /// Retrieves 2D matrix Bottleneck Heatmap across time-of-day and operational dimensions.
+        /// GET /api/v1/dqms/reports/bottleneck-heatmap or POST /api/v1/dqms/reports/bottleneck-heatmap
+        /// </summary>
+        [HttpPost("bottleneck-heatmap")]
+        [HttpGet("bottleneck-heatmap")]
+        [HttpGet("/api/v1/dqms/analytics/bottleneck-heatmap")]
+        public async Task<IActionResult> GetBottleneckHeatmap(
+            [FromBody] DqmsHeatmapFilterDto? filter,
+            [FromQuery] int? organizationId,
+            [FromQuery] int? locationId,
+            [FromQuery] string? dimensionType,
+            [FromQuery] int? areaId)
+        {
+            var dto = filter ?? new DqmsHeatmapFilterDto
+            {
+                OrganizationId = organizationId ?? 1,
+                LocationId = locationId ?? 1,
+                DimensionType = dimensionType ?? "HourByDayOfWeek",
+                AreaId = areaId
+            };
+            var result = await _reportsService.GetBottleneckHeatmapAsync(dto);
+            return ApiResponse(result);
+        }
     }
 }

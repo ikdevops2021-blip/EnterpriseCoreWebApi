@@ -10,6 +10,7 @@ import 'package:dqms_frontend/features/dashboard/widgets/counter_status_panel.da
 import 'package:dqms_frontend/features/dashboard/widgets/queue_trend_chart.dart';
 import 'package:dqms_frontend/features/dashboard/widgets/tat_analytics_panel.dart';
 import 'package:dqms_frontend/features/dashboard/widgets/bottleneck_panel.dart';
+import 'package:dqms_frontend/features/dashboard/widgets/bottleneck_heatmap_matrix.dart';
 import 'package:dqms_frontend/features/dashboard/widgets/recent_activity_panel.dart';
 
 /// ============================================================================
@@ -94,6 +95,8 @@ class DashboardScreen extends ConsumerWidget {
                     const SizedBox(height: 20),
                     CounterStatusPanel(state: state),
                     const SizedBox(height: 20),
+                    BottleneckHeatmapMatrix(heatmap: state.bottleneckHeatmap),
+                    const SizedBox(height: 20),
                     BottleneckPanel(alerts: state.activeBottlenecks),
                   ],
                 ),
@@ -107,7 +110,7 @@ class DashboardScreen extends ConsumerWidget {
                   children: [
                     QueueOverviewPanel(state: state),
                     const SizedBox(height: 20),
-                    TatAnalyticsPanel(tatItems: state.tatAnalytics),
+                    TatAnalyticsPanel(tatItems: state.tatAnalytics, report: state.tatVarianceReport),
                     const SizedBox(height: 20),
                     RecentActivityPanel(activities: state.recentActivities),
                   ],
@@ -129,6 +132,8 @@ class DashboardScreen extends ConsumerWidget {
         children: [
           DashboardKpiStrip(state: state),
           const SizedBox(height: 16),
+          BottleneckHeatmapMatrix(heatmap: state.bottleneckHeatmap),
+          const SizedBox(height: 16),
           BottleneckPanel(alerts: state.activeBottlenecks),
           const SizedBox(height: 16),
           Row(
@@ -149,7 +154,7 @@ class DashboardScreen extends ConsumerWidget {
                   children: [
                     QueueOverviewPanel(state: state),
                     const SizedBox(height: 16),
-                    TatAnalyticsPanel(tatItems: state.tatAnalytics),
+                    TatAnalyticsPanel(tatItems: state.tatAnalytics, report: state.tatVarianceReport),
                     const SizedBox(height: 16),
                     RecentActivityPanel(activities: state.recentActivities),
                   ],
@@ -170,6 +175,8 @@ class DashboardScreen extends ConsumerWidget {
         children: [
           DashboardKpiStrip(state: state),
           const SizedBox(height: 14),
+          BottleneckHeatmapMatrix(heatmap: state.bottleneckHeatmap),
+          const SizedBox(height: 14),
           BottleneckPanel(alerts: state.activeBottlenecks),
           const SizedBox(height: 14),
           CounterStatusPanel(state: state),
@@ -178,7 +185,7 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 14),
           QueueTrendChart(trendData: state.queueTrend),
           const SizedBox(height: 14),
-          TatAnalyticsPanel(tatItems: state.tatAnalytics),
+          TatAnalyticsPanel(tatItems: state.tatAnalytics, report: state.tatVarianceReport),
           const SizedBox(height: 14),
           RecentActivityPanel(activities: state.recentActivities),
         ],

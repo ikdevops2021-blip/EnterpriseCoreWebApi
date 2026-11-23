@@ -1,11 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dqms_frontend/features/dashboard/models/dashboard_dto.dart';
+import 'package:dqms_frontend/features/dashboard/models/tat_analytics_dto.dart';
 import 'package:dqms_frontend/features/dashboard/repositories/dashboard_repository.dart';
 
 /// ============================================================================
 /// COMMAND CENTER DASHBOARD STATE MODELS & PROVIDERS
-/// Connects Dio HTTP client to GET /api/v1/dqms/dashboard
+/// Connects Dio HTTP client to GET /api/v1/dqms/dashboard & /api/v1/dqms/reports/
 /// ============================================================================
 
 /// Hourly Queue Trend Data Point
@@ -180,6 +181,11 @@ class DashboardState {
   final List<BottleneckAlert> activeBottlenecks;
   final List<OperationalActivityEntry> recentActivities;
 
+  // Turnaround Time Variance & 2D Matrix Heatmap extensions
+  final TatVarianceReportDto tatVarianceReport;
+  final BottleneckHeatmapDto bottleneckHeatmap;
+  final String currentHeatmapDimension;
+
   const DashboardState({
     this.isLoading = false,
     this.isOffline = false,
@@ -200,9 +206,69 @@ class DashboardState {
     required this.tatAnalytics,
     required this.activeBottlenecks,
     required this.recentActivities,
+    required this.tatVarianceReport,
+    required this.bottleneckHeatmap,
+    this.currentHeatmapDimension = 'HourByDayOfWeek',
   });
 
-  factory DashboardState.fromDto(DashboardDto dto, {bool isOffline = false, String? errorMessage}) {
+  DashboardState copyWith({
+    bool? isLoading,
+    bool? isOffline,
+    String? errorMessage,
+    int? waitingCustomers,
+    String? waitingTrend,
+    int? currentlyServing,
+    double? avgWaitTimeMins,
+    double? avgServiceTimeMins,
+    int? activeCounters,
+    int? idleCounters,
+    int? totalCounters,
+    int? slaBreachesToday,
+    int? completedToday,
+    Map<String, int>? queueDensityByArea,
+    List<DashboardCounterDetail>? counters,
+    List<QueueTrendDataPoint>? queueTrend,
+    List<TatAnalyticsItem>? tatAnalytics,
+    List<BottleneckAlert>? activeBottlenecks,
+    List<OperationalActivityEntry>? recentActivities,
+    TatVarianceReportDto? tatVarianceReport,
+    BottleneckHeatmapDto? bottleneckHeatmap,
+    String? currentHeatmapDimension,
+  }) {
+    return DashboardState(
+      isLoading: isLoading ?? this.isLoading,
+      isOffline: isOffline ?? this.isOffline,
+      errorMessage: errorMessage ?? this.errorMessage,
+      waitingCustomers: waitingCustomers ?? this.waitingCustomers,
+      waitingTrend: waitingTrend ?? this.waitingTrend,
+      currentlyServing: currentlyServing ?? this.currentlyServing,
+      avgWaitTimeMins: avgWaitTimeMins ?? this.avgWaitTimeMins,
+      avgServiceTimeMins: avgServiceTimeMins ?? this.avgServiceTimeMins,
+      activeCounters: activeCounters ?? this.activeCounters,
+      idleCounters: idleCounters ?? this.idleCounters,
+      totalCounters: totalCounters ?? this.totalCounters,
+      slaBreachesToday: slaBreachesToday ?? this.slaBreachesToday,
+      completedToday: completedToday ?? this.completedToday,
+      queueDensityByArea: queueDensityByArea ?? this.queueDensityByArea,
+      counters: counters ?? this.counters,
+      queueTrend: queueTrend ?? this.queueTrend,
+      tatAnalytics: tatAnalytics ?? this.tatAnalytics,
+      activeBottlenecks: activeBottlenecks ?? this.activeBottlenecks,
+      recentActivities: recentActivities ?? this.recentActivities,
+      tatVarianceReport: tatVarianceReport ?? this.tatVarianceReport,
+      bottleneckHeatmap: bottleneckHeatmap ?? this.bottleneckHeatmap,
+      currentHeatmapDimension: currentHeatmapDimension ?? this.currentHeatmapDimension,
+    );
+  }
+
+  factory DashboardState.fromDto(
+    DashboardDto dto, {
+    bool isOffline = false,
+    String? errorMessage,
+    TatVarianceReportDto? tatVariance,
+    BottleneckHeatmapDto? heatmap,
+    String currentDimension = 'HourByDayOfWeek',
+  }) {
     final idle = (dto.totalCounters - dto.activeCounters).clamp(0, dto.totalCounters);
     return DashboardState(
       isLoading: false,
@@ -229,6 +295,9 @@ class DashboardState {
       tatAnalytics: dto.processAnalytics.map(TatAnalyticsItem.fromDto).toList(),
       activeBottlenecks: dto.bottlenecks.map(BottleneckAlert.fromDto).toList(),
       recentActivities: dto.recentActivities.map(OperationalActivityEntry.fromDto).toList(),
+      tatVarianceReport: tatVariance ?? TatVarianceReportDto.mock(),
+      bottleneckHeatmap: heatmap ?? BottleneckHeatmapDto.mock(dimensionType: currentDimension),
+      currentHeatmapDimension: currentDimension,
     );
   }
 
@@ -254,11 +323,18 @@ class DashboardState {
       tatAnalytics: demo.tatAnalytics,
       activeBottlenecks: demo.activeBottlenecks,
       recentActivities: demo.recentActivities,
+      tatVarianceReport: demo.tatVarianceReport,
+      bottleneckHeatmap: demo.bottleneckHeatmap,
+      currentHeatmapDimension: demo.currentHeatmapDimension,
     );
   }
 
   /// Factory for Demo State
-  factory DashboardState.demo({bool isOffline = false, String? errorMessage}) {
+  factory DashboardState.demo({
+    bool isOffline = false,
+    String? errorMessage,
+    String dimensionType = 'HourByDayOfWeek',
+  }) {
     return DashboardState(
       isLoading: false,
       isOffline: isOffline,
@@ -338,6 +414,9 @@ class DashboardState {
         OperationalActivityEntry(id: 'LOG-106', time: '14:28:10', title: 'Bottleneck Detected', detail: 'Pharmacy Dispensing SLA compliance dropped to 74.8%', category: 'Issue'),
         OperationalActivityEntry(id: 'LOG-105', time: '14:25:30', title: 'Token Completed', detail: 'Token B-209 completed at Billing Counter 06', category: 'Call'),
       ],
+      tatVarianceReport: TatVarianceReportDto.mock(),
+      bottleneckHeatmap: BottleneckHeatmapDto.mock(dimensionType: dimensionType),
+      currentHeatmapDimension: dimensionType,
     );
   }
 }
@@ -354,37 +433,85 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
   void _startAutoRefresh() {
     _timer?.cancel();
-    _timer = Stream.periodic(const Duration(seconds: 4)).listen((_) {
+    _timer = Stream.periodic(const Duration(seconds: 5)).listen((_) {
       loadDashboard(silent: true);
     });
   }
 
-  /// Load live dashboard metrics from GET /api/v1/dqms/dashboard
-  Future<void> loadDashboard({int organizationId = 1, int locationId = 1, int? areaId, bool silent = false}) async {
+  /// Load live dashboard metrics and TAT variance analytics from API
+  Future<void> loadDashboard({
+    int organizationId = 1,
+    int locationId = 1,
+    int? areaId,
+    bool silent = false,
+  }) async {
     if (!silent) {
       state = DashboardState.loading();
     }
     try {
-      final dto = await repository.fetchDashboardSummary(
-        organizationId: organizationId,
-        locationId: locationId,
-        areaId: areaId,
+      final futures = await Future.wait([
+        repository.fetchDashboardSummary(
+          organizationId: organizationId,
+          locationId: locationId,
+          areaId: areaId,
+        ),
+        repository.fetchTatVarianceReport(
+          organizationId: organizationId,
+          locationId: locationId,
+          areaId: areaId,
+        ),
+        repository.fetchBottleneckHeatmap(
+          organizationId: organizationId,
+          locationId: locationId,
+          dimensionType: state.currentHeatmapDimension,
+          areaId: areaId,
+        ),
+      ]);
+
+      final dto = futures[0] as DashboardDto;
+      final tatVariance = futures[1] as TatVarianceReportDto;
+      final heatmap = futures[2] as BottleneckHeatmapDto;
+
+      state = DashboardState.fromDto(
+        dto,
+        tatVariance: tatVariance,
+        heatmap: heatmap,
+        currentDimension: state.currentHeatmapDimension,
       );
-      state = DashboardState.fromDto(dto);
     } on DioException catch (e) {
       if (!silent) {
         state = DashboardState.demo(
           isOffline: true,
-          errorMessage: 'Network notice: ${e.message}. Displaying cached snapshot.',
+          errorMessage: 'Network notice: ${e.message}. Displaying live cached snapshot.',
+          dimensionType: state.currentHeatmapDimension,
         );
       }
     } catch (e) {
       if (!silent) {
         state = DashboardState.demo(
           isOffline: true,
-          errorMessage: 'Connection notice: $e. Displaying cached snapshot.',
+          errorMessage: 'Connection notice: $e. Displaying live cached snapshot.',
+          dimensionType: state.currentHeatmapDimension,
         );
       }
+    }
+  }
+
+  /// Switch the Bottleneck Heatmap Dimension (HourByDayOfWeek, HourByProcess, HourByCounter)
+  Future<void> switchHeatmapDimension(String dimensionType) async {
+    try {
+      final heatmap = await repository.fetchBottleneckHeatmap(
+        dimensionType: dimensionType,
+      );
+      state = state.copyWith(
+        currentHeatmapDimension: dimensionType,
+        bottleneckHeatmap: heatmap,
+      );
+    } catch (_) {
+      state = state.copyWith(
+        currentHeatmapDimension: dimensionType,
+        bottleneckHeatmap: BottleneckHeatmapDto.mock(dimensionType: dimensionType),
+      );
     }
   }
 

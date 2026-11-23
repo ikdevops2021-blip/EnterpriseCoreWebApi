@@ -62,10 +62,16 @@ To ensure targeted, user-centric delivery, development is organized into 3 disti
 * **Branching & Forwarding:** Support for forwarding tokens from Step N to Step N+1 without requiring customer re-registration.
 * **Sub-Token Generation:** Automated generation of sub-tokens or sub-tickets when a process triggers an intermediate step (e.g., Doctor Visit -> Billing -> Lab Collection).
 
-### 2.2 Turnaround Time (TAT) Management
-* **Target TAT Settings:** Define operational TAT thresholds per process step and overall journey.
-* **Real-Time TAT Variance:** Calculation of actual vs. expected processing duration at each counter.
-* **Bottleneck Detection:** Visual alerts on dashboards when tokens exceed target TAT thresholds.
+### 2.2 Turnaround Time (TAT) Management & Bottleneck Heatmaps
+* **Target TAT Settings:** Define operational TAT thresholds per process step (`ProcessStep.TargetTATMinutes`) and overall process journey (`Process.TargetTATMinutes`).
+* **Real-Time TAT Variance %:** Continuous calculation of actual vs. expected processing duration:
+  $$\text{Variance \%} = \left(\frac{\text{ActualTAT} - \text{TargetTAT}}{\text{TargetTAT}}\right) \times 100\%$$
+* **Statistical Dispersion Indicators:** Computes Mean, Standard Deviation ($\sigma$), Coefficient of Variation ($CV$), and 95th Percentile ($P_{95}$) turnaround metrics across completed and in-flight tokens.
+* **2D Bottleneck Heatmap Matrix:** Interactive time-of-day matrix visualizer ($08:00\text{--}18:00$) across three operational dimensions:
+  * **By Day of Week (`HourByDayOfWeek`):** Uncovers weekly congestion patterns.
+  * **By Service Process (`HourByProcess`):** Pinpoints bottlenecked service lines.
+  * **By Counter Station (`HourByCounter`):** Slices performance across operator stations.
+* **Covering Index & Stored Procedures:** High-performance database analytics powered by index `IX_TokenTransaction_Analytics_TAT` and stored procedures `PR_S_DqmsTatVarianceAnalytics` & `PR_S_DqmsBottleneckHeatmap` (MSSQL & MySQL).
 
 ### 2.3 Multi-Channel Communication Flags & Daily Token Quota Engine
 * **Communication Channel Toggles:** Granular service-level enable/disable flags for communication workflows:
