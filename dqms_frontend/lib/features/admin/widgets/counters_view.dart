@@ -808,13 +808,45 @@ class _CountersViewState extends ConsumerState<CountersView> {
           ),
           const SizedBox(height: 18),
 
-          DqmsTextField(label: 'Counter Station Code', initialValue: ctr.counterNumber),
+          DqmsTextField(
+            label: 'Counter Station Code',
+            initialValue: ctr.counterNumber,
+            onChanged: (val) {
+              setState(() {
+                _selectedCounter = ctr.copyWith(counterNumber: val);
+              });
+            },
+          ),
           const SizedBox(height: 14),
-          DqmsTextField(label: 'Counter Name', initialValue: ctr.counterName),
+          DqmsTextField(
+            label: 'Counter Name',
+            initialValue: ctr.counterName,
+            onChanged: (val) {
+              setState(() {
+                _selectedCounter = ctr.copyWith(counterName: val);
+              });
+            },
+          ),
           const SizedBox(height: 14),
-          DqmsTextField(label: 'Assigned Operator', initialValue: ctr.assignedStaffName),
+          DqmsTextField(
+            label: 'Assigned Operator',
+            initialValue: ctr.assignedStaffName,
+            onChanged: (val) {
+              setState(() {
+                _selectedCounter = ctr.copyWith(assignedStaffName: val);
+              });
+            },
+          ),
           const SizedBox(height: 14),
-          DqmsTextField(label: 'Operating Mode', initialValue: ctr.mode),
+          DqmsTextField(
+            label: 'Operating Mode',
+            initialValue: ctr.mode,
+            onChanged: (val) {
+              setState(() {
+                _selectedCounter = ctr.copyWith(mode: val);
+              });
+            },
+          ),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -823,9 +855,76 @@ class _CountersViewState extends ConsumerState<CountersView> {
               Switch(
                 value: ctr.isVoiceEnabled,
                 activeTrackColor: AppColors.brandPrimary,
-                onChanged: (val) {},
+                onChanged: (val) {
+                  setState(() {
+                    _selectedCounter = ctr.copyWith(isVoiceEnabled: val);
+                  });
+                },
               ),
             ],
+          ),
+          const SizedBox(height: 14),
+
+          // Operational Status Provision (Active / Inactive Toggle)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: (ctr.status == 'Active')
+                  ? AppColors.statusActive.withValues(alpha: 0.08)
+                  : AppColors.statusDeactive.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: (ctr.status == 'Active')
+                    ? AppColors.statusActive.withValues(alpha: 0.3)
+                    : AppColors.statusDeactive.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  (ctr.status == 'Active') ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                  color: (ctr.status == 'Active') ? AppColors.statusActive : AppColors.statusDeactive,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'OPERATIONAL STATUS',
+                        style: TextStyle(
+                          color: AppColors.textSubtle,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      Text(
+                        (ctr.status == 'Active') ? 'Active (Ready to Serve Tokens)' : 'Inactive / Closed',
+                        style: TextStyle(
+                          color: (ctr.status == 'Active') ? AppColors.statusActive : AppColors.statusDeactive,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch.adaptive(
+                  value: ctr.status == 'Active',
+                  activeThumbColor: AppColors.statusActive,
+                  activeTrackColor: AppColors.statusActive.withValues(alpha: 0.4),
+                  inactiveThumbColor: AppColors.textSubtle,
+                  inactiveTrackColor: AppColors.bgSurfaceHover,
+                  onChanged: (val) {
+                    setState(() {
+                      _selectedCounter = ctr.copyWith(status: val ? 'Active' : 'Inactive');
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
           DqmsButton(
@@ -848,11 +947,13 @@ class _CountersViewState extends ConsumerState<CountersView> {
                   'locationId': 1,
                   'isActive': ctr.status == 'Active',
                 });
+                ref.read(adminWorkspaceStateProvider.notifier).updateCounter(ctr);
+                await ref.read(adminWorkspaceStateProvider.notifier).fetchApiData(dio);
               } catch (_) {}
 
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Counter ${ctr.counterNumber} saved to backend API.'), backgroundColor: AppColors.statusActive),
+                SnackBar(content: Text('Counter ${ctr.counterNumber} saved to backend API (${ctr.status}).'), backgroundColor: ctr.status == 'Active' ? AppColors.statusActive : AppColors.statusDeactive),
               );
             },
           ),

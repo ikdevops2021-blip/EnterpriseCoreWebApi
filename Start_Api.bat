@@ -7,8 +7,8 @@ echo ==================================================
 tasklist /FI "IMAGENAME eq DNAQMSAPI.Api.exe" 2>NUL | find /I /N "DNAQMSAPI.Api.exe">NUL
 if "%ERRORLEVEL%"=="0" (
     echo [INFO] Found existing DNAQMSAPI.Api process running. Terminating...
-    taskkill /IM DNAQMSAPI.Api.exe /F
-    timeout /t 2 /nobreak >nul
+    taskkill /IM DNAQMSAPI.Api.exe /F >nul 2>&1
+    ping -n 3 127.0.0.1 >nul
 )
 
 :: 2. Check if dotnet process running the API project is present and terminate it
@@ -17,9 +17,12 @@ for /f "tokens=2 delims=," %%a in ('wmic process where "name='dotnet.exe' and co
     taskkill /PID %%a /F >nul 2>&1
 )
 
-:: 3. Start DNAQMSAPI Web Server in a new window
+:: 3. Start DNAQMSAPI Web Server in a new dedicated window
 echo [INFO] Launching Web API on http://localhost:5026 ...
-dotnet run --project "%~dp0DNAQMSAPI\\DNAQMSAPI.Api\\DNAQMSAPI.Api.csproj"
+start "DNAQMS Web API (Port 5026)" /D "%~dp0DNAQMSAPI\DNAQMSAPI.Api" dotnet run --no-build
 
-timeout /t 3 /nobreak >nul
-echo [SUCCESS] Web API startup initiated. Swagger UI available at http://localhost:5026/swagger
+ping -n 4 127.0.0.1 >nul
+echo [SUCCESS] Web API startup initiated.
+echo [INFO] Swagger API Explorer: http://localhost:5026/swagger
+echo [INFO] Health Endpoint:      http://localhost:5026/api/v1/public/display-board?organizationId=1^&locationId=1
+echo ==================================================

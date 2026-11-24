@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'dqms_web_audio_stub.dart' if (dart.library.js) 'dqms_web_audio_web.dart';
 
 /// Represents a voice announcement task for calling a customer token
 class AudioSpeechTask {
@@ -77,24 +78,46 @@ class DqmsAudioVoiceService {
     }
   }
 
-  /// Queues and broadcasts a calling event with dual language support
+  /// Unlocks audio context on browser user interaction
+  void unlockAudio() {
+    if (kIsWeb) {
+      unlockWebAudio();
+    }
+  }
+
+  /// Queues and broadcasts a calling event with dual language and next-token readiness support
   Future<void> announceToken({
     required String tokenNumber,
     required String counterName,
     required String primaryLanguageCode,
+    String? nextTokenNumber,
     String? secondaryLanguageCode,
     String? primaryCustomAnnouncement,
     String? secondaryCustomAnnouncement,
   }) async {
-    await initialize();
-
     final primaryBcp = mapLanguageToBcp47(primaryLanguageCode);
     final secondaryBcp = secondaryLanguageCode != null ? mapLanguageToBcp47(secondaryLanguageCode) : null;
 
-    final primaryText = primaryCustomAnnouncement ?? _getDefaultAnnouncementText(primaryLanguageCode, tokenNumber, counterName);
+    String primaryText = primaryCustomAnnouncement ?? _getDefaultAnnouncementText(primaryLanguageCode, tokenNumber, counterName);
+    if (nextTokenNumber != null && nextTokenNumber.trim().isNotEmpty) {
+      primaryText += '. Next token, ${nextTokenNumber.trim()}, please get ready.';
+    }
+
     final secondaryText = (secondaryBcp != null && secondaryBcp != primaryBcp)
         ? (secondaryCustomAnnouncement ?? _getDefaultAnnouncementText('en', tokenNumber, counterName))
         : null;
+
+    if (kIsWeb) {
+      playWebChimeAndSpeak(primaryText, tokenNumber, counterName, nextTokenNumber ?? '');
+      if (secondaryText != null) {
+        Future.delayed(const Duration(milliseconds: 3200), () {
+          playWebChimeAndSpeak(secondaryText, tokenNumber, counterName, '');
+        });
+      }
+      return;
+    }
+
+    await initialize();
 
     final task = AudioSpeechTask(
       tokenNumber: tokenNumber,

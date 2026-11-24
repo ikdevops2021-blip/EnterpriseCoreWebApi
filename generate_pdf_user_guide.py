@@ -42,7 +42,7 @@ class NumberedCanvas(canvas.Canvas):
         # Running Header
         self.drawString(40, 755, "ANTIGRAVITY ENTERPRISE DQMS  |  PRODUCTION CUSTOMER USER GUIDE")
         self.setFont("Helvetica", 8)
-        self.drawRightString(572, 755, "VERSION 1.0.0 (ENTERPRISE)")
+        self.drawRightString(572, 755, "VERSION 1.1.0 (ENTERPRISE RESILIENCE)")
         self.setStrokeColor(colors.HexColor("#CBD5E1"))
         self.setLineWidth(0.6)
         self.line(40, 747, 572, 747)
@@ -77,7 +77,7 @@ def build_pdf():
     c_surface = colors.HexColor("#1E293B")     # Slate 800
     c_text = colors.HexColor("#1E293B")        # Charcoal body
     c_muted = colors.HexColor("#64748B")       # Slate 500
-    c_border = colors.HexColor("#E2E8F0")      # Slate 200
+    c_border = colors.HexColor("#CBD5E1")      # Slate 300
     c_bg_subtle = colors.HexColor("#F8FAFC")   # Slate 50
     c_green = colors.HexColor("#059669")       # Emerald 600
     c_amber = colors.HexColor("#D97706")       # Amber 600
@@ -91,7 +91,7 @@ def build_pdf():
         fontName='Helvetica-Bold',
         fontSize=10,
         leading=12,
-        textColor=colors.HexColor("#1E40AF"),
+        textColor=c_primary,
         alignment=TA_CENTER
     )
 
@@ -99,8 +99,8 @@ def build_pdf():
         'CoverTitle',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=28,
-        leading=34,
+        fontSize=26,
+        leading=32,
         textColor=c_dark,
         alignment=TA_CENTER
     )
@@ -109,8 +109,8 @@ def build_pdf():
         'CoverSub',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=14,
-        leading=19,
+        fontSize=13,
+        leading=18,
         textColor=c_muted,
         alignment=TA_CENTER
     )
@@ -119,8 +119,8 @@ def build_pdf():
         'H1',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=16,
-        leading=20,
+        fontSize=15,
+        leading=19,
         textColor=c_primary,
         spaceBefore=14,
         spaceAfter=6,
@@ -131,10 +131,10 @@ def build_pdf():
         'H2',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=12,
-        leading=16,
+        fontSize=11.5,
+        leading=15,
         textColor=c_surface,
-        spaceBefore=10,
+        spaceBefore=9,
         spaceAfter=4,
         keepWithNext=True
     )
@@ -143,8 +143,8 @@ def build_pdf():
         'H3',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=10,
-        leading=14,
+        fontSize=9.5,
+        leading=13,
         textColor=colors.HexColor("#334155"),
         spaceBefore=6,
         spaceAfter=2,
@@ -155,11 +155,11 @@ def build_pdf():
         'Body',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=9,
-        leading=13,
+        fontSize=8.5,
+        leading=12.5,
         textColor=c_text,
-        spaceBefore=3,
-        spaceAfter=4
+        spaceBefore=2.5,
+        spaceAfter=3.5
     )
 
     style_body_bold = ParagraphStyle(
@@ -172,8 +172,8 @@ def build_pdf():
         'Callout',
         parent=styles['Normal'],
         fontName='Helvetica-Oblique',
-        fontSize=8.5,
-        leading=12,
+        fontSize=8,
+        leading=11.5,
         textColor=colors.HexColor("#0F172A")
     )
 
@@ -181,8 +181,8 @@ def build_pdf():
         'CodeStyle',
         parent=styles['Normal'],
         fontName='Courier',
-        fontSize=8,
-        leading=10,
+        fontSize=7.5,
+        leading=9.5,
         textColor=colors.HexColor("#1E293B")
     )
 
@@ -190,8 +190,8 @@ def build_pdf():
         'CodeStyleBold',
         parent=styles['Normal'],
         fontName='Courier-Bold',
-        fontSize=8,
-        leading=10,
+        fontSize=7.5,
+        leading=9.5,
         textColor=c_primary
     )
 
@@ -199,8 +199,8 @@ def build_pdf():
         'TableHeader',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=8.5,
-        leading=11,
+        fontSize=8,
+        leading=10.5,
         textColor=colors.white
     )
 
@@ -208,8 +208,8 @@ def build_pdf():
         'TableCell',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=8,
-        leading=11,
+        fontSize=7.5,
+        leading=10.5,
         textColor=c_text
     )
 
@@ -217,8 +217,8 @@ def build_pdf():
         'TableCellBold',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=8,
-        leading=11,
+        fontSize=7.5,
+        leading=10.5,
         textColor=c_text
     )
 
@@ -227,201 +227,547 @@ def build_pdf():
     # =========================================================================
     # COVER PAGE
     # =========================================================================
-    story.append(Spacer(1, 25))
-    story.append(Paragraph("★ ENTERPRISE PRODUCTION RELEASE • V1.0.0 ★", style_cover_badge))
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 20))
+    story.append(Paragraph("★ ENTERPRISE PRODUCTION RELEASE • V1.1.0 RESILIENCE & OPERATIONS EDITION ★", style_cover_badge))
+    story.append(Spacer(1, 8))
     story.append(Paragraph("AntiGravity Enterprise DQMS", style_cover_title))
     story.append(Spacer(1, 6))
     story.append(Paragraph("Digital Queue Management System — Complete Operations & Customer User Guide", style_cover_sub))
-    story.append(Spacer(1, 15))
-    story.append(HRFlowable(width="100%", thickness=2.5, color=c_primary, spaceBefore=4, spaceAfter=18))
+    story.append(Spacer(1, 14))
+    story.append(HRFlowable(width="100%", thickness=2.5, color=c_primary, spaceBefore=2, spaceAfter=14))
 
     # Cover Summary Box
     doc_meta_data = [
-        [Paragraph("<b>Document Title:</b>", style_table_cell_bold), Paragraph("Enterprise Production Operations & Customer Manual", style_table_cell),
-         Paragraph("<b>Target Audience:</b>", style_table_cell_bold), Paragraph("System Admins, Shift Supervisors, Counter Tellers", style_table_cell)],
-        [Paragraph("<b>Product Version:</b>", style_table_cell_bold), Paragraph("v1.0.0 Commercial Release", style_table_cell),
-         Paragraph("<b>Backend Engine:</b>", style_table_cell_bold), Paragraph("C# .NET 8 Web API + Dapper ORM", style_table_cell)],
-        [Paragraph("<b>Primary Database:</b>", style_table_cell_bold), Paragraph("MySQL 8.0 (Enterprise `dnaqms`)", style_table_cell),
-         Paragraph("<b>Frontend UI:</b>", style_table_cell_bold), Paragraph("Flutter Cross-Platform (Web, Mobile, Desktop)", style_table_cell)],
-        [Paragraph("<b>Security Standard:</b>", style_table_cell_bold), Paragraph("PBKDF2-SHA256 & 512-bit JWT RBAC", style_table_cell),
-         Paragraph("<b>QA Certification:</b>", style_table_cell_bold), Paragraph("100% End-to-End Verified (18/18 Tests Passed)", style_table_cell)]
+        [Paragraph("<b>Document Title:</b>", style_table_cell_bold), Paragraph("Enterprise Production Operations & Complete Customer Manual", style_table_cell),
+         Paragraph("<b>Target Roles:</b>", style_table_cell_bold), Paragraph("Visitors, Tellers, Shift Supervisors, Safety Officers, IT Admins", style_table_cell)],
+        [Paragraph("<b>Product Version:</b>", style_table_cell_bold), Paragraph("v1.1.0 Commercial Enterprise Release", style_table_cell),
+         Paragraph("<b>Backend Engine:</b>", style_table_cell_bold), Paragraph("C# .NET 8 Web API + Dapper Micro-ORM", style_table_cell)],
+        [Paragraph("<b>Primary Database:</b>", style_table_cell_bold), Paragraph("MySQL 8.0 (`dnaqms`) & MSSQL LocalDB", style_table_cell),
+         Paragraph("<b>Edge Resilience:</b>", style_table_cell_bold), Paragraph("SQLite Autonomous Local Replicas (`edge_dqms.db`)", style_table_cell)],
+        [Paragraph("<b>Security Standard:</b>", style_table_cell_bold), Paragraph("PBKDF2-SHA256, 512-bit JWT & HMAC-SHA256", style_table_cell),
+         Paragraph("<b>Signage & Safety:</b>", style_table_cell_bold), Paragraph("Audio-Ducked Video Promos & PIN Emergency Override", style_table_cell)]
     ]
     t_doc_meta = Table(doc_meta_data, colWidths=[95, 170, 95, 172])
     t_doc_meta.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#F8FAFC")),
+        ('BACKGROUND', (0,0), (-1,-1), c_bg_subtle),
         ('BOX', (0,0), (-1,-1), 1, c_border),
         ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
         ('PADDING', (0,0), (-1,-1), 5),
     ]))
     story.append(t_doc_meta)
-    story.append(Spacer(1, 20))
+    story.append(Spacer(1, 10))
 
-    # Executive Overview Callout Box
-    exec_summary_html = """<b>Executive Statement:</b> The AntiGravity Digital Queue Management System (DQMS) is an enterprise-grade queue orchestration platform designed for healthcare, banking, government, and retail environments. It provides complete administrative mastery, high-speed keyboard-driven teller stations, self-service touchscreen kiosks, 4K waiting room TV boards, and mobile smartphone live queue tracking."""
-    t_callout = Table([[Paragraph(exec_summary_html, style_callout)]], colWidths=[532])
-    t_callout.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#EFF6FF")),
-        ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#BFDBFE")),
-        ('LINELEFT', (0,0), (0,-1), 3.5, c_primary),
-        ('PADDING', (0,0), (-1,-1), 8),
-    ]))
-    story.append(t_callout)
-    story.append(Spacer(1, 20))
-
-    # Document Control & Revision Table
-    story.append(Paragraph("Document Revision History", style_h2))
+    # Revision History
+    story.append(Paragraph("Document Control & Revision History:", style_h2))
     rev_data = [
-        [Paragraph("Version", style_table_header), Paragraph("Release Date", style_table_header), Paragraph("Primary Authors", style_table_header), Paragraph("Approved By", style_table_header), Paragraph("Summary of Changes", style_table_header)],
-        [Paragraph("v0.9.0", style_table_cell), Paragraph("Oct 2026", style_table_cell), Paragraph("Lead Engineer", style_table_cell), Paragraph("Architecture Review", style_table_cell), Paragraph("Initial Prototype specification and UI mockups.", style_table_cell)],
-        [Paragraph("v1.0.0", style_table_cell), Paragraph("Nov 2026", style_table_cell), Paragraph("Staff Engineer", style_table_cell), Paragraph("QA Manager & Lead Arch", style_table_cell), Paragraph("Production release: real DB PBKDF2 auth, route aliases, local storage, 18/18 QA verified.", style_table_cell)],
+        [Paragraph("Version", style_table_header), Paragraph("Date", style_table_header), Paragraph("Primary Authors", style_table_header), Paragraph("Approved By", style_table_header), Paragraph("Summary of Operational Scope", style_table_header)],
+        [Paragraph("<b>v0.9.0</b>", style_table_cell_bold), Paragraph("Oct 2026", style_table_cell), Paragraph("Architecture Team", style_table_cell), Paragraph("Lead Architect", style_table_cell), Paragraph("Initial Prototype specification and UI mockups.", style_table_cell)],
+        [Paragraph("<b>v1.0.0</b>", style_table_cell_bold), Paragraph("Nov 2026", style_table_cell), Paragraph("Full-Stack Eng.", style_table_cell), Paragraph("QA Manager", style_table_cell), Paragraph("Commercial Production Release: Authenticated PBKDF2 engine, route aliases, seeded TV templates, local disk storage.", style_table_cell)],
+        [Paragraph("<b>v1.1.0</b>", style_table_cell_bold), Paragraph("Nov 2026", style_table_cell), Paragraph("Enterprise Systems", style_table_cell), Paragraph("Chief Info Officer", style_table_cell), Paragraph("<b>Enterprise Operations Edition:</b> Comprehensive 'How to Use It' guides for N-Level Workflows, Webhook Engine with HMAC, Offline Edge Resilience, and PIN-verified Emergency Broadcasts.", style_table_cell)],
     ]
-    t_rev = Table(rev_data, colWidths=[45, 60, 85, 95, 247])
+    t_rev = Table(rev_data, colWidths=[48, 55, 95, 85, 249])
     t_rev.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), c_surface),
         ('BOX', (0,0), (-1,-1), 1, c_border),
         ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
-        ('PADDING', (0,0), (-1,-1), 5),
+        ('PADDING', (0,0), (-1,-1), 4),
     ]))
     story.append(t_rev)
+    story.append(Spacer(1, 10))
 
-    # =========================================================================
-    # SECTION 1: ARCHITECTURE & INFRASTRUCTURE
-    # =========================================================================
-    story.append(PageBreak())
-    story.append(Paragraph("1. System Architecture & Infrastructure Overview", style_h1))
+    # Executive Overview
+    story.append(Paragraph("Executive System Overview:", style_h2))
     story.append(Paragraph(
-        "AntiGravity Enterprise DQMS follows modern <b>Clean Architecture</b> principles to deliver microsecond-latency queue handling, zero data loss, and multi-tenant physical facility isolation.",
+        "The AntiGravity Digital Queue Management System (DQMS) is a multi-tier, zero-deadlock facility orchestration and customer flow automation platform designed for high-density public venues including Hospitals, Outpatient Clinics, Banking Networks, Telecom Flagships, and Municipal Service Centers.",
+        style_body
+    ))
+    story.append(Paragraph(
+        "DQMS unifies self-service touchscreen kiosks, mobile QR code real-time tracking, 4K split-screen waiting room TVs with digital signage, rapid-dispatch staff consoles with POS keyboard hotkeys, automated webhook event delivery, and an autonomous offline edge sync engine capable of operating during complete WAN internet blackouts.",
         style_body
     ))
 
-    # Architecture Breakdown Table
+    # =========================================================================
+    # SECTION 1: ARCHITECTURE & TOPOLOGY
+    # =========================================================================
+    story.append(PageBreak())
+    story.append(Paragraph("1. System Architecture & Network Topology", style_h1))
+    story.append(Paragraph(
+        "DQMS follows Clean Architecture and Domain-Driven Design principles, segregating touchpoints, presentation logic, business workflows, and redundant database layers:",
+        style_body
+    ))
+
     arch_data = [
-        [Paragraph("Layer / Tier", style_table_header), Paragraph("Technology Stack", style_table_header), Paragraph("Core Responsibilities & Capabilities", style_table_header)],
+        [Paragraph("Architecture Layer", style_table_header), Paragraph("Technology Stack", style_table_header), Paragraph("Core Responsibilities & Capabilities", style_table_header)],
         [
-            Paragraph("<b>Presentation Client</b>", style_table_cell),
+            Paragraph("<b>Presentation Client</b>", style_table_cell_bold),
             Paragraph("Flutter 3.x (Riverpod + Dio)", style_table_cell),
-            Paragraph("Single codebase compiled for Web (Chrome/Edge), Desktop (Windows/Linux), and Mobile. Uses Glassmorphic high-density layout and Riverpod state management.", style_table_cell)
+            Paragraph("Single responsive codebase compiled for Web, Mobile, and Desktop. Features glassmorphic high-density layouts, audio-ducked media zone player, offline edge sync status banner, and emergency alert overlays.", style_table_cell)
         ],
         [
-            Paragraph("<b>Application & API</b>", style_table_cell),
-            Paragraph("C# .NET 8 Web API", style_table_cell),
-            Paragraph("High-throughput RESTful controllers, strict JWT authorization policies, Swagger OpenAPI documentation, and centralized API key validation.", style_table_cell)
+            Paragraph("<b>Application & API</b>", style_table_cell_bold),
+            Paragraph("C# .NET 8 Web API Core", style_table_cell),
+            Paragraph("High-throughput RESTful controllers, strict 512-bit JWT authorization policies, Swagger OpenAPI documentation, HMAC-SHA256 webhook dispatcher, and automated edge sync reconciler.", style_table_cell)
         ],
         [
-            Paragraph("<b>Data Access Tier</b>", style_table_cell),
+            Paragraph("<b>Data Access Tier</b>", style_table_cell_bold),
             Paragraph("Dapper Micro-ORM + Stored Procs", style_table_cell),
-            Paragraph("Optimized SQL stored procedures (`PR_IU_IssueToken`, `PR_IU_CallNextToken`, `PR_S_PublicDisplayBoard`) ensuring zero transaction deadlocks under concurrency.", style_table_cell)
+            Paragraph("Optimized SQL stored procedures (`PR_IU_IssueToken`, `PR_IU_CallNextToken`, `PR_IU_ForwardToken`, `PR_S_PublicDisplayBoard`) ensuring zero transaction deadlocks under heavy concurrent load.", style_table_cell)
         ],
         [
-            Paragraph("<b>Database Engines</b>", style_table_cell),
+            Paragraph("<b>Database Persistence</b>", style_table_cell_bold),
             Paragraph("MySQL 8.0 & MSSQL LocalDB", style_table_cell),
-            Paragraph("Dual database engine support abstracted via `IDapperDBFactory`. Primary enterprise production runs on MySQL database `dnaqms` on port 3306.", style_table_cell)
+            Paragraph("Dual database engine support abstracted via `IDapperDBFactory`. Primary production runs on MySQL database `dnaqms` on port 3306.", style_table_cell)
         ],
         [
-            Paragraph("<b>File & Asset Storage</b>", style_table_cell),
-            Paragraph("Local File Provider + S3/Azure", style_table_cell),
-            Paragraph("Production-ready local disk storage provider storing user profile pictures, logos, and ticket attachments in `App_Data/Uploads` with audit trails.", style_table_cell)
+            Paragraph("<b>Edge Resilience Tier</b>", style_table_cell_bold),
+            Paragraph("SQLite Autonomous Replicas", style_table_cell),
+            Paragraph("Embedded local SQLite databases (`edge_dqms.db`) deployed on clinic/branch edge nodes. Guarantees 100% uninterrupted ticketing and counter service during WAN failure with automatic replay queue draining.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>File & Asset Storage</b>", style_table_cell_bold),
+            Paragraph("Local File Provider + Audit Log", style_table_cell),
+            Paragraph("Production-ready local disk storage storing profile avatars, company logos, and digital signage video campaigns in `App_Data/Uploads` with audit logging in `FileAuditLog`.", style_table_cell)
         ]
     ]
-    t_arch = Table(arch_data, colWidths=[100, 120, 312])
+    t_arch = Table(arch_data, colWidths=[105, 120, 307])
     t_arch.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), c_primary),
         ('BOX', (0,0), (-1,-1), 1, c_border),
         ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
-        ('PADDING', (0,0), (-1,-1), 5),
+        ('PADDING', (0,0), (-1,-1), 4.5),
     ]))
     story.append(t_arch)
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 8))
 
     # Network Ports & Endpoints
     story.append(Paragraph("Network Topology & Port Map:", style_h2))
     net_data = [
-        [Paragraph("Service Component", style_table_header), Paragraph("Host / URL", style_table_header), Paragraph("Port", style_table_header), Paragraph("Protocol / Security", style_table_header)],
-        [Paragraph("Backend Web API", style_table_cell), Paragraph("<code>http://localhost</code> (or Server IP)", style_table_cell), Paragraph("5026 / 5000", style_table_cell), Paragraph("HTTP/HTTPS (Bearer JWT / API Key)", style_table_cell)],
-        [Paragraph("Flutter Web Frontend", style_table_cell), Paragraph("<code>http://localhost</code>", style_table_cell), Paragraph("8080 / 5000", style_table_cell), Paragraph("Web Browser (HTML5 Canvas/CanvasKit)", style_table_cell)],
+        [Paragraph("Service Component", style_table_header), Paragraph("Host / URL", style_table_header), Paragraph("Port", style_table_header), Paragraph("Protocol / Security Standard", style_table_header)],
+        [Paragraph("Backend Web API", style_table_cell), Paragraph("<code>http://localhost</code> (or Server IP)", style_table_cell), Paragraph("5026", style_table_cell), Paragraph("HTTP/HTTPS (Bearer JWT / Master API Key)", style_table_cell)],
+        [Paragraph("Flutter Web Frontend", style_table_cell), Paragraph("<code>http://localhost</code>", style_table_cell), Paragraph("8080", style_table_cell), Paragraph("Web Browser (HTML5 Canvas / CanvasKit)", style_table_cell)],
         [Paragraph("MySQL Database Service", style_table_cell), Paragraph("<code>127.0.0.1</code>", style_table_cell), Paragraph("3306", style_table_cell), Paragraph("Native MySQL 8.0 Protocol (Encrypted)", style_table_cell)],
         [Paragraph("Overhead TV Display Feed", style_table_cell), Paragraph("<code>http://[server-ip]:5026/api/v1/public/display-board</code>", style_table_cell), Paragraph("5026", style_table_cell), Paragraph("Public Unauthenticated Stream", style_table_cell)],
+        [Paragraph("Mobile QR Web Tracker", style_table_cell), Paragraph("<code>http://[server-ip]:5026/api/v1/public/ticket-status/{id}</code>", style_table_cell), Paragraph("5026", style_table_cell), Paragraph("Public Mobile Browser Stream", style_table_cell)],
+        [Paragraph("Edge Node Reconciler", style_table_cell), Paragraph("<code>http://[edge-ip]:5028/api/v1/edge/sync</code>", style_table_cell), Paragraph("5028", style_table_cell), Paragraph("Local Network Encrypted Sync Channel", style_table_cell)],
     ]
-    t_net = Table(net_data, colWidths=[110, 185, 55, 182])
+    t_net = Table(net_data, colWidths=[110, 185, 45, 192])
     t_net.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), c_surface),
+        ('BOX', (0,0), (-1,-1), 1, c_border),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
+        ('PADDING', (0,0), (-1,-1), 4.5),
+    ]))
+    story.append(t_net)
+
+    # =========================================================================
+    # SECTION 2: PRODUCTION CREDENTIALS & ROLES
+    # =========================================================================
+    story.append(Spacer(1, 10))
+    story.append(Paragraph("2. Production Credentials & Role-Based Access Control", style_h1))
+    cred_data = [
+        [Paragraph("Credential Type", style_table_header), Paragraph("Identifier / Key", style_table_header), Paragraph("Secret / Password", style_table_header), Paragraph("Assigned Role / Functional Scope", style_table_header)],
+        [Paragraph("System Super Admin", style_table_cell_bold), Paragraph("<code>admin@dnaqms.com</code>", style_code_bold), Paragraph("<code>Welc0me@555</code>", style_code), Paragraph("Global Super Admin (Full Configuration & Security RBAC)", style_table_cell)],
+        [Paragraph("Shift Supervisor", style_table_cell_bold), Paragraph("<code>supervisor@dnaqms.com</code>", style_code_bold), Paragraph("<code>Welc0me@555</code>", style_code), Paragraph("Queue Oversight, TAT Heatmaps, Emergency Authorization", style_table_cell)],
+        [Paragraph("Counter Teller", style_table_cell_bold), Paragraph("<code>teller1@dnaqms.com</code>", style_code_bold), Paragraph("<code>Welc0me@555</code>", style_code), Paragraph("Operational Counter Desk, Call Next, Serve, Forward, Complete", style_table_cell)],
+        [Paragraph("Safety / Security Officer", style_table_cell_bold), Paragraph("<code>security@dnaqms.com</code>", style_code_bold), Paragraph("<code>Welc0me@555</code>", style_code), Paragraph("Incident Command, Emergency Broadcast with PIN (9999 / 1234)", style_table_cell)],
+        [Paragraph("Master System API Key", style_table_cell_bold), Paragraph("<code>X-Api-Key</code> Header", style_table_cell), Paragraph("<code>dnaqms_live_system_admin_key_112233</code>", style_code), Paragraph("Hardware Kiosks, TV Screens, Automated Webhook Listeners", style_table_cell)],
+    ]
+    t_cred = Table(cred_data, colWidths=[105, 135, 145, 147])
+    t_cred.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), c_primary),
+        ('BOX', (0,0), (-1,-1), 1, c_border),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
+        ('PADDING', (0,0), (-1,-1), 4.5),
+    ]))
+    story.append(t_cred)
+
+    # =========================================================================
+    # SECTION 3: END-TO-END OPERATIONAL GUIDE ("HOW TO USE IT")
+    # =========================================================================
+    story.append(PageBreak())
+    story.append(Paragraph("3. End-to-End Operational Guide ('How to Use It')", style_h1))
+    story.append(Paragraph(
+        "This section delivers explicit, step-by-step instructions for all facility personas—from walk-in visitors to counter tellers, safety officers, shift supervisors, and IT administrators.",
+        style_body
+    ))
+
+    # 3.1 Visitor Touchpoints
+    story.append(Paragraph("3.1 Walk-In Visitor & Patient Touchpoints", style_h2))
+    visitor_steps = [
+        [Paragraph("Step #", style_table_header), Paragraph("Customer Action", style_table_header), Paragraph("Touchscreen & System Reaction", style_table_header), Paragraph("Operational Result", style_table_header)],
+        [
+            Paragraph("<b>1</b>", style_table_cell_bold),
+            Paragraph("<b>Select Department</b>", style_table_cell_bold),
+            Paragraph("Visitor taps high-contrast service tile on the self-service kiosk (e.g., <i>Doctor Consultation</i>, <i>Phlebotomy Lab</i>, <i>Pharmacy</i>).", style_table_cell),
+            Paragraph("Routes ticket into department's specific process queue.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>2</b>", style_table_cell_bold),
+            Paragraph("<b>Choose Priority Tier</b>", style_table_cell_bold),
+            Paragraph("Selects classification: <b>Standard Walk-In</b>, <b>Senior Citizen (65+)</b>, <b>Specially Abled / Mobility Impaired</b>, or <b>VIP / Emergency</b>.", style_table_cell),
+            Paragraph("Applies automatic queue prioritization rank (VIP > Senior > Standard).", style_table_cell)
+        ],
+        [
+            Paragraph("<b>3</b>", style_table_cell_bold),
+            Paragraph("<b>Enter Mobile Phone</b> (Optional)", style_table_cell_bold),
+            Paragraph("Visitor inputs 10-digit mobile number using numeric on-screen keypad to receive SMS / WhatsApp queue countdown notifications.", style_table_cell),
+            Paragraph("Enables automated outbound alerts when 2 customers remain ahead.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>4</b>", style_table_cell_bold),
+            Paragraph("<b>Collect Printed Ticket</b>", style_table_cell_bold),
+            Paragraph("Thermal printer outputs paper ticket with Token Number (e.g., <b>A-014</b>), Estimated Wait Time (~12 min), and dynamic <b>Mobile QR Code</b>.", style_table_cell),
+            Paragraph("Visitor is officially registered; ticket enters <code>Waiting (18001)</code> state.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>5</b>", style_table_cell_bold),
+            Paragraph("<b>Mobile Tracking via QR</b>", style_table_cell_bold),
+            Paragraph("Visitor scans QR with smartphone camera (iOS/Android). Displays real-time countdown of visitors ahead without downloading an app.", style_table_cell),
+            Paragraph("Phone vibrates and turns emerald green when teller calls their ticket.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>6</b>", style_table_cell_bold),
+            Paragraph("<b>Appointment Check-In</b>", style_table_cell_bold),
+            Paragraph("Pre-booked patients tap <i>'Check-In Appointment'</i> at kiosk bottom and input their 6-digit confirmation code.", style_table_cell),
+            Paragraph("Issues an expedited appointment token directly into teller's priority queue.", style_table_cell)
+        ],
+    ]
+    t_visitor = Table(visitor_steps, colWidths=[35, 110, 227, 160])
+    t_visitor.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), c_surface),
+        ('BOX', (0,0), (-1,-1), 1, c_border),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
+        ('PADDING', (0,0), (-1,-1), 4.5),
+    ]))
+    story.append(t_visitor)
+    story.append(Spacer(1, 8))
+
+    # 3.2 Staff Counter Station
+    story.append(Paragraph("3.2 Staff & Counter Teller Station Console (/staff/counter)", style_h2))
+    story.append(Paragraph(
+        "The teller console is engineered for maximum throughput, allowing staff to execute all queue actions via physical POS keyboard hotkeys without touching a mouse:",
+        style_body
+    ))
+
+    hotkey_data = [
+        [Paragraph("Physical Key", style_table_header), Paragraph("Command Action", style_table_header), Paragraph("Resulting Token State", style_table_header), Paragraph("Operational Behavior & Impact on Waiting Hall", style_table_header)],
+        [Paragraph("<b>`SPACEBAR`</b>", style_table_cell_bold), Paragraph("<b>Call Next</b>", style_table_cell_bold), Paragraph("<font color='#1E40AF'><b>Calling (18003)</b></font>", style_table_cell), Paragraph("Automatically pulls highest-priority waiting customer (VIP > Senior > Special Needs > Standard FIFO). Instantly flashes TV display and sounds audio chime.", style_table_cell)],
+        [Paragraph("<b>`F1`</b>", style_table_cell_bold), Paragraph("<b>Call Next (Alt)</b>", style_table_cell_bold), Paragraph("<font color='#1E40AF'><b>Calling (18003)</b></font>", style_table_cell), Paragraph("Secondary POS-keyboard key for Call Next.", style_table_cell)],
+        [Paragraph("<b>`F2`</b>", style_table_cell_bold), Paragraph("<b>Recall Customer</b>", style_table_cell_bold), Paragraph("<font color='#D97706'><b>Calling (18003)</b></font>", style_table_cell), Paragraph("Re-triggers the synthesized audio announcement chime and 30-second flashing pulse on the overhead TV display for absent or distracted visitors.", style_table_cell)],
+        [Paragraph("<b>`F3`</b>", style_table_cell_bold), Paragraph("<b>Serve Active</b>", style_table_cell_bold), Paragraph("<font color='#059669'><b>Active (18004)</b></font>", style_table_cell), Paragraph("Customer arrives at counter window. Starts the active service SLA stopwatch (turns amber if duration exceeds process SLA target).", style_table_cell)],
+        [Paragraph("<b>`F4`</b>", style_table_cell_bold), Paragraph("<b>Put on Hold</b>", style_table_cell_bold), Paragraph("<font color='#7C3AED'><b>Hold (18005)</b></font>", style_table_cell), Paragraph("Places ticket on temporary hold (e.g., waiting for lab test, payment authorization, or documents). Prompts teller for optional hold notes.", style_table_cell)],
+        [Paragraph("<b>`F5`</b>", style_table_cell_bold), Paragraph("<b>Complete & Next</b>", style_table_cell_bold), Paragraph("<font color='#059669'><b>Completed (18007)</b></font>", style_table_cell), Paragraph("<b>Rapid Dispatch Key:</b> Finalizes current ticket, logs exact service duration, and automatically calls next customer in 1 stroke.", style_table_cell)],
+        [Paragraph("<b>`F7`</b>", style_table_cell_bold), Paragraph("<b>Cancel / No-Show</b>", style_table_cell_bold), Paragraph("<font color='#DC2626'><b>Canceled (18006)</b></font>", style_table_cell), Paragraph("Cancels ticket after 3 unanswered calls. Flags record as customer no-show for supervisor audit.", style_table_cell)],
+    ]
+    t_hotkeys = Table(hotkey_data, colWidths=[70, 95, 105, 262])
+    t_hotkeys.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), c_primary),
+        ('BOX', (0,0), (-1,-1), 1, c_border),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
+        ('PADDING', (0,0), (-1,-1), 4.5),
+    ]))
+    story.append(t_hotkeys)
+
+    # 3.3 N-Level Multi-Department Workflow Forwarding
+    story.append(PageBreak())
+    story.append(Paragraph("3.3 N-Level Multi-Department Workflow Forwarding", style_h1))
+    story.append(Paragraph(
+        "In healthcare, banking, and public administration, a single customer journey frequently requires sequential routing through multiple service departments (e.g., <b>Registration → Vitals/Triage → Doctor Consultation → Blood Lab → Billing & Pharmacy</b>).",
+        style_body
+    ))
+    story.append(Paragraph(
+        "DQMS implements automated N-Level pipeline forwarding backed by stored procedure <code>PR_IU_ForwardToken</code>, transferring customers with clinical notes and priority retention without forcing them to re-queue at kiosks.",
+        style_body
+    ))
+
+    fwd_steps = [
+        [Paragraph("Workflow Action", style_table_header), Paragraph("Operator Interaction", style_table_header), Paragraph("Technical Execution & Data Transformation", style_table_header)],
+        [
+            Paragraph("<b>1. Open Forward Dialog</b>", style_table_cell_bold),
+            Paragraph("While serving active token at counter, click <b>'Forward Ticket'</b> button or press <b>`Ctrl + F`</b>.", style_table_cell),
+            Paragraph("Pulls active ticket metadata and retrieves list of eligible target processes.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>2. Select Target Pipeline</b>", style_table_cell_bold),
+            Paragraph("Select destination department (e.g., <i>Pathology / Blood Lab</i>) from dropdown.", style_table_cell),
+            Paragraph("Can route to general department pool or designate a specific target desk.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>3. Priority Management</b>", style_table_cell_bold),
+            Paragraph("Choose whether to retain current priority (e.g. <i>Senior Citizen</i>), escalate to <i>VIP</i>, or adopt default.", style_table_cell),
+            Paragraph("Ensures transferred patients receive fair queue placement in destination department.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>4. Enter Handoff Notes</b>", style_table_cell_bold),
+            Paragraph("Type operational / clinical notes (e.g., <i>'Patient fasted 12 hours; draw lipid panel and blood glucose immediately'</i>).", style_table_cell),
+            Paragraph("Saved directly into `TokenWorkflowHistory` and surfaced on receiving teller's console.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>5. Execute Transfer</b>", style_table_cell_bold),
+            Paragraph("Click <b>'Execute Forward'</b>. Current window finishes active service; ticket transitions to destination waiting queue.", style_table_cell),
+            Paragraph("Executes `PR_IU_ForwardToken`. Patient's mobile QR tracker automatically updates: <i>'Transferred to Pathology Lab. Proceed to 2nd Floor Waiting Hall.'</i>", style_table_cell)
+        ]
+    ]
+    t_fwd = Table(fwd_steps, colWidths=[120, 160, 252])
+    t_fwd.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), c_surface),
+        ('BOX', (0,0), (-1,-1), 1, c_border),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
+        ('PADDING', (0,0), (-1,-1), 4.5),
+    ]))
+    story.append(t_fwd)
+    story.append(Spacer(1, 10))
+
+    # 3.4 4K Waiting Room TV & Digital Signage Media Zone
+    story.append(Paragraph("3.4 4K Waiting Room TV Display & Digital Signage Media Zone (/tv)", style_h2))
+    story.append(Paragraph(
+        "Mounted in public waiting halls, the 4K TV display runs in an intelligent split-screen layout. The left zone presents real-time calling queue tokens, while the right zone plays rich promotional campaigns, healthcare education clips, and commercial media.",
+        style_body
+    ))
+
+    signage_data = [
+        [Paragraph("Feature / Component", style_table_header), Paragraph("Behavioral Specification", style_table_header), Paragraph("Visitor Experience & Impact", style_table_header)],
+        [
+            Paragraph("<b>Smart Audio Ducking Engine</b>", style_table_cell_bold),
+            Paragraph("When a teller presses Space/F2 to call a token, the media player automatically dips background video audio down to <b>15%</b> in 200ms, plays the queue chime, then fades back to 75%.", style_table_cell),
+            Paragraph("Guarantees crystal-clear auditory token callouts even during noisy, high-energy promotional video playback.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Calling Token Flashing Pulse</b>", style_table_cell_bold),
+            Paragraph("Newly called tokens trigger a high-visibility, 30-second emerald green and amber pulsing border with enlarged text (<b>A-014 → COUNTER 02</b>).", style_table_cell),
+            Paragraph("Attracts immediate visual attention of waiting visitors across large 85-foot public lobbies.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Campaign Scheduler (/admin/signage)</b>", style_table_cell_bold),
+            Paragraph("Facility managers upload 1080p MP4 videos or slideshow images, setting start/end dates, playback durations, and zone assignments.", style_table_cell),
+            Paragraph("Ensures targeted promotional content is served to specific building wings (e.g. Pediatrics vs Cardiology).", style_table_cell)
+        ]
+    ]
+    t_signage = Table(signage_data, colWidths=[120, 202, 210])
+    t_signage.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), c_primary),
+        ('BOX', (0,0), (-1,-1), 1, c_border),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
+        ('PADDING', (0,0), (-1,-1), 4.5),
+    ]))
+    story.append(t_signage)
+
+    # 3.5 Public Safety & Emergency Broadcast Console
+    story.append(Spacer(1, 10))
+    story.append(Paragraph("3.5 Safety & Security: Emergency Broadcast Console (/admin/emergency-broadcast)", style_h2))
+    story.append(Paragraph(
+        "In critical incidents (Fire Alarms, Code Red/Blue medical emergencies, active security threats, or severe weather evacuations), authorized safety officers can instantly hijack all 4K displays facility-wide with a high-priority emergency overlay.",
+        style_body
+    ))
+
+    emergency_steps = [
+        [Paragraph("Emergency Action", style_table_header), Paragraph("Execution Procedure", style_table_header), Paragraph("Security Verification & System Response", style_table_header)],
+        [
+            Paragraph("<b>1. Access Emergency Hub</b>", style_table_cell_bold),
+            Paragraph("Navigate to <code>/admin/emergency-broadcast</code> from the administrator sidebar or mobile incident console.", style_table_cell),
+            Paragraph("Requires Safety Officer, Facility Manager, or Super Admin credentials.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>2. Select Alert Severity</b>", style_table_cell_bold),
+            Paragraph("Choose severity: <b>Info (Blue)</b>, <b>Warning (Amber)</b>, <b>Critical Hazard (Red)</b>, or <b>Evacuation (Flashing Crimson)</b>.", style_table_cell),
+            Paragraph("Applies appropriate color grading, siren acoustic pattern, and border pulsation.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>3. Compose Evacuation Instructions</b>", style_table_cell_bold),
+            Paragraph("Enter Headline (e.g., <i>'FIRE ALARM: EVACUATE NORTH PAVILION'</i>) and step-by-step guidance (<i>'Use Fire Stairs B. Assemble at Lawn 2'</i>).", style_table_cell),
+            Paragraph("Supports facility-wide broadcast or targeted building/floor scoping.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>4. Mandatory PIN Security Check</b>", style_table_cell_bold),
+            Paragraph("Type the 4-digit <b>Supervisor Safety PIN</b> (default: <code>9999</code> or <code>1234</code>) into the security prompt.", style_table_cell),
+            Paragraph("<b>Anti-Panic Gate:</b> The trigger button remains cryptographically disabled until the correct PIN is verified.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>5. Instant Screen Hijack</b>", style_table_cell_bold),
+            Paragraph("Tap <b>'TRIGGER BROADCAST'</b>. All 4K overhead TVs immediately suppress queue numbers and render the siren alert banner.", style_table_cell),
+            Paragraph("Mutes all commercial video audio and displays full-screen emergency guidance within 500 milliseconds.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>6. Issue 'ALL CLEAR' Dismissal</b>", style_table_cell_bold),
+            Paragraph("When the incident is resolved, click <b>'Dismiss Broadcast / Issue ALL CLEAR'</b>, re-enter Supervisor PIN, and confirm.", style_table_cell),
+            Paragraph("Restores regular queue calling boards and background signage playback instantly.", style_table_cell)
+        ]
+    ]
+    t_emerg = Table(emergency_steps, colWidths=[110, 202, 220])
+    t_emerg.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), c_red),
+        ('BOX', (0,0), (-1,-1), 1, c_border),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
+        ('PADDING', (0,0), (-1,-1), 4.5),
+    ]))
+    story.append(t_emerg)
+
+    # 3.6 Shift Supervisor Analytics & Heatmaps
+    story.append(PageBreak())
+    story.append(Paragraph("3.6 Shift Supervisor: TAT Variance & Bottleneck Heatmaps (/admin/analytics)", style_h1))
+    story.append(Paragraph(
+        "Shift supervisors use the Executive Analytics command center to identify operational bottlenecks before SLA breaches occur:",
+        style_body
+    ))
+
+    sup_data = [
+        [Paragraph("Analytics Metric / Tool", style_table_header), Paragraph("Interpretation & Visual Indicator", style_table_header), Paragraph("Supervisor Remediation Workflow", style_table_header)],
+        [
+            Paragraph("<b>Average Wait Duration</b>", style_table_cell_bold),
+            Paragraph("Time elapsed between kiosk ticket printing and teller Call Next.", style_table_cell),
+            Paragraph("If wait exceeds department SLA target (e.g., > 15 min), system flags row in amber.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Average Service Duration</b>", style_table_cell_bold),
+            Paragraph("Time elapsed between teller F3 (Active) and F5 (Completed).", style_table_cell),
+            Paragraph("Reveals transaction complexity issues or teller retraining requirements.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>2D Bottleneck Heatmap Grid</b>", style_table_cell_bold),
+            Paragraph("Matrix mapping <b>Operating Hours (08:00–18:00)</b> against <b>Service Counters</b> with color grading: Green (< 5m), Amber (5–12m), Red (> 15m).", style_table_cell),
+            Paragraph("Supervisor spots peak congestion patterns instantly across morning rush hours.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Dynamic Staff Reallocation</b>", style_table_cell_bold),
+            Paragraph("Click <b>'Reallocate Counter'</b> directly from the heatmap view.", style_table_cell),
+            Paragraph("Dynamically shifts an idle Billing teller to Laboratory intake for 90 minutes to eliminate waiting room queues.", style_table_cell)
+        ]
+    ]
+    t_sup = Table(sup_data, colWidths=[120, 202, 210])
+    t_sup.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), c_surface),
+        ('BOX', (0,0), (-1,-1), 1, c_border),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
+        ('PADDING', (0,0), (-1,-1), 4.5),
+    ]))
+    story.append(t_sup)
+    story.append(Spacer(1, 10))
+
+    # 3.7 Webhook Notification Engine
+    story.append(Paragraph("3.7 IT Administrator: Webhook Notification Engine (/admin/webhooks)", style_h2))
+    story.append(Paragraph(
+        "The Webhook Engine streams real-time queue events to external enterprise platforms (Hospital Information Systems, Salesforce CRM, Core Banking APIs, or Slack channels):",
+        style_body
+    ))
+
+    webhook_data = [
+        [Paragraph("Operational Step", style_table_header), Paragraph("Configuration Action", style_table_header), Paragraph("Security & Delivery Verification Protocol", style_table_header)],
+        [
+            Paragraph("<b>1. Register Webhook</b>", style_table_cell_bold),
+            Paragraph("Click <b>'+ Register Webhook'</b>. Enter Subscriber Name and Destination Target URL (e.g. <code>https://his.hospital.com/api/dqms-listener</code>).", style_table_cell),
+            Paragraph("Configure secret token (minimum 32 alphanumeric characters).", style_table_cell)
+        ],
+        [
+            Paragraph("<b>2. Select Event Topics</b>", style_table_cell_bold),
+            Paragraph("Subscribe to specific topics: <code>ticket.issued</code>, <code>ticket.called</code>, <code>ticket.completed</code>, <code>ticket.noshow</code>, <code>sla.breached</code>.", style_table_cell),
+            Paragraph("Ensures external systems receive only relevant event streams.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>3. Dispatch Test Ping</b>", style_table_cell_bold),
+            Paragraph("Click <b>'Send Test Ping'</b> button in the webhook registry table.", style_table_cell),
+            Paragraph("Web API dispatches mock JSON payload. Verifies HTTP 200 OK and records round-trip latency.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>4. HMAC-SHA256 Signature</b>", style_table_cell_bold),
+            Paragraph("Outgoing HTTP header: <code>X-DQMS-Signature: sha256=&lt;hash&gt;</code>.", style_table_cell),
+            Paragraph("Receiving servers verify authenticity by computing HMAC-SHA256 over raw JSON payload with shared secret.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>5. Exponential Backoff</b>", style_table_cell_bold),
+            Paragraph("Automated retry engine on failure: +1m, +5m, +15m, +1h.", style_table_cell),
+            Paragraph("Prevents event dropouts during transient network or subscriber outages.", style_table_cell)
+        ]
+    ]
+    t_webhooks = Table(webhook_data, colWidths=[110, 202, 220])
+    t_webhooks.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), c_primary),
+        ('BOX', (0,0), (-1,-1), 1, c_border),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
+        ('PADDING', (0,0), (-1,-1), 4.5),
+    ]))
+    story.append(t_webhooks)
+    story.append(Spacer(1, 10))
+
+    # 3.8 Offline Edge Resilience
+    story.append(Paragraph("3.8 IT Administrator: Offline Edge Resilience & Hybrid Sync (/admin/edge-nodes)", style_h2))
+    story.append(Paragraph(
+        "Remote clinics, basement labs, and island branches frequently suffer internet WAN outages. DQMS Edge Resilience deploys embedded SQLite replicas (`edge_dqms.db`) to ensure 100% uninterrupted ticketing and counter service during complete network blackouts.",
+        style_body
+    ))
+
+    edge_states = [
+        [Paragraph("Edge Status Banner", style_table_header), Paragraph("Operating Condition", style_table_header), Paragraph("Autonomous Edge Behavior & Self-Healing Protocol", style_table_header)],
+        [
+            Paragraph("<font color='#059669'><b>ONLINE</b><br/>Central Connected</font>", style_table_cell_bold),
+            Paragraph("Normal WAN connectivity to primary MySQL central database.", style_table_cell),
+            Paragraph("Transactions commit to central database in real time. Local edge cache receives asynchronous mirror updates.", style_table_cell)
+        ],
+        [
+            Paragraph("<font color='#D97706'><b>OFFLINE DEGRADED</b><br/>Edge Cache Active</font>", style_table_cell_bold),
+            Paragraph("WAN internet dropped; central server unreachable.", style_table_cell),
+            Paragraph("<b>Zero Interruption:</b> Kiosks print tickets and tellers call/serve tokens seamlessly via local SQLite. Operations append to local <code>ReplayQueue</code> with unique UUIDs.", style_table_cell)
+        ],
+        [
+            Paragraph("<font color='#3B82F6'><b>SYNCING</b><br/>Reconciling Operations</font>", style_table_cell_bold),
+            Paragraph("WAN connectivity restored.", style_table_cell),
+            Paragraph("Automatic two-way reconciliation drains <code>ReplayQueue</code> chronologically into central MySQL. Resolves conflicts using server timestamps.", style_table_cell)
+        ]
+    ]
+    t_edge = Table(edge_states, colWidths=[110, 160, 262])
+    t_edge.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), c_surface),
         ('BOX', (0,0), (-1,-1), 1, c_border),
         ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
         ('PADDING', (0,0), (-1,-1), 5),
     ]))
-    story.append(t_net)
+    story.append(t_edge)
 
     # =========================================================================
-    # SECTION 2: INITIAL SETUP & PROVISIONING
-    # =========================================================================
-    story.append(Spacer(1, 12))
-    story.append(Paragraph("2. Initial Setup & Production Provisioning", style_h1))
-    story.append(Paragraph(
-        "Upon fresh deployment, the system initializes with pre-configured seed parameters, administrative master accounts, and location zones.",
-        style_body
-    ))
-
-    # Credentials Table
-    story.append(Paragraph("Default Production Access Credentials:", style_h2))
-    cred_data = [
-        [Paragraph("Credential Type", style_table_header), Paragraph("Identifier / Key", style_table_header), Paragraph("Secret / Password", style_table_header), Paragraph("Assigned Role / Scope", style_table_header)],
-        [Paragraph("System Super Admin", style_table_cell_bold), Paragraph("<code>admin@dnaqms.com</code>", style_code_bold), Paragraph("<code>Welc0me@555</code>", style_code), Paragraph("Global Super Administrator (Full RBAC)", style_table_cell)],
-        [Paragraph("Master System API Key", style_table_cell_bold), Paragraph("<code>X-Api-Key</code> Header", style_table_cell), Paragraph("<code>dnaqms_live_system_admin_key_112233</code>", style_code), Paragraph("Kiosk Hardware & Integration Services", style_table_cell)],
-        [Paragraph("Default Organization", style_table_cell_bold), Paragraph("<code>OrganizationId: 1</code>", style_code), Paragraph("Main Health & Operations Hub", style_table_cell), Paragraph("Primary Operational Facility", style_table_cell)],
-        [Paragraph("Default Location", style_table_cell_bold), Paragraph("<code>LocationId: 1</code>", style_code), Paragraph("Central Outpatient Pavilion", style_table_cell), Paragraph("Primary Facility Building", style_table_cell)],
-    ]
-    t_cred = Table(cred_data, colWidths=[105, 140, 160, 127])
-    t_cred.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), c_primary),
-        ('BOX', (0,0), (-1,-1), 1, c_border),
-        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
-        ('PADDING', (0,0), (-1,-1), 5),
-    ]))
-    story.append(t_cred)
-    story.append(Spacer(1, 8))
-
-    auth_note = """<b>Security Architecture Notice:</b> All passwords are cryptographically hashed using PBKDF2 with SHA-256 (100,000 iterations) with cryptographic salting. Unauthenticated requests strictly return HTTP 401 Unauthorized. No mock or bypass credentials exist in production code."""
-    t_auth_note = Table([[Paragraph(auth_note, style_callout)]], colWidths=[532])
-    t_auth_note.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#FEF3C7")),
-        ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#FDE68A")),
-        ('LINELEFT', (0,0), (0,-1), 3.5, c_amber),
-        ('PADDING', (0,0), (-1,-1), 6),
-    ]))
-    story.append(t_auth_note)
-
-    # =========================================================================
-    # SECTION 3: STAGE 1 ADMIN MASTERS
+    # SECTION 4: ADMINISTRATIVE WORKSPACE
     # =========================================================================
     story.append(PageBreak())
-    story.append(Paragraph("3. Stage 1: Application Administrator Workspace", style_h1))
+    story.append(Paragraph("4. Administrative Facility Workspaces", style_h1))
     story.append(Paragraph(
-        "The Administrative Workspace (accessed via <code>/admin/*</code>) enables facility supervisors and administrators to configure the physical layout, service routing pipelines, teller stations, display templates, and security rules.",
+        "Accessible via <code>/admin/*</code>, these workspaces give facility managers complete control over physical zones, department routing, counters, digital signage campaigns, and security rules:",
         style_body
     ))
 
     admin_modules = [
-        [Paragraph("Admin Module", style_table_header), Paragraph("Route Path", style_table_header), Paragraph("Operational Function & Configuration Guide", style_table_header)],
+        [Paragraph("Admin Module", style_table_header), Paragraph("Route Path", style_table_header), Paragraph("Configuration Guide & Operational Scope", style_table_header)],
         [
             Paragraph("<b>Areas & Zones</b>", style_table_cell_bold),
             Paragraph("<code>/admin/areas</code>", style_code),
-            Paragraph("Defines physical facility sections (e.g., <i>Main Triage</i>, <i>Phlebotomy Lab</i>, <i>Cashier Hall</i>). Configure Area Code, Area Name, and link to parent Location ID. Toggle Active status.", style_table_cell)
+            Paragraph("Defines physical facility sections (e.g., <i>Main Triage</i>, <i>Phlebotomy Lab</i>, <i>Cashier Hall</i>). Configure Area Code, Area Name, and link to parent Location ID. Backed by `PR_IU_Area`.", style_table_cell)
         ],
         [
             Paragraph("<b>Processes & SLAs</b>", style_table_cell_bold),
             Paragraph("<code>/admin/processes</code>", style_code),
-            Paragraph("Configures service departments and workflows. Set Token Prefix (e.g. 'A', 'B'), SLA Turnaround Time in minutes (e.g. 15m target), communication channels (SMS, WhatsApp), and daily token issuance quotas.", style_table_cell)
+            Paragraph("Configures service departments and workflows. Set Token Prefix (e.g. 'A', 'B'), SLA Turnaround Time in minutes (e.g. 15m target), communication channels (SMS, WhatsApp), and daily token issuance quotas. Backed by `PR_IU_Process`.", style_table_cell)
         ],
         [
             Paragraph("<b>Counters & Windows</b>", style_table_cell_bold),
             Paragraph("<code>/admin/counters</code>", style_code),
-            Paragraph("Maps physical service desks/windows (e.g. <i>Counter 01</i>, <i>Desk C</i>). Assign counter to an Area ID and define initial status (Available 20001, Serving 20002, Break 20003).", style_table_cell)
+            Paragraph("Maps physical service desks/windows (e.g. <i>Counter 01</i>, <i>Desk C</i>). Assign counter to an Area ID and define initial status (Available 20001, Serving 20002, Break 20003). Backed by `PR_IU_Counter`.", style_table_cell)
         ],
         [
-            Paragraph("<b>Display Templates</b>", style_table_cell_bold),
-            Paragraph("<code>/admin/display-templates</code>", style_code),
-            Paragraph("Configures overhead TV layout templates: <b>Template 21001</b> (4K Grid View), <b>21002</b> (Split Screen with promotional video), and <b>21003</b> (High-Density Dispatch List). Sets visual flash duration.", style_table_cell)
+            Paragraph("<b>Signage Campaigns</b>", style_table_cell_bold),
+            Paragraph("<code>/admin/signage</code>", style_code),
+            Paragraph("Create promotional media campaigns for waiting room TV media zones. Upload MP4 videos or JPG/PNG banners, configure display schedules, and assign to specific screen zones.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Emergency Broadcast</b>", style_table_cell_bold),
+            Paragraph("<code>/admin/emergency-broadcast</code>", style_code),
+            Paragraph("Security and evacuation override hub. Configure alert severity, instructional body, and trigger full-screen TV takeover using supervisor PIN verification.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Webhook Management</b>", style_table_cell_bold),
+            Paragraph("<code>/admin/webhooks</code>", style_code),
+            Paragraph("Register outgoing event webhook listeners, test HMAC signatures with live test pings, and inspect delivery attempt audit logs.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Edge Resilience Nodes</b>", style_table_cell_bold),
+            Paragraph("<code>/admin/edge-nodes</code>", style_code),
+            Paragraph("Monitor remote clinic edge nodes, view offline replay queue depth, and trigger manual synchronization.", style_table_cell)
         ],
         [
             Paragraph("<b>User Accounts & Staff</b>", style_table_cell_bold),
@@ -431,159 +777,23 @@ def build_pdf():
         [
             Paragraph("<b>Navigation Menu Setup</b>", style_table_cell_bold),
             Paragraph("<code>/admin/navigation-menu</code>", style_code),
-            Paragraph("Dynamically orders sidebar menu items, assigns Material/Feather icons, and maps required permission claims (`navigationmenu` table) with offline fallback safety.", style_table_cell)
+            Paragraph("Dynamically orders sidebar menu items, assigns icons, and maps required permission claims (`navigationmenu` table) with offline fallback safety.", style_table_cell)
         ],
-        [
-            Paragraph("<b>Email Configuration</b>", style_table_cell_bold),
-            Paragraph("<code>/admin/email</code>", style_code),
-            Paragraph("Configures SMTP server connection (Host, Port, SSL/TLS, SMTP Username/Password) and customizes digital queue ticket email receipts.", style_table_cell)
-        ],
-        [
-            Paragraph("<b>Notification Gateway</b>", style_table_cell_bold),
-            Paragraph("<code>/admin/notifications</code>", style_code),
-            Paragraph("Sets up SMS/WhatsApp gateway parameters. Configures prior-to-call alert thresholds (e.g., dispatch SMS when customer is 2 tokens away).", style_table_cell)
-        ],
-        [
-            Paragraph("<b>Executive Analytics</b>", style_table_cell_bold),
-            Paragraph("<code>/admin/analytics</code>", style_code),
-            Paragraph("Real-time operational dashboard visualizing tokens issued, average customer wait times, SLA compliance rate, and hourly customer volume distribution charts.", style_table_cell)
-        ],
-        [
-            Paragraph("<b>System Audit Logs</b>", style_table_cell_bold),
-            Paragraph("<code>/admin/logs</code>", style_code),
-            Paragraph("Compliance and diagnostic log stream detailing all system activities, token status changes, API transactions, and administrative modifications.", style_table_cell)
-        ]
     ]
-    t_admin_mods = Table(admin_modules, colWidths=[110, 110, 312])
-    t_admin_mods.setStyle(TableStyle([
+    t_admin = Table(admin_modules, colWidths=[105, 125, 302])
+    t_admin.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), c_surface),
         ('BOX', (0,0), (-1,-1), 1, c_border),
         ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
         ('PADDING', (0,0), (-1,-1), 4.5),
     ]))
-    story.append(t_admin_mods)
+    story.append(t_admin)
 
     # =========================================================================
-    # SECTION 4: STAGE 2 STAFF CONSOLE & HOTKEYS
+    # SECTION 5: API & STORED PROCEDURES SPECIFICATION
     # =========================================================================
-    story.append(PageBreak())
-    story.append(Paragraph("4. Stage 2: Staff & Teller Counter Station Console", style_h1))
-    story.append(Paragraph(
-        "The <b>Staff Counter Operator Console</b> (<code>/staff/counter</code>) is engineered for maximum teller velocity. Tellers can execute all customer operations without touching the mouse via physical keyboard hotkeys.",
-        style_body
-    ))
-
-    # Lifecycle State Machine
-    story.append(Paragraph("The Queue Ticket Lifecycle:", style_h2))
-    lifecycle_desc = """A queue ticket progresses through a strict, deterministic state machine:
-<br/>• <b>Waiting (18001)</b>: Ticket issued at Kiosk or Reception desk; customer is in waiting area.
-<br/>• <b>Calling (18003)</b>: Teller presses <code>SPACE</code> or <code>F1</code>. TV board flashes green and announces token.
-<br/>• <b>Serving / Active (18004)</b>: Customer arrives at desk. Teller presses <code>F3</code> to start active SLA timer.
-<br/>• <b>On Hold (18005)</b>: Teller presses <code>F4</code> if customer needs to fetch missing documents.
-<br/>• <b>Completed (18007)</b>: Teller finishes service. Pressing <code>F5</code> completes transaction and immediately calls next.
-<br/>• <b>Cancelled / No-Show (18006)</b>: Customer failed to appear after 3 calls. Press <code>F7</code> to cancel."""
-    t_lifecycle = Table([[Paragraph(lifecycle_desc, style_body)]], colWidths=[532])
-    t_lifecycle.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), c_bg_subtle),
-        ('BOX', (0,0), (-1,-1), 1, c_border),
-        ('PADDING', (0,0), (-1,-1), 7),
-    ]))
-    story.append(t_lifecycle)
     story.append(Spacer(1, 10))
-
-    # Hotkey Quick Reference Table
-    story.append(Paragraph("Teller Physical Keyboard Hotkey Quick Reference:", style_h2))
-    hotkey_data = [
-        [Paragraph("Keyboard Key", style_table_header), Paragraph("Action Name", style_table_header), Paragraph("Target Status", style_table_header), Paragraph("Operational Behavior & Impact", style_table_header)],
-        [Paragraph("<b>SPACEBAR</b>", style_table_cell_bold), Paragraph("<b>Call Next</b>", style_table_cell_bold), Paragraph("<font color='#059669'><b>Calling (18003)</b></font>", style_table_cell), Paragraph("Pulls the highest-priority waiting customer (VIP > Senior > Standard). Automatically updates TV displays.", style_table_cell)],
-        [Paragraph("<b>F1</b>", style_table_cell_bold), Paragraph("<b>Call Next (Alt)</b>", style_table_cell_bold), Paragraph("<font color='#059669'><b>Calling (18003)</b></font>", style_table_cell), Paragraph("Alternative key for Call Next for POS keyboards.", style_table_cell)],
-        [Paragraph("<b>F2</b>", style_table_cell_bold), Paragraph("<b>Recall Token</b>", style_table_cell_bold), Paragraph("<font color='#D97706'><b>Calling (18003)</b></font>", style_table_cell), Paragraph("Re-triggers the audio chime and 30-second flashing pulse on the overhead TV display.", style_table_cell)],
-        [Paragraph("<b>F3</b>", style_table_cell_bold), Paragraph("<b>Serve Active</b>", style_table_cell_bold), Paragraph("<font color='#1E40AF'><b>Active (18004)</b></font>", style_table_cell), Paragraph("Marks customer present at counter window and initiates active service SLA stopwatch.", style_table_cell)],
-        [Paragraph("<b>F4</b>", style_table_cell_bold), Paragraph("<b>Hold Token</b>", style_table_cell_bold), Paragraph("<font color='#7C3AED'><b>Hold (18005)</b></font>", style_table_cell), Paragraph("Places ticket on temporary hold. Prompts teller for reason notes.", style_table_cell)],
-        [Paragraph("<b>F5</b>", style_table_cell_bold), Paragraph("<b>Complete & Next</b>", style_table_cell_bold), Paragraph("<font color='#059669'><b>Completed (18007)</b></font>", style_table_cell), Paragraph("<b>Rapid Dispatch Key:</b> Finalizes current ticket, records service duration, and automatically calls next customer in 1 stroke.", style_table_cell)],
-        [Paragraph("<b>F7</b>", style_table_cell_bold), Paragraph("<b>Cancel / No-Show</b>", style_table_cell_bold), Paragraph("<font color='#DC2626'><b>Canceled (18006)</b></font>", style_table_cell), Paragraph("Closes ticket as customer no-show. Records cancellation reason.", style_table_cell)],
-    ]
-    t_hotkeys = Table(hotkey_data, colWidths=[85, 105, 105, 237])
-    t_hotkeys.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), c_primary),
-        ('BOX', (0,0), (-1,-1), 1, c_border),
-        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
-        ('PADDING', (0,0), (-1,-1), 5),
-    ]))
-    story.append(t_hotkeys)
-    story.append(Spacer(1, 10))
-
-    # Priority Tier Routing
-    story.append(Paragraph("Automatic Priority Tier Dispatch Rules:", style_h2))
-    prio_data = [
-        [Paragraph("Priority Tier", style_table_header), Paragraph("Code", style_table_header), Paragraph("Queue Precedence", style_table_header), Paragraph("Target Customer Demographics", style_table_header)],
-        [Paragraph("<b>VIP / Emergency</b>", style_table_cell_bold), Paragraph("<code>19001</code>", style_code_bold), Paragraph("Priority Rank 1 (Top of Stack)", style_table_cell), Paragraph("Emergency trauma, high-value clients, critical conditions", style_table_cell)],
-        [Paragraph("<b>Senior Citizen</b>", style_table_cell_bold), Paragraph("<code>19002</code>", style_code_bold), Paragraph("Priority Rank 2", style_table_cell), Paragraph("Elderly patients (65+) and expectant mothers", style_table_cell)],
-        [Paragraph("<b>Specially Abled</b>", style_table_cell_bold), Paragraph("<code>19003</code>", style_code_bold), Paragraph("Priority Rank 3", style_table_cell), Paragraph("Wheelchair assistance, sensory/mobility impairments", style_table_cell)],
-        [Paragraph("<b>Standard Queue</b>", style_table_cell_bold), Paragraph("<code>19004</code>", style_code_bold), Paragraph("FIFO (First In, First Out)", style_table_cell), Paragraph("General public walk-in registrations", style_table_cell)],
-    ]
-    t_prio = Table(prio_data, colWidths=[100, 55, 140, 237])
-    t_prio.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), c_surface),
-        ('BOX', (0,0), (-1,-1), 1, c_border),
-        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
-        ('PADDING', (0,0), (-1,-1), 4.5),
-    ]))
-    story.append(t_prio)
-
-    # =========================================================================
-    # SECTION 5: STAGE 3 CUSTOMER TOUCHPOINTS
-    # =========================================================================
-    story.append(PageBreak())
-    story.append(Paragraph("5. Stage 3: Customer Touchpoints & Public Displays", style_h1))
-    story.append(Paragraph(
-        "Stage 3 encompasses the public customer-facing touchpoints, engineered to eliminate waiting room congestion and keep visitors informed at every stage.",
-        style_body
-    ))
-
-    # Touchpoint Descriptions
-    tp_data = [
-        [Paragraph("Touchpoint Interface", style_table_header), Paragraph("Device / Form Factor", style_table_header), Paragraph("Operational Workflow & Experience", style_table_header)],
-        [
-            Paragraph("<b>Self-Service Ticket Kiosk</b><br/><code>/kiosk</code>", style_table_cell),
-            Paragraph("19\"–32\" Touchscreen Terminal with Thermal Printer", style_table_cell),
-            Paragraph("Walk-in visitors tap their desired service department, choose priority status, and optionally enter their mobile number. The kiosk prints a physical paper ticket containing Token Number (e.g., <b>A-009</b>), Date/Time, Estimated Wait Time, and a dynamic <b>Mobile Tracking QR Code</b>.", style_table_cell)
-        ],
-        [
-            Paragraph("<b>4K Overhead TV Display</b><br/><code>/tv</code>", style_table_cell),
-            Paragraph("55\"–85\" Commercial Display or Smart TV", style_table_cell),
-            Paragraph("Mounts in waiting halls. Connects to <code>/api/v1/public/display-board</code>. Renders active calls with teller window number (<b>A-009 → COUNTER 01</b>). Newly called tokens trigger a high-visibility 30-second flashing border alert and audible synthesized announcement.", style_table_cell)
-        ],
-        [
-            Paragraph("<b>Mobile Web QR Tracker</b><br/><code>/mobile</code>", style_table_cell),
-            Paragraph("Customer Smartphone (iOS / Android)", style_table_cell),
-            Paragraph("No mobile app installation required. Scanning the ticket QR code opens a lightweight mobile web page showing real-time <b>Customers Ahead</b> count and <b>Estimated Minutes Until Call</b>. Automatically vibrates and turns green when the customer's token is called.", style_table_cell)
-        ],
-        [
-            Paragraph("<b>Appointments Engine</b><br/><code>/appointment</code>", style_table_cell),
-            Paragraph("Customer Web Portal / Staff Calendar", style_table_cell),
-            Paragraph("Allows patients to book specific time slots online in advance. Upon arriving at the facility, entering their confirmation code at the kiosk instantly issues a prioritized check-in token.", style_table_cell)
-        ]
-    ]
-    t_tp = Table(tp_data, colWidths=[120, 120, 292])
-    t_tp.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), c_primary),
-        ('BOX', (0,0), (-1,-1), 1, c_border),
-        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
-        ('PADDING', (0,0), (-1,-1), 6),
-    ]))
-    story.append(t_tp)
-    story.append(Spacer(1, 14))
-
-    # =========================================================================
-    # SECTION 6: API SPECIFICATION & REFERENCE
-    # =========================================================================
-    story.append(Paragraph("6. Production API Endpoints & Stored Procedures", style_h1))
-    story.append(Paragraph(
-        "All customer touchpoints and teller consoles interface with optimized .NET Core endpoints backed by MySQL stored procedures:",
-        style_body
-    ))
-
+    story.append(Paragraph("5. Production API Endpoints & Stored Procedures", style_h1))
     api_specs = [
         [Paragraph("HTTP & Endpoint Path", style_table_header), Paragraph("Controller & Purpose", style_table_header), Paragraph("Database Stored Procedure", style_table_header), Paragraph("Auth Requirements", style_table_header)],
         [Paragraph("<code>POST /api/v1/auth/login</code>", style_code_bold), Paragraph("Authenticate User & Issue JWT", style_table_cell), Paragraph("<code>PR_S_User</code>, <code>UserRole</code>", style_code), Paragraph("Anonymous (Public)", style_table_cell)],
@@ -593,82 +803,93 @@ def build_pdf():
         [Paragraph("<code>POST /api/v1/staff/issue-token</code>", style_code_bold), Paragraph("Issue New Queue Ticket", style_table_cell), Paragraph("<code>PR_IU_IssueToken</code>", style_code), Paragraph("API Key / Bearer JWT", style_table_cell)],
         [Paragraph("<code>POST /api/v1/dqms/tickets</code>", style_code_bold), Paragraph("Kiosk Route Alias for Issue", style_table_cell), Paragraph("<code>PR_IU_IssueToken</code>", style_code), Paragraph("API Key / Bearer JWT", style_table_cell)],
         [Paragraph("<code>POST /api/v1/staff/call-next</code>", style_code_bold), Paragraph("Teller Hotkey: Call Next", style_table_cell), Paragraph("<code>PR_IU_CallNextToken</code>", style_code), Paragraph("Bearer JWT (Staff)", style_table_cell)],
+        [Paragraph("<code>POST /api/v1/staff/forward</code>", style_code_bold), Paragraph("Multi-Step Workflow Forward", style_table_cell), Paragraph("<code>PR_IU_ForwardToken</code>", style_code), Paragraph("Bearer JWT (Staff)", style_table_cell)],
         [Paragraph("<code>PUT /api/v1/staff/status</code>", style_code_bold), Paragraph("Update Status (Serve/Hold/Done)", style_table_cell), Paragraph("<code>PR_IU_UpdateTokenStatus</code>", style_code), Paragraph("Bearer JWT (Staff)", style_table_cell)],
         [Paragraph("<code>GET /api/v1/public/display-board</code>", style_code_bold), Paragraph("Overhead TV Stream Feed", style_table_cell), Paragraph("<code>PR_S_PublicDisplayBoard</code>", style_code), Paragraph("Public Anonymous", style_table_cell)],
         [Paragraph("<code>GET /api/v1/public/ticket-status/{id}</code>", style_code_bold), Paragraph("Mobile QR Ticket Tracking", style_table_cell), Paragraph("<code>PR_S_PublicTokenStatus</code>", style_code), Paragraph("Public Anonymous", style_table_cell)],
-        [Paragraph("<code>GET /api/v1/reports/summary</code>", style_code_bold), Paragraph("Executive Analytics Summary", style_table_cell), Paragraph("Dapper Direct Aggregation", style_code), Paragraph("Bearer JWT / Admin", style_table_cell)],
+        [Paragraph("<code>POST /api/v1/emergency/broadcast</code>", style_code_bold), Paragraph("Trigger Emergency Alert Override", style_table_cell), Paragraph("<code>PR_IU_EmergencyBroadcast</code>", style_code), Paragraph("Bearer JWT + PIN", style_table_cell)],
+        [Paragraph("<code>POST /api/v1/emergency/dismiss</code>", style_code_bold), Paragraph("Dismiss Emergency Broadcast", style_table_cell), Paragraph("<code>PR_IU_DismissBroadcast</code>", style_code), Paragraph("Bearer JWT + PIN", style_table_cell)],
+        [Paragraph("<code>GET /api/v1/signage/campaigns</code>", style_code_bold), Paragraph("Fetch Active Signage Media", style_table_cell), Paragraph("<code>PR_S_SignageCampaigns</code>", style_code), Paragraph("Public Anonymous", style_table_cell)],
+        [Paragraph("<code>POST /api/v1/webhooks</code>", style_code_bold), Paragraph("Register Webhook Subscriber", style_table_cell), Paragraph("<code>PR_IU_WebhookSubscription</code>", style_code), Paragraph("Bearer JWT (Admin)", style_table_cell)],
+        [Paragraph("<code>POST /api/v1/webhooks/test-ping</code>", style_code_bold), Paragraph("Dispatch HMAC-SHA256 Test Ping", style_table_cell), Paragraph("Direct HttpClient with HMAC", style_code), Paragraph("Bearer JWT (Admin)", style_table_cell)],
+        [Paragraph("<code>GET /api/v1/edge/sync-status</code>", style_code_bold), Paragraph("Query Edge Node Health", style_table_cell), Paragraph("SQLite / MySQL Check", style_code), Paragraph("Bearer JWT (Admin)", style_table_cell)],
     ]
-    t_api = Table(api_specs, colWidths=[150, 130, 130, 122])
+    t_api = Table(api_specs, colWidths=[140, 130, 132, 130])
     t_api.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), c_surface),
+        ('BACKGROUND', (0,0), (-1,0), c_primary),
         ('BOX', (0,0), (-1,-1), 1, c_border),
         ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
-        ('PADDING', (0,0), (-1,-1), 4),
+        ('PADDING', (0,0), (-1,-1), 3.5),
     ]))
     story.append(t_api)
 
     # =========================================================================
-    # SECTION 7: TROUBLESHOOTING & FAQ
+    # SECTION 6: TROUBLESHOOTING & SUPPORT
     # =========================================================================
     story.append(PageBreak())
-    story.append(Paragraph("7. Production Troubleshooting & Diagnostic Guide", style_h1))
-    story.append(Paragraph(
-        "Review the following resolution protocols for common operating scenarios:",
-        style_body
-    ))
-
+    story.append(Paragraph("6. Production Troubleshooting & Diagnostic Guide", style_h1))
     troubleshoot_data = [
         [Paragraph("Observed Symptom / Error", style_table_header), Paragraph("Root Cause Analysis", style_table_header), Paragraph("Step-by-Step Resolution Protocol", style_table_header)],
         [
             Paragraph("<b>HTTP 401 Unauthorized</b> on Login Screen", style_table_cell_bold),
             Paragraph("Invalid user identifier or incorrect password hash mismatch.", style_table_cell),
-            Paragraph("Verify credentials against database. Default admin is <code>admin@dnaqms.com</code> with password <code>Welc0me@555</code>. If password was reset via external script, verify PBKDF2 hash algorithm.", style_table_cell)
+            Paragraph("Verify credentials against database. Default admin is <code>admin@dnaqms.com</code> with password <code>Welc0me@555</code>. Ensure Authorization header uses format <code>Bearer &lt;token&gt;</code>.", style_table_cell)
         ],
         [
             Paragraph("<b>Overhead TV Screen Not Refreshing</b>", style_table_cell_bold),
-            Paragraph("Network disconnect or browser websocket/polling timeout.", style_table_cell),
-            Paragraph("1. Check network connectivity to server IP.<br/>2. Open browser developer console (F12) to ensure <code>GET /api/v1/public/display-board</code> returns HTTP 200.<br/>3. Press F5 to refresh browser or restart TV kiosk PC.", style_table_cell)
+            Paragraph("Network disconnect or browser polling timeout.", style_table_cell),
+            Paragraph("1. Check network connectivity to server IP.<br/>2. Open <code>/api/v1/public/display-board</code> in browser to verify JSON stream.<br/>3. Press F5 to refresh browser or restart TV kiosk PC.", style_table_cell)
         ],
         [
             Paragraph("<b>Teller Hotkey Space / F1 Does Nothing</b>", style_table_cell_bold),
             Paragraph("No waiting customers in queue, or browser window lost focus.", style_table_cell),
-            Paragraph("1. Click anywhere inside the teller counter screen to restore focus.<br/>2. Verify waiting queue count in sidebar is greater than 0.<br/>3. Verify teller's counter is active in status <code>Serving (20002)</code>.", style_table_cell)
+            Paragraph("1. Click anywhere inside the teller counter screen to restore focus.<br/>2. Verify waiting count in sidebar is greater than 0.<br/>3. Verify teller's counter is active in status <code>Serving (20002)</code>.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Emergency Broadcast Fails to Trigger</b>", style_table_cell_bold),
+            Paragraph("Incorrect or missing Supervisor Security PIN.", style_table_cell),
+            Paragraph("Ensure the 4-digit PIN entered matches the supervisor PIN configured in <code>appsettings.json</code> or table <code>SecurityPin</code> (default: <code>9999</code> or <code>1234</code>).", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Edge Banner Displays 'Offline Degraded'</b>", style_table_cell_bold),
+            Paragraph("Local edge station lost network connectivity to Central HQ.", style_table_cell),
+            Paragraph("Normal resilient behavior. Tellers can continue calling and serving tickets without interruption. System will auto-drain operations upon reconnection.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Webhook Test Ping Returns HTTP 403 / 401</b>", style_table_cell_bold),
+            Paragraph("Subscriber endpoint failed HMAC signature check or requires auth.", style_table_cell),
+            Paragraph("Check that subscriber server computes HMAC-SHA256 using the exact same secret key string configured in the DQMS Webhook management screen.", style_table_cell)
         ],
         [
             Paragraph("<b>Mobile QR Scan Returns 'Ticket Not Found'</b>", style_table_cell_bold),
-            Paragraph("Token ID or alphanumeric ticket code does not exist.", style_table_cell),
-            Paragraph("Ensure customer scans the newly printed QR code. Test manually by querying <code>/api/v1/public/ticket-status/A-009</code> in browser. Verify ticket was issued under today's operational date.", style_table_cell)
-        ],
-        [
-            Paragraph("<b>Database Connection Refused (Port 3306)</b>", style_table_cell_bold),
-            Paragraph("MySQL service stopped or firewall blocking local socket.", style_table_cell),
-            Paragraph("Ensure MySQL 8.0 service is running (`mysqld.exe`). Verify connection string in `appsettings.json` points to server `127.0.0.1;Port=3306;Database=dnaqms;Uid=root;Pwd=mysql;`.", style_table_cell)
+            Paragraph("Token ID or alphanumeric ticket code does not exist in today's queue.", style_table_cell),
+            Paragraph("Ensure customer scans the newly printed QR code. Test manually by querying <code>/api/v1/public/ticket-status/A-014</code> in browser.", style_table_cell)
         ],
     ]
     t_trouble = Table(troubleshoot_data, colWidths=[120, 130, 282])
     t_trouble.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), c_primary),
+        ('BACKGROUND', (0,0), (-1,0), c_surface),
         ('BOX', (0,0), (-1,-1), 1, c_border),
         ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
-        ('PADDING', (0,0), (-1,-1), 5),
+        ('PADDING', (0,0), (-1,-1), 4.5),
     ]))
     story.append(t_trouble)
-    story.append(Spacer(1, 15))
+    story.append(Spacer(1, 14))
 
     # Support & Contact Block
     story.append(Paragraph("Enterprise Technical Support Contacts", style_h2))
     support_data = [
-        [Paragraph("<b>Support Tier:</b> Tier 3 Enterprise 24/7", style_body), Paragraph("<b>Email Desk:</b> support@antigravityenterprise.com", style_body)],
+        [Paragraph("<b>Support Tier:</b> Tier 3 Mission-Critical Enterprise 24/7", style_body), Paragraph("<b>Email Desk:</b> support@antigravityenterprise.com", style_body)],
         [Paragraph("<b>Customer Portal:</b> https://support.antigravityenterprise.com", style_body), Paragraph("<b>Emergency Hotline:</b> +1 (800) 555-DQMS", style_body)],
     ]
     t_supp = Table(support_data, colWidths=[266, 266])
     t_supp.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#F8FAFC")),
         ('BOX', (0,0), (-1,-1), 1, c_border),
-        ('PADDING', (0,0), (-1,-1), 6),
+        ('PADDING', (0,0), (-1,-1), 5),
     ]))
     story.append(t_supp)
-    story.append(Spacer(1, 25))
+    story.append(Spacer(1, 20))
 
     story.append(Paragraph("<b>End of Document • AntiGravity Enterprise Platform Operations Manual</b>", ParagraphStyle('DocEnd', parent=style_body, alignment=TA_CENTER, textColor=c_muted)))
 

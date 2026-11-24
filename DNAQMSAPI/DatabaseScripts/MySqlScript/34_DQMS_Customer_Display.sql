@@ -67,7 +67,35 @@ BEGIN
       AND T.IsDeleted = 0
     ORDER BY T.CalledTime DESC;
 
-    -- 2. Currently Waiting Count Summary per Process
+    -- 2. Upcoming Queue & On-Hold Tokens (Public Waiting Lounge Display)
+    SELECT 
+        T.Id,
+        T.TokenNumber,
+        T.ProcessId,
+        P.ProcessName,
+        P.Prefix,
+        T.PriorityTier,
+        T.TokenStatus,
+        T.CounterId,
+        C.CounterNumber,
+        C.CounterName,
+        T.IssuedTime,
+        T.CalledTime
+    FROM TokenTransaction T
+    INNER JOIN Process P ON T.ProcessId = P.Id
+    LEFT JOIN Counter C ON T.CounterId = C.Id
+    WHERE T.OrganizationId = p_OrganizationId
+      AND T.LocationId = p_LocationId
+      AND (COALESCE(p_AreaId, -1) = -1 OR T.AreaId = p_AreaId)
+      AND T.TokenStatus IN (18001, 18002, 18005) -- Waiting, Queued, Hold
+      AND T.IsDeleted = 0
+    ORDER BY 
+      CASE WHEN T.TokenStatus = 18005 THEN 1 ELSE 0 END ASC, -- Waiting/Queued first, On-Hold second
+      T.PriorityTier DESC, -- VIP (19003) -> Senior (19002) -> Standard (19001)
+      T.IssuedTime ASC
+    LIMIT 20;
+
+    -- 3. Currently Waiting Count Summary per Process
     SELECT 
         P.Id AS ProcessId,
         P.ProcessName,

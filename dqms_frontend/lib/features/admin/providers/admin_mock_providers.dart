@@ -35,6 +35,24 @@ class AreaZoneModel {
       isActive: json['isActive'] ?? json['IsActive'] ?? true,
     );
   }
+
+  AreaZoneModel copyWith({
+    int? areaId,
+    String? areaCode,
+    String? areaName,
+    String? description,
+    int? targetSlaMins,
+    bool? isActive,
+  }) {
+    return AreaZoneModel(
+      areaId: areaId ?? this.areaId,
+      areaCode: areaCode ?? this.areaCode,
+      areaName: areaName ?? this.areaName,
+      description: description ?? this.description,
+      targetSlaMins: targetSlaMins ?? this.targetSlaMins,
+      isActive: isActive ?? this.isActive,
+    );
+  }
 }
 
 /// 2a. Process Step Multi-Level Workflow Model
@@ -244,6 +262,30 @@ class CounterModel {
       isVoiceEnabled: json['isVoiceEnabled'] ?? json['IsVoiceEnabled'] ?? true,
     );
   }
+
+  CounterModel copyWith({
+    int? counterId,
+    int? areaId,
+    String? areaName,
+    String? counterNumber,
+    String? counterName,
+    String? mode,
+    String? assignedStaffName,
+    String? status,
+    bool? isVoiceEnabled,
+  }) {
+    return CounterModel(
+      counterId: counterId ?? this.counterId,
+      areaId: areaId ?? this.areaId,
+      areaName: areaName ?? this.areaName,
+      counterNumber: counterNumber ?? this.counterNumber,
+      counterName: counterName ?? this.counterName,
+      mode: mode ?? this.mode,
+      assignedStaffName: assignedStaffName ?? this.assignedStaffName,
+      status: status ?? this.status,
+      isVoiceEnabled: isVoiceEnabled ?? this.isVoiceEnabled,
+    );
+  }
 }
 
 /// 4. Display Templates Model
@@ -439,6 +481,28 @@ class AdminWorkspaceState {
       ],
     );
   }
+
+  AdminWorkspaceState copyWith({
+    List<AreaZoneModel>? areas,
+    List<ProcessModel>? processes,
+    List<CounterModel>? counters,
+    List<DisplayTemplateModel>? displayTemplates,
+    List<StaffRoleModel>? staffMembers,
+    List<SystemConfigModel>? systemConfigs,
+    List<NotificationConfigModel>? notificationConfigs,
+    List<AnalyticsReportEntryModel>? analyticsReports,
+  }) {
+    return AdminWorkspaceState(
+      areas: areas ?? this.areas,
+      processes: processes ?? this.processes,
+      counters: counters ?? this.counters,
+      displayTemplates: displayTemplates ?? this.displayTemplates,
+      staffMembers: staffMembers ?? this.staffMembers,
+      systemConfigs: systemConfigs ?? this.systemConfigs,
+      notificationConfigs: notificationConfigs ?? this.notificationConfigs,
+      analyticsReports: analyticsReports ?? this.analyticsReports,
+    );
+  }
 }
 
 /// Riverpod StateNotifier for Admin Workspace
@@ -447,6 +511,18 @@ class AdminWorkspaceNotifier extends StateNotifier<AdminWorkspaceState> {
 
   void refresh() {
     state = AdminWorkspaceState.demo();
+  }
+
+  void updateArea(AreaZoneModel updatedArea) {
+    state = state.copyWith(
+      areas: state.areas.map((a) => a.areaId == updatedArea.areaId ? updatedArea : a).toList(),
+    );
+  }
+
+  void updateCounter(CounterModel updatedCounter) {
+    state = state.copyWith(
+      counters: state.counters.map((c) => c.counterId == updatedCounter.counterId ? updatedCounter : c).toList(),
+    );
   }
 
   Future<void> fetchApiData(Dio dio) async {

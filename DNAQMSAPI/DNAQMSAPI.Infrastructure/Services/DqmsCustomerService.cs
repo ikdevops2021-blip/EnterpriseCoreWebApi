@@ -7,7 +7,7 @@ namespace DNAQMSAPI.Infrastructure.Services
 {
     public interface IDqmsCustomerService
     {
-        Task<ApiResponse<IEnumerable<DisplayBoardItemModel>>> GetPublicDisplayBoardAsync(int organizationId, int locationId, int? areaId);
+        Task<ApiResponse<PublicDisplayBoardModel>> GetPublicDisplayBoardAsync(int organizationId, int locationId, int? areaId);
         Task<ApiResponse<PublicTokenStatusModel>> GetPublicTokenStatusAsync(int tokenId);
         Task<ApiResponse<PublicTokenStatusModel>> GetPublicTokenStatusByNumberAsync(string tokenNumber);
     }
@@ -21,7 +21,7 @@ namespace DNAQMSAPI.Infrastructure.Services
             _dbFactory = dbFactory;
         }
 
-        public async Task<ApiResponse<IEnumerable<DisplayBoardItemModel>>> GetPublicDisplayBoardAsync(int organizationId, int locationId, int? areaId)
+        public async Task<ApiResponse<PublicDisplayBoardModel>> GetPublicDisplayBoardAsync(int organizationId, int locationId, int? areaId)
         {
             try
             {
@@ -32,17 +32,25 @@ namespace DNAQMSAPI.Infrastructure.Services
                     p_AreaId = areaId ?? -1
                 };
 
-                var items = await _dbFactory.QueryAsync<DisplayBoardItemModel>(
+                using var multi = await _dbFactory.QueryMultipleAsync(
                     "PR_S_PublicDisplayBoard",
-                    parameters,
-                    commandType: CommandType.StoredProcedure
+                    parameters
                 );
 
-                return ApiResponse<IEnumerable<DisplayBoardItemModel>>.Ok(items.Where(i => i != null).Select(i => i!).ToList());
+                var activeCalls = (await multi.ReadAsync<DisplayBoardItemModel>()).Where(i => i != null).ToList();
+                var upcomingQueue = (await multi.ReadAsync<DisplayBoardQueueItemModel>()).Where(i => i != null).ToList();
+
+                var result = new PublicDisplayBoardModel
+                {
+                    ActiveCalls = activeCalls,
+                    UpcomingQueue = upcomingQueue
+                };
+
+                return ApiResponse<PublicDisplayBoardModel>.Ok(result);
             }
             catch (Exception ex)
             {
-                return ApiResponse<IEnumerable<DisplayBoardItemModel>>.Ok(Enumerable.Empty<DisplayBoardItemModel>(), $"Display notice ({ex.Message})");
+                return ApiResponse<PublicDisplayBoardModel>.Ok(new PublicDisplayBoardModel(), $"Display notice ({ex.Message})");
             }
         }
 

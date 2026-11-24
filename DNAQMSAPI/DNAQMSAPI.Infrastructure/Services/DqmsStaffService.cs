@@ -138,6 +138,7 @@ namespace DNAQMSAPI.Infrastructure.Services
                 {
                     string eventCode = dto.NewStatus switch
                     {
+                        18003 => "token.called",
                         18004 => "token.serving",
                         18005 => "token.hold",
                         18006 => "token.canceled",

@@ -47,19 +47,22 @@ class _WaitingRoomDisplayScreenState extends ConsumerState<WaitingRoomDisplayScr
             child: displayState.when(
               loading: () => const Center(child: CircularProgressIndicator(color: AppColors.brandPrimary)),
               error: (err, _) => Center(child: Text('Display Error: $err', style: const TextStyle(color: AppColors.statusError))),
-              data: (callingItems) => callingItems.isEmpty
-                  ? _buildEmptyDisplayBoard()
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(24),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 20,
-                        mainAxisSpacing: 20,
-                        childAspectRatio: 1.4,
-                      ),
-                      itemCount: callingItems.length,
-                      itemBuilder: (ctx, i) => _buildCallingCard(callingItems[i]),
-                    ),
+              data: (board) {
+                final callingItems = board.activeCalls;
+                return callingItems.isEmpty
+                    ? _buildEmptyDisplayBoard()
+                    : GridView.builder(
+                        padding: const EdgeInsets.all(24),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20,
+                          childAspectRatio: 1.4,
+                        ),
+                        itemCount: callingItems.length,
+                        itemBuilder: (ctx, i) => _buildCallingCard(callingItems[i]),
+                      );
+              },
             ),
           ),
           _buildLiveFooterTicker(),

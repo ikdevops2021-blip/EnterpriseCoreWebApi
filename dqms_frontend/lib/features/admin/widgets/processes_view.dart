@@ -1140,6 +1140,69 @@ class _ProcessesViewState extends ConsumerState<ProcessesView> {
           ),
           const SizedBox(height: 14),
 
+          // Operational Status Provision (Active / Inactive Toggle)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: proc.isActive
+                  ? AppColors.statusActive.withValues(alpha: 0.08)
+                  : AppColors.statusDeactive.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: proc.isActive
+                    ? AppColors.statusActive.withValues(alpha: 0.3)
+                    : AppColors.statusDeactive.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  proc.isActive ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                  color: proc.isActive ? AppColors.statusActive : AppColors.statusDeactive,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'OPERATIONAL STATUS',
+                        style: TextStyle(
+                          color: AppColors.textSubtle,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      Text(
+                        proc.isActive ? 'Active (Open for Ticketing)' : 'Inactive / Suspended',
+                        style: TextStyle(
+                          color: proc.isActive ? AppColors.statusActive : AppColors.statusDeactive,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch.adaptive(
+                  value: proc.isActive,
+                  activeThumbColor: AppColors.statusActive,
+                  activeTrackColor: AppColors.statusActive.withValues(alpha: 0.4),
+                  inactiveThumbColor: AppColors.textSubtle,
+                  inactiveTrackColor: AppColors.bgSurfaceHover,
+                  onChanged: (val) {
+                    setState(() {
+                      _selectedProcess = proc.copyWith(isActive: val);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+
           // Daily Max Quota
           DqmsTextField(
             label: 'Daily Maximum Token Limit (0 or empty = Unlimited)',

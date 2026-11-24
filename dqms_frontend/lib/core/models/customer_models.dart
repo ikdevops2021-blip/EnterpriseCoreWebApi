@@ -49,6 +49,81 @@ class DisplayBoardItemDto {
   }
 }
 
+class DisplayBoardQueueItemDto {
+  final int id;
+  final String tokenNumber;
+  final int processId;
+  final String processName;
+  final String prefix;
+  final int priorityTier;
+  final int tokenStatus;
+  final int? counterId;
+  final String? counterNumber;
+  final String? counterName;
+  final String? issuedTime;
+  final String? calledTime;
+
+  DisplayBoardQueueItemDto({
+    required this.id,
+    required this.tokenNumber,
+    required this.processId,
+    required this.processName,
+    required this.prefix,
+    required this.priorityTier,
+    required this.tokenStatus,
+    this.counterId,
+    this.counterNumber,
+    this.counterName,
+    this.issuedTime,
+    this.calledTime,
+  });
+
+  factory DisplayBoardQueueItemDto.fromJson(Map<String, dynamic> json) {
+    return DisplayBoardQueueItemDto(
+      id: json['id'] ?? 0,
+      tokenNumber: json['tokenNumber'] ?? '',
+      processId: json['processId'] ?? 0,
+      processName: json['processName'] ?? '',
+      prefix: json['prefix'] ?? 'A',
+      priorityTier: json['priorityTier'] ?? 19001,
+      tokenStatus: json['tokenStatus'] ?? 18001,
+      counterId: json['counterId'],
+      counterNumber: json['counterNumber'],
+      counterName: json['counterName'],
+      issuedTime: json['issuedTime']?.toString(),
+      calledTime: json['calledTime']?.toString(),
+    );
+  }
+}
+
+class PublicDisplayBoardDto {
+  final List<DisplayBoardItemDto> activeCalls;
+  final List<DisplayBoardQueueItemDto> upcomingQueue;
+
+  PublicDisplayBoardDto({
+    required this.activeCalls,
+    required this.upcomingQueue,
+  });
+
+  factory PublicDisplayBoardDto.empty() => PublicDisplayBoardDto(
+        activeCalls: [],
+        upcomingQueue: [],
+      );
+
+  factory PublicDisplayBoardDto.fromJson(Map<String, dynamic> json) {
+    final active = (json['activeCalls'] as List?)
+            ?.map((e) => DisplayBoardItemDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList() ??
+        [];
+    final queue = (json['upcomingQueue'] as List?)
+            ?.map((e) =>
+                DisplayBoardQueueItemDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList() ??
+        [];
+    return PublicDisplayBoardDto(activeCalls: active, upcomingQueue: queue);
+  }
+}
+
 class PublicTokenStatusDto {
   final int id;
   final String tokenNumber;

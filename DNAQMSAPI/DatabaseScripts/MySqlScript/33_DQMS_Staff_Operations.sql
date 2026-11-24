@@ -206,12 +206,15 @@ CREATE PROCEDURE PR_S_TokenQueue (
     IN p_CounterId      INT
 )
 BEGIN
-    -- Active / Called Token for this Counter
+    -- Active / Called Token for this Counter, or Held tokens for this counter/process
     SELECT * FROM TokenTransaction
     WHERE OrganizationId = p_OrganizationId
       AND LocationId = p_LocationId
-      AND CounterId = p_CounterId
-      AND TokenStatus IN (18003, 18004, 18005) -- Calling, Active, Hold
+      AND (
+          (CounterId = p_CounterId AND TokenStatus IN (18003, 18004))
+          OR
+          (TokenStatus = 18005 AND (CounterId = p_CounterId OR (COALESCE(p_ProcessId, 0) > 0 AND ProcessId = p_ProcessId)))
+      )
       AND IsDeleted = 0
     ORDER BY ModifiedDate DESC;
 

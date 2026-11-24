@@ -18,7 +18,28 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="description" content="A new Flutter project.">
+
+  <script>
+    // Force wipe any stale Flutter Service Worker and CacheStorage on load
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (let r of registrations) {
+          r.unregister();
+        }
+      });
+    }
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        for (let name of names) {
+          caches.delete(name);
+        }
+      });
+    }
+  </script>
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -41,6 +62,76 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <script>
+    window.dqmsAudioContext = null;
+
+    window.dqmsUnlockAudio = function() {
+      try {
+        if (!window.dqmsAudioContext) {
+          window.dqmsAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (window.dqmsAudioContext.state === 'suspended') {
+          window.dqmsAudioContext.resume();
+        }
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(' ');
+          window.speechSynthesis.speak(u);
+        }
+        return true;
+      } catch (e) {
+        console.warn('DQMS Audio unlock warning:', e);
+        return false;
+      }
+    };
+
+    window.dqmsPlayChimeAndSpeak = function(text, tokenNumber, counterName, nextTokenNumber) {
+      try {
+        window.dqmsUnlockAudio();
+        const ctx = window.dqmsAudioContext;
+        if (ctx) {
+          const now = ctx.currentTime;
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gainNode = ctx.createGain();
+
+          gainNode.connect(ctx.destination);
+          gainNode.gain.setValueAtTime(0.35, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+
+          // Standard 2-tone hospital announcement chime (D5 -> A5)
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(587.33, now);
+          osc1.connect(gainNode);
+          osc1.start(now);
+          osc1.stop(now + 0.35);
+
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(880.00, now + 0.28);
+          osc2.connect(gainNode);
+          osc2.start(now + 0.28);
+          osc2.stop(now + 0.9);
+        }
+
+        if ('speechSynthesis' in window) {
+          setTimeout(function() {
+            window.speechSynthesis.cancel();
+            let spokenText = text || ('Token ' + (tokenNumber || '') + ', please proceed to Counter ' + (counterName || ''));
+            if (nextTokenNumber && String(nextTokenNumber).trim().length > 0 && !spokenText.toLowerCase().includes('next token')) {
+              spokenText += '. Next token, ' + String(nextTokenNumber).trim() + ', please get ready.';
+            }
+            const utterance = new SpeechSynthesisUtterance(spokenText);
+            utterance.rate = 0.88;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            window.speechSynthesis.speak(utterance);
+          }, 700);
+        }
+      } catch (e) {
+        console.error('DQMS audio error:', e);
+      }
+    };
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

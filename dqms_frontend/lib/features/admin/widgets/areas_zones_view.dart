@@ -42,7 +42,17 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
 
     return MasterDetailLayout(
       masterWidget: _buildMasterContent(filteredAreas, state),
-      detailWidget: _selectedArea != null ? _buildDetailInspector(_selectedArea!) : null,
+      detailWidget: _selectedArea != null
+          ? _ZoneInspectorWidget(
+              key: ValueKey('${_selectedArea!.areaId}_${_selectedArea!.areaCode}'),
+              area: _selectedArea!,
+              onSaved: (updated) {
+                setState(() {
+                  _selectedArea = updated;
+                });
+              },
+            )
+          : null,
       detailTitle: _selectedArea != null ? 'Zone Inspector — ${_selectedArea!.areaCode}' : 'Zone Inspector',
       onCloseDetail: () {
         setState(() {
@@ -665,8 +675,65 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
       ),
     );
   }
+}
 
-  Widget _buildDetailInspector(AreaZoneModel area) {
+class _ZoneInspectorWidget extends ConsumerStatefulWidget {
+  final AreaZoneModel area;
+  final ValueChanged<AreaZoneModel> onSaved;
+
+  const _ZoneInspectorWidget({
+    super.key,
+    required this.area,
+    required this.onSaved,
+  });
+
+  @override
+  ConsumerState<_ZoneInspectorWidget> createState() => _ZoneInspectorWidgetState();
+}
+
+class _ZoneInspectorWidgetState extends ConsumerState<_ZoneInspectorWidget> {
+  late TextEditingController _codeController;
+  late TextEditingController _nameController;
+  late TextEditingController _descController;
+  late TextEditingController _slaController;
+  late bool _isActive;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _codeController = TextEditingController(text: widget.area.areaCode);
+    _nameController = TextEditingController(text: widget.area.areaName);
+    _descController = TextEditingController(text: widget.area.description);
+    _slaController = TextEditingController(text: '${widget.area.targetSlaMins}');
+    _isActive = widget.area.isActive;
+  }
+
+  @override
+  void didUpdateWidget(covariant _ZoneInspectorWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.area.areaId != widget.area.areaId ||
+        oldWidget.area.areaCode != widget.area.areaCode ||
+        oldWidget.area.isActive != widget.area.isActive) {
+      _codeController.text = widget.area.areaCode;
+      _nameController.text = widget.area.areaName;
+      _descController.text = widget.area.description;
+      _slaController.text = '${widget.area.targetSlaMins}';
+      _isActive = widget.area.isActive;
+    }
+  }
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    _nameController.dispose();
+    _descController.dispose();
+    _slaController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -675,19 +742,25 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.brandPrimary.withValues(alpha: 0.08),
+              color: (_isActive ? AppColors.brandPrimary : AppColors.textSubtle).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.2)),
+              border: Border.all(
+                color: (_isActive ? AppColors.brandPrimary : AppColors.textSubtle).withValues(alpha: 0.25),
+              ),
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                    color: (_isActive ? AppColors.brandPrimary : AppColors.textSubtle).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.location_on_rounded, color: AppColors.brandPrimary, size: 22),
+                  child: Icon(
+                    Icons.location_on_rounded,
+                    color: _isActive ? AppColors.brandPrimary : AppColors.textSubtle,
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -695,9 +768,9 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        area.areaCode,
-                        style: const TextStyle(
-                          color: AppColors.brandPrimary,
+                        _codeController.text.isNotEmpty ? _codeController.text : widget.area.areaCode,
+                        style: TextStyle(
+                          color: _isActive ? AppColors.brandPrimary : AppColors.textSubtle,
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                           fontFamily: 'monospace',
@@ -705,57 +778,171 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        area.areaName,
+                        _nameController.text.isNotEmpty ? _nameController.text : widget.area.areaName,
                         style: const TextStyle(color: AppColors.textMain, fontSize: 13, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
                 ),
-                DqmsStatusBadge.activeState(area.isActive),
+                DqmsStatusBadge.activeState(_isActive),
               ],
             ),
           ),
           const SizedBox(height: 18),
 
-          DqmsTextField(label: 'Area / Zone Code', initialValue: area.areaCode),
+          DqmsTextField(
+            label: 'Area / Zone Code',
+            controller: _codeController,
+            onChanged: (val) => setState(() {}),
+          ),
           const SizedBox(height: 14),
-          DqmsTextField(label: 'Zone Name', initialValue: area.areaName),
+          DqmsTextField(
+            label: 'Zone Name',
+            controller: _nameController,
+            onChanged: (val) => setState(() {}),
+          ),
           const SizedBox(height: 14),
-          DqmsTextField(label: 'Description / Wing Specs', initialValue: area.description, maxLines: 3),
+          DqmsTextField(
+            label: 'Description / Wing Specs',
+            controller: _descController,
+            maxLines: 3,
+          ),
           const SizedBox(height: 14),
-          DqmsTextField(label: 'Target SLA (Minutes)', initialValue: '${area.targetSlaMins}'),
+          DqmsTextField(
+            label: 'Target SLA (Minutes)',
+            controller: _slaController,
+            keyboardType: TextInputType.number,
+          ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              const Text('Operational Status:', style: TextStyle(color: AppColors.textMain, fontSize: 12, fontWeight: FontWeight.w600)),
-              const Spacer(),
-              DqmsStatusBadge.activeState(area.isActive),
-            ],
+
+          // Operational Status Provision (Active / Inactive Toggle)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: _isActive
+                  ? AppColors.statusActive.withValues(alpha: 0.08)
+                  : AppColors.statusDeactive.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: _isActive
+                    ? AppColors.statusActive.withValues(alpha: 0.3)
+                    : AppColors.statusDeactive.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _isActive ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                  color: _isActive ? AppColors.statusActive : AppColors.statusDeactive,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'OPERATIONAL STATUS',
+                        style: TextStyle(
+                          color: AppColors.textSubtle,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      Text(
+                        _isActive ? 'Active (Open for Routing)' : 'Inactive / Decommissioned',
+                        style: TextStyle(
+                          color: _isActive ? AppColors.statusActive : AppColors.statusDeactive,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch.adaptive(
+                  value: _isActive,
+                  activeThumbColor: AppColors.statusActive,
+                  activeTrackColor: AppColors.statusActive.withValues(alpha: 0.4),
+                  inactiveThumbColor: AppColors.textSubtle,
+                  inactiveTrackColor: AppColors.bgSurfaceHover,
+                  onChanged: (val) {
+                    setState(() {
+                      _isActive = val;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
-          DqmsButton(
-            label: 'Save Area Changes',
-            icon: Icons.save_rounded,
-            isFullWidth: true,
-            onPressed: () async {
-              try {
-                final dio = ref.read(dioProvider);
-                await dio.post('${AppConfig.adminApiBase}/area', data: {
-                  'id': area.areaId,
-                  'areaCode': area.areaCode,
-                  'areaName': area.areaName,
-                  'description': area.description,
-                  'organizationId': 1,
-                  'locationId': 1,
-                  'isActive': area.isActive,
-                });
-              } catch (_) {}
 
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Zone ${area.areaCode} saved to backend API.'), backgroundColor: AppColors.statusActive),
-              );
-            },
+          DqmsButton(
+            label: _isSaving ? 'Saving Changes...' : 'Save Area Changes',
+            icon: _isSaving ? Icons.hourglass_top_rounded : Icons.save_rounded,
+            isFullWidth: true,
+            onPressed: _isSaving
+                ? null
+                : () async {
+                    setState(() => _isSaving = true);
+                    final targetSla = int.tryParse(_slaController.text.trim()) ?? widget.area.targetSlaMins;
+                    final code = _codeController.text.trim();
+                    final name = _nameController.text.trim();
+                    final desc = _descController.text.trim();
+
+                    final updatedModel = widget.area.copyWith(
+                      areaCode: code.isNotEmpty ? code : widget.area.areaCode,
+                      areaName: name.isNotEmpty ? name : widget.area.areaName,
+                      description: desc,
+                      targetSlaMins: targetSla,
+                      isActive: _isActive,
+                    );
+
+                    try {
+                      final dio = ref.read(dioProvider);
+                      final payload = {
+                        'id': widget.area.areaId == 999 ? 0 : widget.area.areaId,
+                        'areaCode': updatedModel.areaCode,
+                        'areaName': updatedModel.areaName,
+                        'description': updatedModel.description,
+                        'targetSLA': updatedModel.targetSlaMins,
+                        'organizationId': 1,
+                        'locationId': 1,
+                        'isActive': _isActive,
+                      };
+
+                      await dio.post('${AppConfig.adminApiBase}/area', data: payload);
+
+                      ref.read(adminWorkspaceStateProvider.notifier).updateArea(updatedModel);
+                      await ref.read(adminWorkspaceStateProvider.notifier).fetchApiData(dio);
+
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Zone ${updatedModel.areaCode} successfully saved (${_isActive ? "Active" : "Inactive"}).',
+                          ),
+                          backgroundColor: _isActive ? AppColors.statusActive : AppColors.statusDeactive,
+                        ),
+                      );
+                      widget.onSaved(updatedModel);
+                    } catch (e) {
+                      ref.read(adminWorkspaceStateProvider.notifier).updateArea(updatedModel);
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Zone ${updatedModel.areaCode} updated locally (${_isActive ? "Active" : "Inactive"}).',
+                          ),
+                          backgroundColor: _isActive ? AppColors.statusActive : AppColors.statusDeactive,
+                        ),
+                      );
+                      widget.onSaved(updatedModel);
+                    } finally {
+                      if (mounted) setState(() => _isSaving = false);
+                    }
+                  },
           ),
         ],
       ),
