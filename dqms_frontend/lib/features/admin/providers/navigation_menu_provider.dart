@@ -176,4 +176,6 @@ const List<NavigationMenuModel> _fallbackMenus = [
   NavigationMenuModel(id: 12, title: 'Analytics Hub',                iconName: 'analytics_rounded',            routePath: '/admin/analytics',          sortOrder: 12, isActive: true),
   NavigationMenuModel(id: 13, title: 'Application & Audit Logs',     iconName: 'terminal_rounded',             routePath: '/admin/logs',               sortOrder: 13, isActive: true),
   NavigationMenuModel(id: 14, title: 'Navigation Menu Manager',      iconName: 'menu_rounded',                 routePath: '/admin/navigation-menu',    sortOrder: 14, isActive: true),
+  NavigationMenuModel(id: 18, title: 'Webhook Integrations',         iconName: 'webhook_rounded',              routePath: '/admin/webhooks',           sortOrder: 15, isActive: true),
+  NavigationMenuModel(id: 19, title: 'Edge Appliances & Sync',       iconName: 'hub_rounded',                  routePath: '/admin/edge-nodes',         sortOrder: 16, isActive: true),
 ];

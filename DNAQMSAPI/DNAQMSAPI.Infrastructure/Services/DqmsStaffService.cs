@@ -21,10 +21,14 @@ namespace DNAQMSAPI.Infrastructure.Services
     public class DqmsStaffService : IDqmsStaffService
     {
         private readonly DNAQMSAPI.Application.Interfaces.IDapperDBFactory _dbFactory;
+        private readonly IWebhookDispatcher? _webhookDispatcher;
 
-        public DqmsStaffService(DNAQMSAPI.Application.Interfaces.IDapperDBFactory dbFactory)
+        public DqmsStaffService(
+            DNAQMSAPI.Application.Interfaces.IDapperDBFactory dbFactory,
+            IWebhookDispatcher? webhookDispatcher = null)
         {
             _dbFactory = dbFactory;
+            _webhookDispatcher = webhookDispatcher;
         }
 
         public async Task<ApiResponse<object>> IssueTokenAsync(IssueTokenRequestDto dto, int userId)
@@ -51,6 +55,16 @@ namespace DNAQMSAPI.Infrastructure.Services
 
                 if (result != null && result.ErrNo == 0)
                 {
+                    _ = _webhookDispatcher?.EnqueueEventAsync("token.issued", dto.OrganizationId, dto.LocationId, new
+                    {
+                        tokenId = result.ID,
+                        processId = dto.ProcessId,
+                        areaId = dto.AreaId,
+                        priorityTier = dto.PriorityTier,
+                        customerName = dto.CustomerName,
+                        customerPhone = dto.CustomerPhone
+                    });
+
                     return ApiResponse<object>.Ok(new { tokenId = result.ID }, "Token issued successfully");
                 }
 
@@ -83,6 +97,14 @@ namespace DNAQMSAPI.Infrastructure.Services
 
                 if (result != null && result.ErrNo == 0)
                 {
+                    _ = _webhookDispatcher?.EnqueueEventAsync("token.called", dto.OrganizationId, dto.LocationId, new
+                    {
+                        tokenId = result.ID,
+                        counterId = dto.CounterId,
+                        processId = dto.ProcessId,
+                        callerUserId = userId
+                    });
+
                     return ApiResponse<object>.Ok(new { tokenId = result.ID }, "Next token called successfully");
                 }
 
@@ -114,6 +136,23 @@ namespace DNAQMSAPI.Infrastructure.Services
 
                 if (result != null && result.ErrNo == 0)
                 {
+                    string eventCode = dto.NewStatus switch
+                    {
+                        18004 => "token.serving",
+                        18005 => "token.hold",
+                        18006 => "token.canceled",
+                        18007 => "token.completed",
+                        _ => "token.updated"
+                    };
+
+                    _ = _webhookDispatcher?.EnqueueEventAsync(eventCode, 1, null, new
+                    {
+                        tokenId = dto.TokenId,
+                        newStatus = dto.NewStatus,
+                        reason = dto.Reason,
+                        userId = userId
+                    });
+
                     return ApiResponse<object>.Ok(new { tokenId = result.ID }, "Token status updated successfully");
                 }
 
@@ -148,6 +187,16 @@ namespace DNAQMSAPI.Infrastructure.Services
 
                 if (result != null && (int)result.ErrNo == 0)
                 {
+                    _ = _webhookDispatcher?.EnqueueEventAsync("token.forwarded", 1, null, new
+                    {
+                        tokenId = (int)result.ID,
+                        tokenNumber = (string)result.TokenNumber,
+                        targetProcessId = dto.TargetProcessId,
+                        stepOrder = (int)result.StepOrder,
+                        stepName = (string)result.StepName,
+                        isSubToken = dto.IsSubToken
+                    });
+
                     return ApiResponse<object>.Ok(new
                     {
                         tokenId = (int)result.ID,

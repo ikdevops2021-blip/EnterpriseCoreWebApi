@@ -222,6 +222,10 @@ class IconResolver {
     'summarize_rounded':               Icons.summarize_rounded,
     'find_in_page_rounded':            Icons.find_in_page_rounded,
     'integration_instructions_rounded': Icons.integration_instructions_rounded,
+    'webhook_rounded':                 Icons.webhook_rounded,
+    'webhook':                         Icons.webhook_rounded,
+    'hub_rounded':                     Icons.hub_rounded,
+    'router_rounded':                  Icons.router_rounded,
     // Finance & Commerce
     'payments_rounded':                Icons.payments_rounded,
     'receipt_rounded':                 Icons.receipt_rounded,

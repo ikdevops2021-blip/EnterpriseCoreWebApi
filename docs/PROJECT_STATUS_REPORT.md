@@ -1,162 +1,176 @@
-# AntiGravity Enterprise DQMS — Project Status Report
-
-**Report Date:** November 24, 2026  
-**Project:** DNAQMS Enterprise (Digital Queue Management System)  
-**System Architecture:** Clean Architecture .NET 8 Web API + Flutter 3.x Multiplatform Client + MSSQL & MySQL Dual RDBMS  
-**Status Verdict:** **PRODUCTION & COMMERCIAL READY (Phase 1–3 Complete + Stage 3 Extensions Deployed)**
+# 🏗️ DQMS Enterprise — Project Status Report
+**Date:** November 24, 2026 · **Branch:** `master` · **Last commit:** Nov 24, 2026 (`779c8d0`)
 
 ---
 
-## 1. Executive Summary & Project Health
+## 📊 Project At A Glance
 
-The **Digital Queue Management System (DQMS)** has achieved complete end-to-end commercial viability. All core persona journeys—**Application Admin Setup**, **Teller & Staff Counter Operations**, and **Customer Self-Service Touchpoints (Kiosk, TV, Mobile PWA)**—are fully implemented, tested, and verified across both backend (.NET 8 Core Web API) and cross-platform frontend (Flutter Web, Windows Desktop, Linux, Android, iOS).
-
-### Project Health Dashboard
-
-| Health Category | Status | Metrics / Score | Highlights |
-|:---|:---:|:---:|:---|
-| **Backend API Health** | 🟢 **Green** | 100% Build Clean (0 Errors) | .NET 8 Web API, Dapper DB Factory, Dual RDBMS (MSSQL/MySQL), SignalR Live Hubs. |
-| **Frontend Health** | 🟢 **Green** | 100% Test Pass Rate | Single shared Flutter codebase, Riverpod state management, responsive CanvasKit Web & Desktop. |
-| **Database Migrations** | 🟢 **Green** | 39 SQL Scripts (100% Dual Parity) | Fully synchronized across MSSQL & MySQL with automated SeederApp migration CLI. |
-| **Security & Compliance** | 🟢 **Green** | 100% Enforced | PBKDF2-SHA256 password hashing, 512-bit signed JWTs, RolePermission Matrix, dynamic tenant isolation. |
-| **Multi-Lingual / i18n** | 🟢 **Green** | 4 Enterprise Locales | English, Arabic (Right-to-Left RTL layout), Hindi, Assamese with live Text-to-Speech (TTS). |
-| **Analytics & Reporting** | 🟢 **Green** | P95 + 2D Matrix Heatmap | Turnaround Time (TAT) Variance % engine, statistical dispersion ($\sigma, CV, P_{95}$), and 2D Bottleneck Heatmap. |
+| Metric | Value |
+|---|---|
+| **Project Start** | July 29, 2026 |
+| **Total Commits** | 103+ |
+| **Codebase Files** | 530+ indexed |
+| **Languages** | C# (.NET 8), Dart/Flutter, SQL (T-SQL & MySQL), TypeScript, PowerShell, Python |
+| **Architecture** | Clean Architecture, Dapper DB Factory, Riverpod 2.6, 23 code communities |
+| **Last Activity** | Today (November 24, 2026) |
+| **Build & Test Status** | 🟢 .NET 8 API (0 Errors) · 🟢 Flutter (76/76 Tests Passed · 100%) |
 
 ---
 
-## 2. Milestone & Persona Staging Progress
+## 🧱 System Architecture
 
+```mermaid
+graph TD
+    A["Flutter Frontend<br/>(Web / Mobile / Desktop)"] -->|REST API & SignalR| B[".NET 8 Core Web API<br/>(DNAQMSAPI)"]
+    B --> C["Dapper DB Factory<br/>(MySQL 8.0 / MS SQL Server)"]
+    B --> D["Stored Procedures<br/>(PR_IU_, PR_S_, PR_D_)"]
+    B --> E["MemoryCache & Covered Indexes<br/>(60s Sliding Analytics Cache)"]
+    A --> F["Riverpod State Management<br/>(Locale, Theme, Dashboard, Auth)"]
+    A --> G["Stitch Design System<br/>(18 Responsive Clinical Screens)"]
+    A --> H["Universal Printer Engine<br/>(Thermal ESC/POS, Spooler, PDF)"]
+    B --> I["Webhook Notification Engine<br/>(Bounded Channel, HMAC-SHA256, Circuit Breaker)"]
+    B --> J["Offline Edge Resilience & Hybrid Sync<br/>(UUIDv7, Local Edge SQLite, State Dominance)"]
 ```
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ STAGE 1: APPLICATION ADMIN PERSPECTIVE (Master Setup, Pipeline Configs & Analytics)         [100% DONE] │
-├─────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ STAGE 2: STAFF & TELLER PERSPECTIVE (High-Speed, Low-Friction, Hotkey Counter Station)      [100% DONE] │
-├─────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ STAGE 3: END CUSTOMER PERSPECTIVE (App-Less Mobile PWA, Kiosk, Display TVs & Voice TTS)     [100% DONE] │
-├─────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ STAGE 4: ADVANCED WORKFLOWS & ANALYTICS (N-Level Pipelines, Sub-Tokens, TAT Variance Matrix)[100% DONE] │
-└─────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-```
 
-### Stage 1: Application Admin Perspective (100% Complete)
-- **Tenant & Location Partitioning**: Multi-tenant isolation supporting Healthcare, Banking, Retail, and Government centers.
-- **Dynamic Navigation Menu**: Database-driven dynamic menu system (`PR_S_NavigationMenuByRole`, `PR_IU_NavigationMenu`) with URL route preservation on refresh and fallback menu resilience.
-- **Master Setup Screens**: Complete administrative configuration for Areas, Counters, Service Processes, Display Templates, and Staff User Profiles.
-- **Role-Permission Matrix Configurator**: Interactive visual matrix for runtime RBAC permission grants.
-- **Service Flags & Quotas**: Granular channel toggles (`IsSMS`, `IsWhatsApp`, `IsEmail`, `IsFeedBack`) and daily token quotas (`TokenLimitDaily`) excluding cancelled tickets.
+### Backend — `.NET Core Web API`
+| Layer | Project | Purpose |
+|---|---|---|
+| API | [DNAQMSAPI.Api](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Api) | Controllers, middleware, SignalR hubs, startup |
+| Application | [DNAQMSAPI.Application](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Application) | Services & core business logic interfaces |
+| Domain | [DNAQMSAPI.Domain](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Domain) | Entities, domain models, enum constants |
+| Infrastructure | [DNAQMSAPI.Infrastructure](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Infrastructure) | Dapper DB factory, reports, analytics & notification services |
+| Security | [DNAQMSAPI.Security](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Security) | PBKDF2-SHA256 Auth, 512-bit JWT tokens, API keys, RBAC |
+| Payments | [DNAQMSAPI.Payments](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Payments) | Payment gateways & transaction records |
+| Storage | [DNAQMSAPI.Storage](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Storage) | File/blob storage providers and audit logs |
+| Shared | [AntiGravity.Enterprise.Shared.Core](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/AntiGravity.Enterprise.Shared.Core) | Cross-cutting models, DTOs, Dapper DB factory implementation |
+| DB Scripts | [DatabaseScripts](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DatabaseScripts) | 41 MSSQL & MySQL stored procedures and migration scripts |
 
-### Stage 2: Staff & Teller Perspective (100% Complete)
-- **High-Density Counter Operator Console (`CounterOperatorScreen`)**:
-  - Hotkey-driven workflow (`Space` = Call Next, `F1` = Start Service, `F2` = Complete, `F3` = Hold, `F4` = Transfer, `F5` = No-Show).
-  - Contextual token detail cards displaying wait time, customer profile, and priority tier.
-  - Active session persistence and lobby screen (`StaffLobbyScreen`).
-- **Token State Machine**: Strict 8-stage state machine (`Queued` $\to$ `Waiting` $\to$ `Calling` $\to$ `Active` $\to$ `Hold` $\to$ `Completed` / `Canceled` / `Forwarded`).
-- **Priority Tier Routing**: Standard, Senior Citizen, Disabled, Emergency, and VIP tier prioritization.
+### Frontend — `Flutter (Dart)`
+| Feature Module | Purpose |
+|---|---|
+| [admin](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/dqms_frontend/lib/features/admin) | Admin masters (Areas, Counters, Processes, Displays), Edge Appliances, Webhooks, roles, dynamic menu |
+| [auth](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/dqms_frontend/lib/features/auth) | Enterprise login, Dio interceptors, JWT session persistence |
+| [staff](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/dqms_frontend/lib/features/staff) | Counter station operator console, hotkey ops (`Space`, `F1`–`F5`), token calling |
+| [customer](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/dqms_frontend/lib/features/customer) | Self-service Kiosk, 4K Waiting Room TV display, App-less PWA mobile tracker |
+| [dashboard](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/dqms_frontend/lib/features/dashboard) | Real-time command center, TAT Variance % panel, 2D Bottleneck Heatmap matrix |
+| [l10n](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/dqms_frontend/lib/l10n) | 4-language ARB localization (English, Arabic RTL, Hindi, Assamese) + TTS voice engine |
 
-### Stage 3: End Customer Perspective (100% Complete)
-- **Self-Service Touch Kiosk (`KioskScreen`)**:
-  - 3-step touch issuance: Category Selection $\to$ Sub-Service $\to$ Ticket QR Pass Generation.
-  - Integration with cross-platform Universal Printer engine (`packages/universal_printer`).
-- **Overhead TV Waiting Room Display (`WaitingRoomTvScreen`)**:
-  - 4K-ready responsive board showing Currently Serving counters, Upcoming Queue, and scrolling ticker banner.
-  - Audio chime notifications and multi-lingual Text-to-Speech (TTS) synthesized queue callouts.
-- **Virtual PWA Queueing (`PublicMobileTrackerScreen`, `TicketQrPassWidget`)**:
-  - No app download or customer registration required.
-  - Instant mobile queue tracking via physical ticket QR scan or SMS/WhatsApp link (`/track/:identifier`).
-  - Real-time progress bar, estimated wait time, and counter call push alerts.
-- **Multi-Lingual i18n & RTL Engine**:
-  - Full native localization for **English (`en`)**, **Arabic (`ar` - RTL)**, **Hindi (`hi`)**, and **Assamese (`as`)**.
-  - Persistent locale state management via `SharedPreferences`.
+---
 
-### Stage 4: Advanced Workflows & TAT Analytics (100% Complete)
-- **N-Level Process Pipelines & Sub-Tokens (Migration Script 38)**:
-  - Multi-step customer journeys (`ParentTokenId`, `StepOrder`, `SubTokenSequence`).
-  - Stored procedures: `PR_S_ProcessSteps`, `PR_IU_ForwardToken`, `PR_S_TokenWorkflowHistory`.
-  - Sequential forwarding and cross-service branch handoffs with complete audit trails.
-- **Turnaround Time (TAT) Management & Bottleneck Heatmaps (Migration Script 39)**:
-  - Non-clustered covering index: `IX_TokenTransaction_Analytics_TAT` on `(OrganizationId, LocationId, CreatedDate, TokenStatus)`.
+## ✅ What's Been Completed (Stages 1–4)
+
+### Stage 1 — Admin Masters & Configuration ✅
+- [x] Multi-tenant organization setup & location hierarchy
+- [x] Counter and DisplayTemplate full CRUD endpoints + stored procedures
+- [x] Dynamic `ConfigCategory` & `ConfigParameters` system (no hardcoded strings)
+- [x] Searchable cascading Location pickers (Country → State → City) with multi-tier caching
+- [x] Dynamic database-driven Navigation Menu with URL route preservation on refresh
+- [x] Interactive Role-Permission Matrix Configurator
+- [x] Responsive Abu Anwar pattern SideMenu with top command header
+- [x] Icon picker, duration time picker for SLA/steps
+- [x] API Gateway Endpoints config screen with live connectivity ping tester
+- [x] Runtime `config.json` loader (zero-rebuild API endpoint updates)
+- [x] Administrative Reports & Analytics CSV Export endpoints
+- [x] Two-tier caching: `IMemoryCache` backend + `Riverpod` frontend
+- [x] Application & Audit Logs (API + Flutter `ClientLogger` + Admin log viewer)
+- [x] User profile dropdown with avatar uploads, glassmorphism UI
+- [x] Communication flags (`IsSMS`, `IsWhatsApp`, `IsEmail`, `IsFeedBack`) + `TokenLimitDaily` quota engine
+
+### Stage 2 — Staff Counter Station ✅
+- [x] Staff Counter Station app with hotkey support (`Space`, `F1`–`F5`)
+- [x] Role-based routing, lobby selection, audit trail
+- [x] `PR_IU_IssueToken`, `PR_IU_CallNextToken` stored procedures
+- [x] Token lifecycle state machine (Queued → Waiting → Calling → Active → Hold → Canceled → Completed → Forwarded)
+- [x] Priority tier routing (Standard, Senior Citizen, Disabled, Emergency, VIP)
+
+### Stage 3 — Customer & Public Display ✅
+- [x] Self-Service Kiosk with live service search, zone filter chips, dynamic process cards
+- [x] Token prefix from process code, Print + Done actions
+- [x] Waiting Room TV Display Board with real-time sync (4K layout, audio chime, scrolling ticker)
+- [x] `PR_S_PublicDisplayBoard` stored procedure
+- [x] Online Appointment & Time-Slot Booking wizard (`AppointmentBookingScreen`, `AppointmentsCalendarScreen`)
+
+### Stage 4 — Advanced Workflows, Analytics & PWA (Latest Completed) ✅
+- [x] **N-Level Pipeline Workflows (Script 38)**:
+  - Multi-step customer journeys with `ParentTokenId`, `StepOrder`, and `SubTokenSequence`.
+  - Sequential forwarding and cross-service branch handoffs via `PR_IU_ForwardToken`.
+  - Complete workflow history tracking via `PR_S_TokenWorkflowHistory` and `PR_S_ProcessSteps`.
+- [x] **Turnaround Time (TAT) Management & Bottleneck Heatmaps (Script 39)**:
+  - Covering Index `IX_TokenTransaction_Analytics_TAT` on `(OrganizationId, LocationId, CreatedDate, TokenStatus)`.
   - Stored procedures: `PR_S_DqmsTatVarianceAnalytics` and `PR_S_DqmsBottleneckHeatmap`.
-  - Mathematical Variance % Engine: $\text{Variance \%} = \frac{\text{ActualTAT} - \text{TargetTAT}}{\text{TargetTAT}} \times 100\%$.
-  - Statistical Dispersion: Mean, Standard Deviation ($\sigma$), Coefficient of Variation ($CV$), and 95th Percentile ($P_{95}$).
-  - Interactive 2D Bottleneck Heatmap Matrix widget in `DashboardScreen` slicing congestion across Hour-of-Day ($08:00\text{--}18:00$) by Day of Week, Service Process, or Counter Station with tap drilldown popovers.
+  - Mathematical Variance % engine: $\text{Variance \%} = \frac{\text{ActualTAT} - \text{TargetTAT}}{\text{TargetTAT}} \times 100\%$.
+  - Statistical Dispersion metrics: Mean, Standard Deviation ($\sigma$), Coefficient of Variation ($CV$), and 95th Percentile ($P_{95}$).
+  - Interactive 2D Bottleneck Heatmap Matrix widget with Day/Process/Counter dimension toggling and tap drilldown dialog.
+- [x] **PWA Virtual Queueing (No-App-Required)**:
+  - Digital Ticket QR Pass widget (`TicketQrPassWidget`) for physical kiosk prints and digital receipts.
+  - Public mobile tracking screen (`PublicMobileTrackerScreen`) accessible via `/track/:identifier` with zero authentication requirement.
+- [x] **Multi-Lingual i18n & Voice Audio TTS**:
+  - Full native localization for **English (`en`)**, **Arabic (`ar` - RTL)**, **Hindi (`hi`)**, and **Assamese (`as`)**.
+  - Right-to-Left (RTL) mirror layout rendering for Arabic.
+  - Multi-lingual Text-to-Speech (TTS) synthesized queue voice announcements (`DqmsAudioVoiceService`).
+  - Persistent locale state management via `SharedPreferences`.
+- [x] **Hardware Integration & Universal Printing Engine**:
+  - Dedicated cross-platform printer driver package (`packages/universal_printer`).
+  - Supports 80mm ESC/POS thermal receipt printers, Windows spooler, PDF generation, and CUPS network print.
+- [x] **Webhook Notification Engine (Script 40)**:
+  - Enterprise event-driven outbound HTTP callbacks with bounded in-memory channel queue (`10,000` items) for `< 1ms` non-blocking dispatch.
+  - Cryptographic HMAC-SHA256 payload signing (`X-DQMS-Signature: t={timestamp},v1={hex}`) with timestamp replay protection window (300s).
+  - Exponential backoff retry engine with jitter ($15\text{s} \times 2^{\text{attempt}-1}$, capped at 300s) and automatic Circuit Breaker tripping after 10 consecutive delivery failures.
+  - Full CRUD endpoints and test ping diagnostics: `GET/POST/DELETE /api/v1/dqms/webhooks`, `POST /test`, and `GET /logs`.
+  - Database persistence: `WebhookSubscription` and `WebhookDeliveryLog` tables with matching stored procedures across MSSQL and MySQL.
+  - Modern Flutter Admin Console: `/admin/webhooks` with real-time test ping popover, secret generator, delivery log viewer, and fallback navigation synchronization.
+- [x] **Offline Edge Resilience & Hybrid Sync Engine (Script 41)**:
+  - Branch edge resilience architecture guaranteeing 100% autonomous local Kiosk, Counter Station, and TV chime operations when WAN drops.
+  - Dual-key anti-collision protocol using **UUIDv7 `ClientTokenGuid`** with unique covered index `UX_TokenTransaction_ClientTokenGuid`.
+  - State machine dominance conflict resolution: $\text{Completed} (18007) \succ \text{Forwarded} (18008) \succ \text{Active} (18004) \succ \text{Calling} (18003) \succ \text{Waiting} (18002) \succ \text{Queued} (18001)$, preserving physical teller service over remote cancellations.
+  - Database persistence: `EdgeNodeRegistration` and `EdgeSyncAuditLog` tables with `PR_IU_EdgeNodeRegistration`, `PR_S_EdgeNodes`, and transactional bulk `PR_IU_ProcessEdgeSyncBatch` across MSSQL and MySQL.
+  - Backend API: `POST /api/v1/dqms/edge/register`, `POST /heartbeat`, `POST /sync`, and `GET /logs`.
+  - Flutter UI & Clinical Widgets: `EdgeResilienceBanner` connectivity pill and `EdgeNodesView` (`/admin/edge-nodes`) with dynamic navigation and fallback synchronization.
+
+### Cross-Cutting — UI/UX & Infrastructure
+- [x] Enterprise login screen with Dio Auth Interceptors (100% pass rate)
+- [x] Responsive 3D glass clinical queue cards (web, mobile, desktop)
+- [x] Shimmer skeletons, `fl_chart` curves, `flutter_animate` micro-animations
+- [x] `flutter_spinkit` + interactive trend charts + TV animations
+- [x] Responsive admin views across mobile, tablet, and desktop
+- [x] Docker support (`Dockerfile` + `docker-compose.yml`)
+- [x] QA test suites (76 automated tests passing, 0 failures)
+- [x] Real browser E2E QA automation (98/100 commercial-ready verdict)
+- [x] Professional User Guide v1.2.0 (9-page PDF with roadmap + Markdown manual)
 
 ---
 
-## 3. Database Architecture & Script Directory Status
+## 🔴 What's NOT Yet Done (from [FEATURES.md](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/FEATURES.md))
 
-The database schema is 100% synchronized across **Microsoft SQL Server** (`DNAQMSAPI/DatabaseScripts/MSSQLScript/`) and **MySQL 8.0** (`DNAQMSAPI/DatabaseScripts/MySqlScript/`):
-
-| Script # | Script Title | Scope / Implementation Detail |
-|:---:|:---|:---|
-| **01–09** | Identity, Auth & Permissions | Multi-tenant `Organization`, `User`, `Role`, `Permission`, `UserOrganization`, `UserRole`, `ApiKey`, `UserSession`, `UserDevice`. |
-| **10–22** | Core System & NexusConfig | `ConfigCategory`, `ConfigParameters`, `NexusCore_ID_Generator`, `UserContactAndAddress`. |
-| **23–30** | Locations & Notifications | World geographic seed data, `LocationAndUserProfileService`, `Notification`, `NotificationTemplate`, `SmsQueue`. |
-| **31–32** | DQMS Admin Masters | `Area`, `Counter`, `Process`, `ProcessStep`, `DisplayTemplate`, `ProcessDisplayMapping`, `UserCounterAssignment`. |
-| **33** | DQMS Staff Operations | `TokenTransaction`, `TokenAuditLog`, `PR_S_ActiveQueueTokens`, `PR_IU_TokenCall`, `PR_IU_TokenStatusUpdate`. |
-| **34** | DQMS Customer Display | `PR_S_DisplayBoardData`, `PR_IU_GenerateToken`, `PR_S_CustomerTokenStatus`. |
-| **35** | Navigation Menu Engine | Dynamic database-driven menu hierarchy with role permissions. |
-| **36–37** | Process Flags & Quota Alterations | Added `IsSMS`, `IsWhatsApp`, `IsEmail`, `IsFeedBack`, and `TokenLimitDaily` columns and validation logic. |
-| **38** | N-Level Pipeline Workflows | Added `ParentTokenId`, `StepOrder`, `SubTokenSequence`, `PR_S_ProcessSteps`, `PR_IU_ForwardToken`, `PR_S_TokenWorkflowHistory`. |
-| **39** | TAT Variance & Bottleneck Heatmaps | Added covering index `IX_TokenTransaction_Analytics_TAT`, `PR_S_DqmsTatVarianceAnalytics`, and `PR_S_DqmsBottleneckHeatmap`. |
+| Feature Area | Status | Priority |
+|---|---|---|
+| **WhatsApp / SMS Live Gateway Dispatch** | 🟡 DB flags & models done; external SMS/WhatsApp HTTP provider gateway pending | Medium |
+| **CSAT / NPS Survey Feedback** | 🟡 `IsFeedBack` flag exists; counter survey terminal & automated WhatsApp survey webhook pending | Medium |
+| **SLA Escalation Manager** | 🟡 Variance analytics done; automated threshold notifications to supervisor pending | Medium |
+| **SSO / SAML 2.0 / Azure AD** | 🔴 Enterprise IdP federation not started | Low |
+| **SaaS Billing / Subscription Metering** | 🔴 Multi-tenant automated Stripe/Razorpay usage billing not started | Low |
+| **Digital Signage Campaigns / Emergency Broadcast** | 🔴 TV display promo ticker exists; rich media video campaign overlay pending | Low |
+| **AI Smart Capacity / Dynamic Queue Balancing** | 🔴 Heatmap data exists; ML predictive queue forecasting pending | Low |
+| **Multi-Region Data Residency / GDPR** | 🔴 Tenant isolation exists; geographic data residency sharding not started | Low |
 
 ---
 
-## 4. Verification & Testing Scorecard
+## ⚠️ Architecture Warnings (from Knowledge Graph)
 
-### Automated Test Suites
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                              AUTOMATED TEST SUITE PASS RATES                           │
-├─────────────────────────────────────────┬──────────────┬───────────┬───────────────────┤
-│ Test Suite                              │ Tests Run    │ Passed    │ Failure / Flakes  │
-├─────────────────────────────────────────┼──────────────┼───────────┼───────────────────┤
-│ test/tat_variance_heatmap_test.dart     │ 10           │ 10 (100%) │ 0                 │
-│ test/widget_test.dart                   │ 9            │ 9 (100%)  │ 0                 │
-│ test/i18n_rtl_tts_test.dart             │ 14           │ 14 (100%) │ 0                 │
-│ test/pwa_virtual_queueing_test.dart     │ 3            │ 3 (100%)  │ 0                 │
-│ test/frontend_api_integration_test.dart │ 14           │ 14 (100%) │ 0                 │
-│ test/visual_regression_test.dart        │ 6            │ 6 (100%)  │ 0                 │
-├─────────────────────────────────────────┼──────────────┼───────────┼───────────────────┤
-│ TOTAL AUTOMATED TEST COVERAGE           │ 56 Tests     │ 56 (100%) │ 0 Failures        │
-└─────────────────────────────────────────┴──────────────┴───────────┴───────────────────┘
-```
+| Warning | Coupling | Note / Resolution |
+|---|---|---|
+| `controllers-controller` ↔ `interfaces-async` | **92 edges** | Expected for layered Clean Architecture service dispatch |
+| `dqms-dto` ↔ `services-async` | **74 edges** | Strongly typed DTO contracts between presentation & infrastructure |
+| `controllers-api` ↔ `controllers-controller` | **35 edges** | Standard controller inheritance from `ApiControllerBase` |
+| `dqms-dto` ↔ `controllers-controller` | **34 edges** | Controller request/response payload typing |
 
-### End-to-End Real Browser QA (Google Chrome DevTools Protocol)
-- **12 E2E Scenarios Validated**:
-  1. Super Admin Login & JWT Issuance (`http://localhost:8085/#/login`).
-  2. Command Center Dashboard Metrics & Live KPI updates.
-  3. Dynamic Navigation Menu URL route preservation on page refresh.
-  4. Area, Counter & Service Process configuration.
-  5. Touch Self-Service Kiosk ticket issuance (`#/kiosk`).
-  6. 4K Overhead TV Display board with audio chime and scrolling ticker (`#/tv`).
-  7. Staff Counter Console calling, servicing, and forwarding (`#/staff/counter`).
-  8. App-Less PWA Mobile Tracker QR scan journey (`#/track/1`).
-  9. Appointments Calendar & Booking Wizard (`#/appointment`).
-  10. Multi-lingual switching and Arabic Right-to-Left (RTL) mirror rendering.
-  11. Turnaround Time (TAT) Variance % and $P_{95}$ statistical indicators.
-  12. Interactive 2D Bottleneck Heatmap Matrix with Day/Process/Counter dimension toggling.
-- **Overall QA Score**: **98 / 100 — PASSED (COMMERCIAL READY)**.
+> [!NOTE]
+> The knowledge graph was updated and verified during recent commit cycles. All controllers and services conform strictly to the Clean Architecture boundaries with zero cyclic dependencies.
 
 ---
 
-## 5. Technology Stack & Key Dependencies
+## 📈 Summary
 
-- **Backend**: C# .NET 8 Web API, ASP.NET Core, Dapper ORM, SignalR Core, Microsoft.Data.SqlClient, MySql.Data, System.IdentityModel.Tokens.Jwt.
-- **Frontend**: Flutter 3.x, Dart 3.12+, Riverpod 2.6.1, GoRouter 14.8.1, Dio 5.7.0, GoogleFonts, FlexColorPicker, FlutterAnimate, SharedPreferences, FlutterTTS, Intl 0.20.2.
-- **Cross-Platform Modules**:
-  - `packages/universal_printer`: Custom thermal ESC/POS, Windows print spooler, PDF, and network printer driver.
-  - Multi-Lingual ARB catalogs: English (`app_en.arb`), Arabic (`app_ar.arb`), Hindi (`app_hi.arb`), Assamese (`app_as.arb`).
+**The platform has transitioned from MVP to a full Enterprise Commercial Queue System.** All 3 persona stages (Admin, Staff, Customer) are 100% functional, and major Phase 4 enterprise capabilities—**N-Level Pipeline Workflows, Turnaround Time (TAT) Variance % Analysis, 2D Bottleneck Heatmaps, PWA Virtual Queueing (No-App-Required), Multi-Lingual Arabic RTL / TTS Voice Announcements, Universal ESC/POS Printing, Webhook Notification Engine, and Offline Edge Resilience / Hybrid Sync**—are fully built, tested, and pushed to `master` and `main`.
 
----
-
-## 6. Next Steps & Recommendations
-
-1. **Production Deployment**:
-   - Run database migration scripts `38_DQMS_NLevel_Pipeline_Workflows.sql` and `39_DQMS_TatVariance_BottleneckHeatmaps.sql` in staging and production databases.
-   - Configure reverse proxy (Nginx or IIS) with SSL termination for Web API (`5026`) and Flutter Web client (`8085`).
-2. **Physical Hardware Integrations**:
-   - Connect ESC/POS 80mm USB/Network thermal receipt printers to physical kiosk hardware using `packages/universal_printer`.
-   - Setup overhead 4K Android TV or Smart Display hardware running the web client in kiosk browser mode pointing to `/#/tv?areaId=1`.
-3. **Optional Enhancements**:
-   - Machine learning predictive wait time forecast based on historical heatmap hour-of-day matrices.
-   - Native WhatsApp Cloud API webhook integration for automatic ticket dispatch upon kiosk print.
+**The remaining backlog** consists of external third-party communication gateway bindings (live WhatsApp Cloud API & SMS provider endpoints), automated CSAT survey webhooks, and enterprise SSO/SAML integration.

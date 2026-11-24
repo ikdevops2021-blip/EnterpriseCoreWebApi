@@ -26,6 +26,8 @@ import 'features/admin/widgets/analytics_entry_view.dart';
 import 'features/admin/widgets/app_logs_view.dart';
 import 'features/admin/widgets/navigation_menu_view.dart';
 import 'features/admin/widgets/token_transactions_view.dart';
+import 'features/admin/widgets/webhook_management_view.dart';
+import 'features/admin/widgets/edge_nodes_view.dart';
 
 import 'features/customer/kiosk/screens/kiosk_screen.dart';
 import 'features/customer/mobile/screens/mobile_tracker_screen.dart';
@@ -134,6 +136,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin/navigation-menu',
             builder: (context, state) => const NavigationMenuView(),
+          ),
+          GoRoute(
+            path: '/admin/webhooks',
+            builder: (context, state) => const WebhookManagementView(),
+          ),
+          GoRoute(
+            path: '/admin/edge-nodes',
+            builder: (context, state) => const EdgeNodesView(),
           ),
         ],
       ),

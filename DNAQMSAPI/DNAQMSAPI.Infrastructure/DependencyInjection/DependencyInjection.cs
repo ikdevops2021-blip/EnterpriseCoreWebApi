@@ -66,6 +66,15 @@ public static class DependencyInjection
         // --- DQMS Core : Dynamic Navigation Menu (Plug-and-Play) ---
         services.AddScoped<INavigationMenuService, NavigationMenuService>();
 
+        // --- DQMS Webhook Notification Engine ---
+        services.AddScoped<IWebhookService, WebhookService>();
+        services.AddSingleton<WebhookDispatcherBackgroundService>();
+        services.AddSingleton<IWebhookDispatcher>(sp => sp.GetRequiredService<WebhookDispatcherBackgroundService>());
+        services.AddHostedService(sp => sp.GetRequiredService<WebhookDispatcherBackgroundService>());
+
+        // --- DQMS Offline Edge Resilience & Hybrid Sync ---
+        services.AddScoped<IEdgeSyncService, EdgeSyncService>();
+
         return services;
     }
 }
