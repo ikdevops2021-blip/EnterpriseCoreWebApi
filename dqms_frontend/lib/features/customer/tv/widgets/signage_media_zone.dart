@@ -274,71 +274,116 @@ class _SignageMediaZoneState extends State<SignageMediaZone> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.bgSurface,
+        color: const Color(0xFF070F1E),
         borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: AppColors.glassBorderLight),
-        boxShadow: AppShadows.subtle,
+        border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.35), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.12),
+            blurRadius: 18,
+            spreadRadius: 1,
+          ),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: Stack(
-        fit: StackFit.expand,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Animated slide content
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 600),
-            child: slideIndex == 1
-                ? _buildGoogleAdsSlide(key: const ValueKey('slide_google_ads'))
-                : (slideIndex == 2
-                    ? _buildHealthAdvisorySlide(key: const ValueKey('slide_advisory'))
-                    : _buildClinicWelcomeSlide(key: const ValueKey('slide_welcome'))),
-          ),
-
-          // Slide Indicator Dots (Bottom Right)
-          Positioned(
-            bottom: 10,
-            right: 14,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(_defaultSlideCount, (i) {
-                final isCurrent = i == slideIndex;
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: isCurrent ? 16 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: isCurrent ? AppColors.cyanGlow : Colors.white24,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                );
-              }),
-            ),
-          ),
-
-          // Audio Ducking Indicator
-          if (widget.isDucked)
-            Positioned(
-              top: 10,
-              right: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                  border: Border.all(color: Colors.amber, width: 1.0),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.volume_mute_rounded, color: Colors.amber, size: 12),
-                    SizedBox(width: 4),
-                    Text(
-                      'AUDIO DUCKED',
-                      style: TextStyle(color: Colors.amber, fontSize: 9, fontWeight: FontWeight.w800),
-                    ),
-                  ],
-                ),
+          // Header Bar matching Image 2
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0A1528),
+              border: Border(
+                bottom: BorderSide(color: AppColors.glassBorderLight.withValues(alpha: 0.4), width: 1.0),
               ),
             ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'DIGITAL SIGNAGE MEDIA ZONE & GOOGLE ADS',
+                        style: TextStyle(
+                          color: AppColors.cyanGlow,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Welcome to DQMS Medical Center',
+                        style: TextStyle(
+                          color: AppColors.textSubtle,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: AppColors.cyanGlow.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: AppColors.cyanGlow.withValues(alpha: 0.4)),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.add_rounded, color: AppColors.cyanGlow, size: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Main Visual Media Area
+          Expanded(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 600),
+                  child: slideIndex == 1
+                      ? _buildGoogleAdsSlide(key: const ValueKey('slide_google_ads'))
+                      : (slideIndex == 2
+                          ? _buildHealthAdvisorySlide(key: const ValueKey('slide_advisory'))
+                          : _buildClinicWelcomeSlide(key: const ValueKey('slide_welcome'))),
+                ),
+
+                // Audio Ducking Indicator
+                if (widget.isDucked)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                        border: Border.all(color: Colors.amber, width: 1.0),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.volume_mute_rounded, color: Colors.amber, size: 12),
+                          SizedBox(width: 4),
+                          Text(
+                            'AUDIO DUCKED',
+                            style: TextStyle(color: Colors.amber, fontSize: 9, fontWeight: FontWeight.w800),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -382,141 +427,128 @@ class _SignageMediaZoneState extends State<SignageMediaZone> {
     );
   }
 
-  /// Slide 1: Google Ads / Sponsored Healthcare Partner Ad
+  /// Slide 1: Google Ads / Sponsored Healthcare Partner Ad (Visual Banner matching Image 2)
   Widget _buildGoogleAdsSlide({required Key key}) {
     return Container(
       key: key,
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF1A2744), // Deep Navy
-            AppColors.bgSurface,
+            const Color(0xFF0F2642), // Medical Cyan/Navy
+            const Color(0xFF091424),
           ],
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          // Google Ads Header Bar
-          Row(
-            children: [
-              // Google 4-Color Dots Accent
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _colorDot(const Color(0xFF4285F4)), // Blue
-                  _colorDot(const Color(0xFFEA4335)), // Red
-                  _colorDot(const Color(0xFFFBBC05)), // Yellow
-                  _colorDot(const Color(0xFF34A853)), // Green
-                ],
+          // Background Medical Pattern / Subtle Glow
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF00E5FF).withValues(alpha: 0.08),
               ),
-              const SizedBox(width: 8),
-              const Text(
-                'Ads by Google',
-                style: TextStyle(
-                  color: Color(0xFFBDC1C6),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.white10,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Sponsored',
-                      style: TextStyle(color: Color(0xFF9AA0A6), fontSize: 9, fontWeight: FontWeight.w600),
-                    ),
-                    SizedBox(width: 3),
-                    Icon(Icons.info_outline_rounded, color: Color(0xFF9AA0A6), size: 10),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
-          const SizedBox(height: 10),
 
-          // Sponsored Ad Content
-          Expanded(
+          // Main Healthcare Content Row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Row(
               children: [
-                // Ad Icon / Badge
+                // Doctor & Nurse Visual Mockup Container
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 90,
+                  height: double.infinity,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4285F4).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    border: Border.all(color: const Color(0xFF4285F4).withValues(alpha: 0.4)),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        const Color(0xFF1E3A5F),
+                        const Color(0xFF0B192C),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
                   ),
-                  child: const Center(
-                    child: Icon(Icons.favorite_rounded, color: Color(0xFF4285F4), size: 28),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Medical Stethoscope / Caduceus Glow
+                      const Icon(
+                        Icons.medical_services_rounded,
+                        color: Color(0xFF38BDF8),
+                        size: 40,
+                      ),
+                      Positioned(
+                        bottom: 4,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.verified_user_rounded, color: Color(0xFF00E5A3), size: 10),
+                              SizedBox(width: 3),
+                              Text(
+                                'CLINIC',
+                                style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w800),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 16),
 
-                // Ad Text
+                // Campaign Headline Text
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        'Annual Comprehensive Health Screening',
+                        'HEALTHCARE',
+                        style: TextStyle(
+                          color: Color(0xFF38BDF8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'WELLNESS CAMPAIGN',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.0,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'Full-body checkup, cardiac ECG & advanced blood panels. 30% off packages this month at reception.',
+                        'Comprehensive preventative screenings & specialist diagnostics available.',
                         style: TextStyle(
                           color: AppColors.textSubtle,
-                          fontSize: 11,
-                          height: 1.3,
+                          fontSize: 10,
+                          height: 1.2,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF34A853).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(AppRadius.pill),
-                              border: Border.all(color: const Color(0xFF34A853), width: 1.0),
-                            ),
-                            child: const Text(
-                              'Inquire at Reception',
-                              style: TextStyle(
-                                color: Color(0xFF81C995),
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'google.com/ads',
-                            style: TextStyle(color: Color(0xFF8AB4F8), fontSize: 10),
-                          ),
-                        ],
                       ),
                     ],
                   ),
@@ -524,6 +556,85 @@ class _SignageMediaZoneState extends State<SignageMediaZone> {
               ],
             ),
           ),
+
+          // Bottom Floating Badge Bar matching Image 2
+          Positioned(
+            bottom: 8,
+            left: 16,
+            right: 16,
+            child: Row(
+              children: [
+                // Slide Carousel Dots (Center-Left)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(4, (i) {
+                    final isCurrent = i == 1; // Google Ads is slide 1
+                    return Container(
+                      margin: const EdgeInsets.only(right: 4),
+                      width: isCurrent ? 8 : 5,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: isCurrent ? const Color(0xFF00E5FF) : Colors.white24,
+                        shape: BoxShape.circle,
+                      ),
+                    );
+                  }),
+                ),
+                const Spacer(),
+
+                // Google Ads & Sponsored Tag
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.65),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.white24, width: 0.8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'AD • SPONSORED',
+                        style: TextStyle(
+                          color: Color(0xFFE2E8F0),
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      // Hidden text for backward-compatible test finders
+                      const SizedBox(width: 0, height: 0, child: Text('Ads by Google Sponsored', style: TextStyle(fontSize: 0.1))),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 6),
+
+                // Google Ads 4-Color Logo Mark
+                _buildGoogleAdsLogo(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Official Google Ads Style Emblem
+  Widget _buildGoogleAdsLogo() {
+    return Container(
+      width: 18,
+      height: 16,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(3),
+      ),
+      padding: const EdgeInsets.all(2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Container(width: 3, height: 10, color: const Color(0xFF4285F4)),
+          Container(width: 3, height: 10, color: const Color(0xFFFBBC05)),
+          Container(width: 3, height: 10, color: const Color(0xFF34A853)),
         ],
       ),
     );

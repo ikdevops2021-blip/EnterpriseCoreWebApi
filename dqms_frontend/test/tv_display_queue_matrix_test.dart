@@ -231,7 +231,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('STANDBY'), findsOneWidget);
-      expect(find.text('All counter stations standby'), findsOneWidget);
+      expect(find.text('0 In-Service'), findsOneWidget);
+      expect(find.text('C-01'), findsWidgets);
       expect(find.text('No patients waiting in queue'), findsOneWidget);
       expect(find.textContaining('Welcome to DQMS Medical Center'), findsWidgets);
     });
@@ -274,16 +275,18 @@ void main() {
       // Signage Media Zone exists
       expect(find.byType(SignageMediaZone), findsOneWidget);
 
-      // Verify Welcome Slide initially visible
+      // Verify Header & Welcome Slide initially visible
+      expect(find.text('DIGITAL SIGNAGE MEDIA ZONE & GOOGLE ADS'), findsOneWidget);
       expect(find.text('Welcome to DQMS Medical Center'), findsWidgets);
 
-      // Advance time by 13s to rotate to Slide 1 (Ads by Google)
+      // Advance time by 13s to rotate to Slide 1 (Ads by Google / Healthcare Campaign)
       await tester.pump(const Duration(seconds: 13));
       await tester.pumpAndSettle();
 
-      // Verify Google Ads Slide renders
-      expect(find.text('Ads by Google'), findsOneWidget);
-      expect(find.text('Sponsored'), findsOneWidget);
+      // Verify Google Ads / Healthcare Campaign Slide renders
+      expect(find.text('HEALTHCARE'), findsOneWidget);
+      expect(find.text('WELLNESS CAMPAIGN'), findsOneWidget);
+      expect(find.text('AD • SPONSORED'), findsOneWidget);
     });
   });
 }
