@@ -8,11 +8,15 @@ import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
 import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/core/widgets/language_selector_dropdown.dart';
 import 'package:dqms_frontend/features/customer/providers/customer_providers.dart';
+import '../widgets/emergency_broadcast_overlay.dart';
+import '../widgets/signage_media_zone.dart';
+import '../../../admin/providers/signage_provider.dart';
 
 /// ============================================================================
 /// WAITING ROOM 4K TV DISPLAY SCREEN (WaitingRoomTvScreen)
 /// Real-time live TV monitor display prioritizing NOW CALLING & Previous Calls from DB
 /// Modern luxury glassmorphism surfaces, cyan/emerald ambient aura & high visibility
+/// Enhanced with Multi-Zone Digital Signage Campaigns & Emergency Broadcast Overlays
 /// ============================================================================
 class WaitingRoomTvScreen extends ConsumerWidget {
   const WaitingRoomTvScreen({super.key});
@@ -20,9 +24,14 @@ class WaitingRoomTvScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final boardAsync = ref.watch(displayBoardProvider);
+    final playlistAsync = ref.watch(activePlaylistProvider(1));
+    final emergencyAsync = ref.watch(activeEmergencyProvider(1));
     final isMobile = AppBreakpoints.isMobile(context);
 
     final items = boardAsync.value ?? [];
+    final mediaItems = playlistAsync.value ?? [];
+    final emergencyAlert = emergencyAsync.value;
+
     final DisplayBoardItemDto? heroItem = items.isNotEmpty ? items.first : null;
     final List<DisplayBoardItemDto> previousCalls = items.length > 1 ? items.sublist(1) : [];
 
@@ -34,7 +43,11 @@ class WaitingRoomTvScreen extends ConsumerWidget {
             // Modern Frosted TV Header Bar
             _buildTvHeader(),
 
-            // TV Main Body Split (Left: NOW CALLING Hero, Right: Previous Calls Matrix)
+            // Emergency Broadcast Overlay (High Priority Strobe Banner)
+            if (emergencyAlert != null && emergencyAlert.isActive)
+              EmergencyBroadcastOverlay(broadcast: emergencyAlert),
+
+            // TV Main Body Split (Left: NOW CALLING Hero, Right: Signage + Previous Calls)
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -43,6 +56,14 @@ class WaitingRoomTvScreen extends ConsumerWidget {
                         child: Column(
                           children: [
                             _buildNowCallingHero(heroItem),
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              height: 220,
+                              child: SignageMediaZone(
+                                items: mediaItems,
+                                isDucked: heroItem != null && heroItem.flashAlert,
+                              ),
+                            ),
                             const SizedBox(height: 20),
                             SizedBox(
                               height: 340,
@@ -61,10 +82,29 @@ class WaitingRoomTvScreen extends ConsumerWidget {
                           ),
                           const SizedBox(width: 24),
 
-                          // Previous Calls Matrix Panel (Right Column)
+                          // Right Column: Digital Signage Media Zone + Previous Calls Matrix
                           Expanded(
                             flex: 5,
-                            child: _buildPreviousCallsPanel(previousCalls),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Digital Signage Media Player Zone (Top Half)
+                                Expanded(
+                                  flex: 5,
+                                  child: SignageMediaZone(
+                                    items: mediaItems,
+                                    isDucked: heroItem != null && heroItem.flashAlert,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Previous Calls Matrix Panel (Bottom Half)
+                                Expanded(
+                                  flex: 5,
+                                  child: _buildPreviousCallsPanel(previousCalls),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

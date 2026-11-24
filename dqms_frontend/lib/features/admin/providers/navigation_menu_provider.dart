@@ -152,6 +152,9 @@ class NavigationMenuNotifier extends AsyncNotifier<List<NavigationMenuModel>> {
   // Load all (including inactive) for admin management screen
   // -----------------------------------------------------------------------
   Future<List<NavigationMenuModel>> fetchAll() async => _fetchMenus(activeOnly: false);
+
+  /// Direct access to fallback menus for offline mode and tests
+  static const List<NavigationMenuModel> fallbackMenus = _fallbackMenus;
 }
 
 /// ============================================================================
@@ -178,4 +181,5 @@ const List<NavigationMenuModel> _fallbackMenus = [
   NavigationMenuModel(id: 14, title: 'Navigation Menu Manager',      iconName: 'menu_rounded',                 routePath: '/admin/navigation-menu',    sortOrder: 14, isActive: true),
   NavigationMenuModel(id: 18, title: 'Webhook Integrations',         iconName: 'webhook_rounded',              routePath: '/admin/webhooks',           sortOrder: 15, isActive: true),
   NavigationMenuModel(id: 19, title: 'Edge Appliances & Sync',       iconName: 'hub_rounded',                  routePath: '/admin/edge-nodes',         sortOrder: 16, isActive: true),
+  NavigationMenuModel(id: 20, title: 'Signage & Broadcast',          iconName: 'campaign_rounded',             routePath: '/admin/signage-campaigns',  sortOrder: 17, isActive: true, requiredPermission: 'ManageSignage'),
 ];

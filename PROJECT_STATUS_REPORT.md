@@ -126,6 +126,14 @@ graph TD
   - Database persistence: `EdgeNodeRegistration` and `EdgeSyncAuditLog` tables with `PR_IU_EdgeNodeRegistration`, `PR_S_EdgeNodes`, and transactional bulk `PR_IU_ProcessEdgeSyncBatch` across MSSQL and MySQL.
   - Backend API: `POST /api/v1/dqms/edge/register`, `POST /heartbeat`, `POST /sync`, and `GET /logs`.
   - Flutter UI & Clinical Widgets: `EdgeResilienceBanner` connectivity pill and `EdgeNodesView` (`/admin/edge-nodes`) with dynamic navigation and fallback synchronization.
+- [x] **Digital Signage Campaigns & Emergency Broadcast (Script 42)**:
+  - Multi-zone waiting room 4K display compositor with decoupled queue and media viewports.
+  - Rich media rotating carousel supporting video streams (MP4/HLS) and high-res images with dwell-time control and automatic audio ducking during queue vocal chimes.
+  - Comprehensive campaign scheduling: calendar date ranges, daily active time-slots, and day-of-week filters per organization, location, and area.
+  - Life-safety emergency broadcast overlay (Code Red, Code Blue, Evacuation, Severe Weather) with pulsating strobe banner, siren tone generator, and PIN-verified trigger console.
+  - Persistent one-click de-escalation ("ALL CLEAR") master switch across all admin interfaces.
+  - Stored procedures `PR_IU_SignageCampaign`, `PR_S_ActiveSignagePlaylist`, `PR_IU_EmergencyBroadcast`, `PR_S_ActiveEmergencyBroadcast` with full MySQL 8.0 and MSSQL parity.
+  - Full Flutter UI integration: `SignageCampaignsView` (`/admin/signage-campaigns`), `EmergencyBroadcastOverlay`, `SignageMediaZone`, and fallback navigation menu synchronization.
 
 ### Cross-Cutting — UI/UX & Infrastructure
 - [x] Enterprise login screen with Dio Auth Interceptors (100% pass rate)
@@ -149,7 +157,6 @@ graph TD
 | **SLA Escalation Manager** | 🟡 Variance analytics done; automated threshold notifications to supervisor pending | Medium |
 | **SSO / SAML 2.0 / Azure AD** | 🔴 Enterprise IdP federation not started | Low |
 | **SaaS Billing / Subscription Metering** | 🔴 Multi-tenant automated Stripe/Razorpay usage billing not started | Low |
-| **Digital Signage Campaigns / Emergency Broadcast** | 🔴 TV display promo ticker exists; rich media video campaign overlay pending | Low |
 | **AI Smart Capacity / Dynamic Queue Balancing** | 🔴 Heatmap data exists; ML predictive queue forecasting pending | Low |
 | **Multi-Region Data Residency / GDPR** | 🔴 Tenant isolation exists; geographic data residency sharding not started | Low |
 

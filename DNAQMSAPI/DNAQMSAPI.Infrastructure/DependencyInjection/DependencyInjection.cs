@@ -75,6 +75,10 @@ public static class DependencyInjection
         // --- DQMS Offline Edge Resilience & Hybrid Sync ---
         services.AddScoped<IEdgeSyncService, EdgeSyncService>();
 
+        // --- DQMS Digital Signage & Emergency Public Broadcast ---
+        services.AddScoped<ISignageService, SignageService>();
+        services.AddScoped<IEmergencyBroadcastService, EmergencyBroadcastService>();
+
         return services;
     }
 }
