@@ -1,5 +1,5 @@
 # 🏗️ DQMS Enterprise — Project Status Report
-**Date:** November 24, 2026 · **Branch:** `master` · **Last commit:** Nov 24, 2026 (`779c8d0`)
+**Date:** November 27, 2026 · **Branch:** `master` · **Last commit:** Nov 27, 2026
 
 ---
 
@@ -8,12 +8,12 @@
 | Metric | Value |
 |---|---|
 | **Project Start** | July 29, 2026 |
-| **Total Commits** | 103+ |
-| **Codebase Files** | 530+ indexed |
+| **Total Commits** | 108+ |
+| **Codebase Files** | 545+ indexed |
 | **Languages** | C# (.NET 8), Dart/Flutter, SQL (T-SQL & MySQL), TypeScript, PowerShell, Python |
-| **Architecture** | Clean Architecture, Dapper DB Factory, Riverpod 2.6, 23 code communities |
-| **Last Activity** | Today (November 24, 2026) |
-| **Build & Test Status** | 🟢 .NET 8 API (0 Errors) · 🟢 Flutter (76/76 Tests Passed · 100%) |
+| **Architecture** | Clean Architecture, Dapper DB Factory, Riverpod 2.6, 24 code communities |
+| **Last Activity** | Today (November 27, 2026) |
+| **Build & Test Status** | 🟢 .NET 8 API (0 Errors, 8/8 Tests Passed) · 🟢 Flutter (83/83 Tests Passed · 100%) |
 
 ---
 
@@ -26,10 +26,11 @@ graph TD
     B --> D["Stored Procedures<br/>(PR_IU_, PR_S_, PR_D_)"]
     B --> E["MemoryCache & Covered Indexes<br/>(60s Sliding Analytics Cache)"]
     A --> F["Riverpod State Management<br/>(Locale, Theme, Dashboard, Auth)"]
-    A --> G["Stitch Design System<br/>(18 Responsive Clinical Screens)"]
+    A --> G["Stitch Design System<br/>(19 Responsive Clinical Screens)"]
     A --> H["Universal Printer Engine<br/>(Thermal ESC/POS, Spooler, PDF)"]
     B --> I["Webhook Notification Engine<br/>(Bounded Channel, HMAC-SHA256, Circuit Breaker)"]
     B --> J["Offline Edge Resilience & Hybrid Sync<br/>(UUIDv7, Local Edge SQLite, State Dominance)"]
+    B --> K["Multi-Region Data Residency & GDPR Engine<br/>(AES-256-GCM, HMAC Blind Index, Sharded Routing)"]
 ```
 
 ### Backend — `.NET Core Web API`
@@ -38,12 +39,13 @@ graph TD
 | API | [DNAQMSAPI.Api](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Api) | Controllers, middleware, SignalR hubs, startup |
 | Application | [DNAQMSAPI.Application](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Application) | Services & core business logic interfaces |
 | Domain | [DNAQMSAPI.Domain](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Domain) | Entities, domain models, enum constants |
-| Infrastructure | [DNAQMSAPI.Infrastructure](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Infrastructure) | Dapper DB factory, reports, analytics & notification services |
+| Infrastructure | [DNAQMSAPI.Infrastructure](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Infrastructure) | Dapper DB factory, reports, analytics, privacy & notification services |
 | Security | [DNAQMSAPI.Security](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Security) | PBKDF2-SHA256 Auth, 512-bit JWT tokens, API keys, RBAC |
 | Payments | [DNAQMSAPI.Payments](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Payments) | Payment gateways & transaction records |
 | Storage | [DNAQMSAPI.Storage](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Storage) | File/blob storage providers and audit logs |
+| Tests | [DNAQMSAPI.Tests](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DNAQMSAPI.Tests) | xUnit unit & integration tests (AES-GCM, HMAC, Sovereignty) |
 | Shared | [AntiGravity.Enterprise.Shared.Core](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/AntiGravity.Enterprise.Shared.Core) | Cross-cutting models, DTOs, Dapper DB factory implementation |
-| DB Scripts | [DatabaseScripts](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DatabaseScripts) | 41 MSSQL & MySQL stored procedures and migration scripts |
+| DB Scripts | [DatabaseScripts](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DNAQMSAPI/DatabaseScripts) | 43 MSSQL & MySQL stored procedures and migration scripts |
 
 ### Frontend — `Flutter (Dart)`
 | Feature Module | Purpose |
@@ -134,6 +136,16 @@ graph TD
   - Persistent one-click de-escalation ("ALL CLEAR") master switch across all admin interfaces.
   - Stored procedures `PR_IU_SignageCampaign`, `PR_S_ActiveSignagePlaylist`, `PR_IU_EmergencyBroadcast`, `PR_S_ActiveEmergencyBroadcast` with full MySQL 8.0 and MSSQL parity.
   - Full Flutter UI integration: `SignageCampaignsView` (`/admin/signage-campaigns`), `EmergencyBroadcastOverlay`, `SignageMediaZone`, and fallback navigation menu synchronization.
+- [x] **Multi-Region Data Residency & GDPR Privacy Engine (Script 43)**:
+  - Dynamic regional connection sharding via `IDapperDBFactory` routing data across sovereign boundaries (`eu-central-1` GDPR, `me-central-1` NESA, `me-south-1` Saudi PDPL, `us-east-1` HIPAA, `ap-south-1` DPDP).
+  - Strict zero-trust data sovereignty policy throwing `ERR_UNMAPPED_DATA_REGION` (403 Forbidden) on un-sharded tenant queries to prevent accidental cross-border data leakage.
+  - Envelope encryption using **AES-256-GCM** with authenticated associated data (AAD) validation and fail-closed corrupted data fallbacks (`[ENCRYPTED_DATA_CORRUPTED]`).
+  - Blind Indexing using **HMAC-SHA256** over normalized E.164 phone numbers with covered indexes `IX_TokenTransaction_PhoneBlindIndex` enabling $O(1)$ search over encrypted tables without table-scan decryption.
+  - GDPR Article 17 Right-To-Be-Forgotten cryptographic shredding procedure (`PR_IU_GdprRightToBeForgotten`) scrubbing customer PII while retaining queue duration telemetry for operational analytics.
+  - GDPR Article 20 Data Portability exporter (`ExportCustomerDataAsync`) generating structured JSON visit history.
+  - Autonomous 12-hour background retention daemon (`DataRetentionPurgeWorker`) purging expired records per organization retention policies (`PR_IU_PurgeExpiredDataRetention`).
+  - Sovereign audit trail (`GdprAuditLog` and `PR_S_GdprAuditLogs`) logging all privacy operations.
+  - Modern Flutter Admin Console: `DataResidencyView` (`/admin/data-residency`) with region flags, KMS ARN configuration, interactive retention slider, Article 17 modal confirmation, and navigation menu fallback synchronization.
 
 ### Cross-Cutting — UI/UX & Infrastructure
 - [x] Enterprise login screen with Dio Auth Interceptors (100% pass rate)
@@ -158,7 +170,7 @@ graph TD
 | **SSO / SAML 2.0 / Azure AD** | 🔴 Enterprise IdP federation not started | Low |
 | **SaaS Billing / Subscription Metering** | 🔴 Multi-tenant automated Stripe/Razorpay usage billing not started | Low |
 | **AI Smart Capacity / Dynamic Queue Balancing** | 🔴 Heatmap data exists; ML predictive queue forecasting pending | Low |
-| **Multi-Region Data Residency / GDPR** | 🔴 Tenant isolation exists; geographic data residency sharding not started | Low |
+| **Multi-Region Data Residency / GDPR** | 🟢 Complete (Script 43: Dynamic Sharding, AES-256-GCM, Blind Indexing, Art. 17/20, Purge Daemon, Flutter Admin) | Completed |
 
 ---
 

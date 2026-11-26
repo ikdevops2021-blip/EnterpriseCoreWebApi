@@ -42,7 +42,7 @@ class NumberedCanvas(canvas.Canvas):
         # Running Header
         self.drawString(40, 755, "ANTIGRAVITY ENTERPRISE DQMS  |  PRODUCTION CUSTOMER USER GUIDE")
         self.setFont("Helvetica", 8)
-        self.drawRightString(572, 755, "VERSION 1.1.0 (ENTERPRISE RESILIENCE)")
+        self.drawRightString(572, 755, "VERSION 1.2.0 (MULTI-REGION RESIDENCY & GDPR)")
         self.setStrokeColor(colors.HexColor("#CBD5E1"))
         self.setLineWidth(0.6)
         self.line(40, 747, 572, 747)
@@ -228,7 +228,7 @@ def build_pdf():
     # COVER PAGE
     # =========================================================================
     story.append(Spacer(1, 20))
-    story.append(Paragraph("★ ENTERPRISE PRODUCTION RELEASE • V1.1.0 RESILIENCE & OPERATIONS EDITION ★", style_cover_badge))
+    story.append(Paragraph("★ ENTERPRISE PRODUCTION RELEASE • V1.2.0 MULTI-REGION & GDPR COMPLIANCE ★", style_cover_badge))
     story.append(Spacer(1, 8))
     story.append(Paragraph("AntiGravity Enterprise DQMS", style_cover_title))
     story.append(Spacer(1, 6))
@@ -239,13 +239,13 @@ def build_pdf():
     # Cover Summary Box
     doc_meta_data = [
         [Paragraph("<b>Document Title:</b>", style_table_cell_bold), Paragraph("Enterprise Production Operations & Complete Customer Manual", style_table_cell),
-         Paragraph("<b>Target Roles:</b>", style_table_cell_bold), Paragraph("Visitors, Tellers, Shift Supervisors, Safety Officers, IT Admins", style_table_cell)],
-        [Paragraph("<b>Product Version:</b>", style_table_cell_bold), Paragraph("v1.1.0 Commercial Enterprise Release", style_table_cell),
+         Paragraph("<b>Target Roles:</b>", style_table_cell_bold), Paragraph("Visitors, Tellers, Shift Supervisors, Safety Officers, IT Admins, DPOs", style_table_cell)],
+        [Paragraph("<b>Product Version:</b>", style_table_cell_bold), Paragraph("v1.2.0 Commercial Enterprise Release", style_table_cell),
          Paragraph("<b>Backend Engine:</b>", style_table_cell_bold), Paragraph("C# .NET 8 Web API + Dapper Micro-ORM", style_table_cell)],
         [Paragraph("<b>Primary Database:</b>", style_table_cell_bold), Paragraph("MySQL 8.0 (`dnaqms`) & MSSQL LocalDB", style_table_cell),
          Paragraph("<b>Edge Resilience:</b>", style_table_cell_bold), Paragraph("SQLite Autonomous Local Replicas (`edge_dqms.db`)", style_table_cell)],
-        [Paragraph("<b>Security Standard:</b>", style_table_cell_bold), Paragraph("PBKDF2-SHA256, 512-bit JWT & HMAC-SHA256", style_table_cell),
-         Paragraph("<b>Signage & Safety:</b>", style_table_cell_bold), Paragraph("Audio-Ducked Video Promos & PIN Emergency Override", style_table_cell)]
+        [Paragraph("<b>Security Standard:</b>", style_table_cell_bold), Paragraph("PBKDF2-SHA256, 512-bit JWT, AES-256-GCM, HMAC Blind Index", style_table_cell),
+         Paragraph("<b>Compliance:</b>", style_table_cell_bold), Paragraph("GDPR Art. 17/20, NESA UAE, PDPL KSA, HIPAA, DPDP", style_table_cell)]
     ]
     t_doc_meta = Table(doc_meta_data, colWidths=[95, 170, 95, 172])
     t_doc_meta.setStyle(TableStyle([
@@ -264,6 +264,7 @@ def build_pdf():
         [Paragraph("<b>v0.9.0</b>", style_table_cell_bold), Paragraph("Oct 2026", style_table_cell), Paragraph("Architecture Team", style_table_cell), Paragraph("Lead Architect", style_table_cell), Paragraph("Initial Prototype specification and UI mockups.", style_table_cell)],
         [Paragraph("<b>v1.0.0</b>", style_table_cell_bold), Paragraph("Nov 2026", style_table_cell), Paragraph("Full-Stack Eng.", style_table_cell), Paragraph("QA Manager", style_table_cell), Paragraph("Commercial Production Release: Authenticated PBKDF2 engine, route aliases, seeded TV templates, local disk storage.", style_table_cell)],
         [Paragraph("<b>v1.1.0</b>", style_table_cell_bold), Paragraph("Nov 2026", style_table_cell), Paragraph("Enterprise Systems", style_table_cell), Paragraph("Chief Info Officer", style_table_cell), Paragraph("<b>Enterprise Operations Edition:</b> Comprehensive 'How to Use It' guides for N-Level Workflows, Webhook Engine with HMAC, Offline Edge Resilience, and PIN-verified Emergency Broadcasts.", style_table_cell)],
+        [Paragraph("<b>v1.2.0</b>", style_table_cell_bold), Paragraph("Nov 2026", style_table_cell), Paragraph("Security & Privacy Team", style_table_cell), Paragraph("Chief Info Security Officer", style_table_cell), Paragraph("<b>Data Sovereignty & GDPR Edition:</b> Multi-region sharding (Frankfurt, Dubai, Riyadh, US, Mumbai), AES-256-GCM envelope encryption, HMAC blind indexing, zero-trust fail-closed routing, GDPR Art. 17/20, and 12-hour purge daemon.", style_table_cell)],
     ]
     t_rev = Table(rev_data, colWidths=[48, 55, 95, 85, 249])
     t_rev.setStyle(TableStyle([
@@ -722,6 +723,51 @@ def build_pdf():
     ]))
     story.append(t_edge)
 
+    # 3.9 Multi-Region Data Residency & GDPR Privacy Engine
+    story.append(Spacer(1, 10))
+    story.append(Paragraph("3.9 Data Protection Officer: Multi-Region Data Residency & GDPR (/admin/data-residency)", style_h2))
+    story.append(Paragraph(
+        "For multinational networks, compliance requires strict geographic data residency. The DQMS Privacy Engine enforces fail-closed sharded routing across sovereign jurisdictions (Frankfurt GDPR, Dubai NESA, Riyadh PDPL, US HIPAA, Mumbai DPDP) with AES-256-GCM envelope encryption and blind indexing.",
+        style_body
+    ))
+
+    gdpr_features = [
+        [Paragraph("Privacy & Sovereignty Feature", style_table_header), Paragraph("Technical Standard & Protocol", style_table_header), Paragraph("Regulatory Guarantee & Audit Impact", style_table_header)],
+        [
+            Paragraph("<b>Fail-Closed Sharded Routing</b>", style_table_cell_bold),
+            Paragraph("Dynamic multi-region routing via <code>DapperDBFactory</code>. Rejects unmapped tenants with <code>ERR_UNMAPPED_DATA_REGION</code> (403).", style_table_cell),
+            Paragraph("Guarantees customer data never leaks across sovereign international boundaries or defaults to central storage.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Field-Level Encryption at Rest</b>", style_table_cell_bold),
+            Paragraph("AES-256-GCM with tenant KMS keys and 96-bit random nonces. Tampered data fails closed with <code>[ENCRYPTED_DATA_CORRUPTED]</code>.", style_table_cell),
+            Paragraph("Protects customer names, phone numbers, and notes against direct database breaches.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>HMAC-SHA256 Blind Indexing</b>", style_table_cell_bold),
+            Paragraph("Normalized E.164 phone hashing indexed in covered index <code>IX_TokenTransaction_PhoneBlindIndex</code>.", style_table_cell),
+            Paragraph("Enables fast O(1) indexed customer phone searches without decrypting entire tables or leaking plaintext.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>GDPR Article 17 Erasure</b>", style_table_cell_bold),
+            Paragraph("Cryptographic shredding via <code>PR_IU_GdprRightToBeForgotten</code> permanently zeroing PII to <code>[ANONYMIZED]</code>.", style_table_cell),
+            Paragraph("Satisfies Right-To-Be-Forgotten while preserving queue wait metrics for clinical capacity planning.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Retention Purge Daemon</b>", style_table_cell_bold),
+            Paragraph("Autonomous 12-hour background worker executing <code>PR_IU_PurgeExpiredDataRetention</code>.", style_table_cell),
+            Paragraph("Enforces organization data retention limits (30–365 days) automatically with audit log records.", style_table_cell)
+        ],
+    ]
+    t_gdpr = Table(gdpr_features, colWidths=[110, 160, 262])
+    t_gdpr.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), c_surface),
+        ('BOX', (0,0), (-1,-1), 1, c_border),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, c_border),
+        ('PADDING', (0,0), (-1,-1), 4.5),
+    ]))
+    story.append(t_gdpr)
+
     # =========================================================================
     # SECTION 4: ADMINISTRATIVE WORKSPACE
     # =========================================================================
@@ -779,6 +825,11 @@ def build_pdf():
             Paragraph("<code>/admin/navigation-menu</code>", style_code),
             Paragraph("Dynamically orders sidebar menu items, assigns icons, and maps required permission claims (`navigationmenu` table) with offline fallback safety.", style_table_cell)
         ],
+        [
+            Paragraph("<b>Data Residency & GDPR</b>", style_table_cell_bold),
+            Paragraph("<code>/admin/data-residency</code>", style_code),
+            Paragraph("Configures sovereign data regions (GDPR, NESA, PDPL, HIPAA, DPDP), KMS keys, retention sliders (30–365d), Article 17 PII shredding, Article 20 export, and audit log inspection.", style_table_cell)
+        ],
     ]
     t_admin = Table(admin_modules, colWidths=[105, 125, 302])
     t_admin.setStyle(TableStyle([
@@ -813,6 +864,11 @@ def build_pdf():
         [Paragraph("<code>POST /api/v1/webhooks</code>", style_code_bold), Paragraph("Register Webhook Subscriber", style_table_cell), Paragraph("<code>PR_IU_WebhookSubscription</code>", style_code), Paragraph("Bearer JWT (Admin)", style_table_cell)],
         [Paragraph("<code>POST /api/v1/webhooks/test-ping</code>", style_code_bold), Paragraph("Dispatch HMAC-SHA256 Test Ping", style_table_cell), Paragraph("Direct HttpClient with HMAC", style_code), Paragraph("Bearer JWT (Admin)", style_table_cell)],
         [Paragraph("<code>GET /api/v1/edge/sync-status</code>", style_code_bold), Paragraph("Query Edge Node Health", style_table_cell), Paragraph("SQLite / MySQL Check", style_code), Paragraph("Bearer JWT (Admin)", style_table_cell)],
+        [Paragraph("<code>GET /api/v1/dqms/residency/config</code>", style_code_bold), Paragraph("Query Regional Residency Config", style_table_cell), Paragraph("<code>PR_S_OrganizationDataResidency</code>", style_code), Paragraph("Bearer / API Key", style_table_cell)],
+        [Paragraph("<code>POST /api/v1/dqms/residency/config</code>", style_code_bold), Paragraph("Upsert Regional Sovereignty", style_table_cell), Paragraph("<code>PR_IU_OrganizationDataResidency</code>", style_code), Paragraph("Bearer (Admin)", style_table_cell)],
+        [Paragraph("<code>POST /api/v1/dqms/residency/purge</code>", style_code_bold), Paragraph("Execute Retention Purge Sweep", style_table_cell), Paragraph("<code>PR_IU_PurgeExpiredDataRetention</code>", style_code), Paragraph("Bearer (Admin)", style_table_cell)],
+        [Paragraph("<code>POST /api/v1/dqms/gdpr/right-to-be-forgotten</code>", style_code_bold), Paragraph("Article 17 PII Shredding", style_table_cell), Paragraph("<code>PR_IU_GdprRightToBeForgotten</code>", style_code), Paragraph("Bearer (Admin/DPO)", style_table_cell)],
+        [Paragraph("<code>GET /api/v1/dqms/gdpr/export</code>", style_code_bold), Paragraph("Article 20 Portability Export", style_table_cell), Paragraph("<code>PR_S_PublicTokenStatus</code>", style_code), Paragraph("Bearer (Admin/DPO)", style_table_cell)],
     ]
     t_api = Table(api_specs, colWidths=[140, 130, 132, 130])
     t_api.setStyle(TableStyle([
@@ -864,6 +920,16 @@ def build_pdf():
             Paragraph("<b>Mobile QR Scan Returns 'Ticket Not Found'</b>", style_table_cell_bold),
             Paragraph("Token ID or alphanumeric ticket code does not exist in today's queue.", style_table_cell),
             Paragraph("Ensure customer scans the newly printed QR code. Test manually by querying <code>/api/v1/public/ticket-status/A-014</code> in browser.", style_table_cell)
+        ],
+        [
+            Paragraph("<b>API Error: ERR_UNMAPPED_DATA_REGION (403)</b>", style_table_cell_bold),
+            Paragraph("Organization has no mapped sovereign data region configured.", style_table_cell),
+            Paragraph("Navigate to <code>/admin/data-residency</code> or call <code>POST /api/v1/dqms/residency/config</code> to map the tenant to an approved regional database (e.g. <code>eu-central-1</code>, <code>me-central-1</code>).", style_table_cell)
+        ],
+        [
+            Paragraph("<b>Field Displays '[ENCRYPTED_DATA_CORRUPTED]'</b>", style_table_cell_bold),
+            Paragraph("AES-256-GCM authentication tag check failed due to ciphertext alteration.", style_table_cell),
+            Paragraph("Indicates unauthorized modification or encryption key mismatch. Verify that <code>Security:MasterEncryptionKey</code> in <code>appsettings.json</code> matches the key used when encrypting.", style_table_cell)
         ],
     ]
     t_trouble = Table(troubleshoot_data, colWidths=[120, 130, 282])

@@ -1,13 +1,14 @@
 # AntiGravity Enterprise DQMS — Complete Production Operations & Customer User Guide
 
 **Document Classification:** Commercial Enterprise Edition  
-**Product Version:** v1.0.0 Production Release (with Enterprise Edge Resilience, Signage & Webhooks)  
+**Product Version:** v1.2.0 Production Release (with Multi-Region Data Residency, GDPR & Enterprise Resiliency)  
 **Backend Architecture:** C# .NET 8 Web API + Dapper Micro-ORM  
 **Primary Database:** MySQL 8.0 (`dnaqms` on port 3306) & MSSQL LocalDB  
 **Edge Database:** SQLite Embedded Local Replicas (`edge_dqms.db`)  
 **Frontend Architecture:** Flutter Cross-Platform Framework (Riverpod 2.x + Dio HTTP Engine)  
-**Security Standard:** PBKDF2-SHA256 (100,000 iterations), 512-bit JWT Bearer Authentication & HMAC-SHA256 Signatures  
-**QA Certification:** 100% End-to-End Verified (All Automated Integration Tests Passed)  
+**Security Standard:** PBKDF2-SHA256 (100,000 iterations), 512-bit JWT Bearer Authentication, AES-256-GCM Envelope Encryption, HMAC-SHA256 Blind Indexing  
+**Compliance Coverage:** GDPR (EU), NESA (UAE), PDPL (Saudi Arabia), HIPAA (US), DPDP (India)  
+**QA Certification:** 100% End-to-End Verified (8/8 .NET Unit Tests & 83/83 Flutter Integration Tests Passed)  
 **Official PDF Document:** [DQMS_Enterprise_User_Guide.pdf](file:///e:/MySourceCodes/AntiGravity_Projects/WebAPIs/antigravity-enterprise/DQMS_Enterprise_User_Guide.pdf)
 
 ---
@@ -19,6 +20,7 @@
 | **v0.9.0** | Oct 2026 | Architecture Team | Lead Systems Architect | Initial Prototype specification and UI mockups. |
 | **v1.0.0** | Nov 2026 | Full-Stack Engineering | QA Manager & Lead Architect | **Commercial Production Release:** Authenticated PBKDF2 password engine, route aliases, seeded TV display templates, local disk storage default, and 100% verified automated test pass. |
 | **v1.1.0** | Nov 2026 | Enterprise Systems Team | Chief Information Officer | **Enterprise Resiliency & Operations Edition:** Added end-to-end "How to Use" operational guides for N-Level Multi-Department Workflows, Webhook Notification Engine with HMAC-SHA256 signatures, Offline Edge Resilience with 3-state banners, and Digital Signage Campaigns with PIN-secured Emergency Broadcast Overrides. |
+| **v1.2.0** | Nov 2026 | Enterprise Security & Data Privacy Team | Chief Information Security Officer | **Data Sovereignty, Multi-Region Residency & GDPR Compliance Edition:** Added Section 3.9 operational guide for geographic data residency sharding, AES-256-GCM envelope encryption, HMAC-SHA256 blind indexing, zero-trust fail-closed routing, GDPR Article 17 Right-To-Be-Forgotten cryptographic shredding, Article 20 data portability JSON export, and automated 12-hour retention purge daemon. Added Section 4.6 for `/admin/data-residency` admin view and updated API reference. |
 
 ---
 
@@ -35,7 +37,14 @@
    - 3.6 [Facility Shift Supervisor: TAT Variance & Bottleneck Heatmaps](#36-facility-shift-supervisor-tat-variance--bottleneck-heatmaps)
    - 3.7 [IT Systems Administrator: Webhook Notification Engine](#37-it-systems-administrator-webhook-notification-engine)
    - 3.8 [IT Systems Administrator: Offline Edge Resilience & Hybrid Sync](#38-it-systems-administrator-offline-edge-resilience--hybrid-sync)
+   - 3.9 [Data Protection Officer & IT Administrator: Multi-Region Data Residency & GDPR Privacy Engine](#39-data-protection-officer--it-administrator-multi-region-data-residency--gdpr-privacy-engine)
 4. [Administrative Facility Workspaces](#4-administrative-facility-workspaces)
+   - 4.1 [Physical Areas & Zones (/admin/areas)](#41-physical-areas--zones-adminareas)
+   - 4.2 [Service Process Pipelines & SLAs (/admin/processes)](#42-service-process-pipelines--slas-adminprocesses)
+   - 4.3 [Counter & Window Stations (/admin/counters)](#43-counter--window-stations-admincounters)
+   - 4.4 [Digital Signage Campaigns (/admin/signage)](#44-digital-signage-campaigns-adminsignage)
+   - 4.5 [Navigation Menu Permissions (/admin/navigation-menu)](#45-navigation-menu-permissions-adminnavigation-menu)
+   - 4.6 [Multi-Region Data Residency & GDPR Console (/admin/data-residency)](#46-multi-region-data-residency--gdpr-console-admindata-residency)
 5. [Production API Endpoints & Stored Procedures](#5-production-api-endpoints--stored-procedures)
 6. [Security, Storage & Compliance Specifications](#6-security-storage--compliance-specifications)
 7. [Production Troubleshooting & Diagnostic Guide](#7-production-troubleshooting--diagnostic-guide)
@@ -396,6 +405,62 @@ The AntiGravity DQMS incorporates an autonomous edge survivability architecture:
 
 ---
 
+### 3.9 Data Protection Officer & IT Administrator: Multi-Region Data Residency & GDPR Privacy Engine
+
+For multinational healthcare networks, cross-border banking institutions, and government facilities, compliance with statutory data sovereignty frameworks (e.g. EU GDPR, UAE NESA, Saudi Arabia PDPL, US HIPAA, India DPDP) requires strict physical isolation of patient/customer personal data within designated national and regional boundaries.
+
+The AntiGravity DQMS incorporates an automated Multi-Region Residency & Cryptographic Privacy Engine:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│               MULTI-REGION DATA SOVEREIGNTY & CRYPTOGRAPHIC PRIVACY TOPOLOGY           │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                        │
+│   Incoming API Request ──► [ Fail-Closed Zero-Trust Region Resolver (DapperDBFactory) ]│
+│                                  │                                                     │
+│             ┌────────────────────┼─────────────────────┬──────────────────┐            │
+│             ▼                    ▼                     ▼                  ▼            │
+│      [ EU Frankfurt ]     [ UAE Dubai ]         [ Saudi Riyadh ]    [ US East ]        │
+│       (eu-central-1)       (me-central-1)        (me-south-1)       (us-east-1)        │
+│          [ GDPR ]             [ NESA ]              [ PDPL ]          [ HIPAA ]        │
+│             │                    │                     │                  │            │
+│   ┌─────────┴────────────────────┴─────────────────────┴──────────────────┴────────┐   │
+│   │                      AES-256-GCM Envelope Encryption (KMS)                     │   │
+│   │   • Encrypted Customer Name & Phone Number (Authenticated with AAD)            │   │
+│   │   • HMAC-SHA256 Blind Indexing (`PhoneBlindIndex`) for O(1) Search             │   │
+│   │   • Article 17 Right-To-Be-Forgotten: Permanent Cryptographic PII Shredding    │   │
+│   │   • Article 20 Data Portability: Machine-Readable JSON Visit History Export    │   │
+│   │   • Autonomous 12-Hour Background Data Retention Lifecycle Purge Daemon       │   │
+│   └────────────────────────────────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Key Privacy & Residency Capabilities:
+
+1. **Geographic Data Residency Sharding**:
+   - Each tenant organization is mapped to an approved sovereign jurisdiction (`eu-central-1` [GDPR], `me-central-1` [NESA], `me-south-1` [PDPL], `us-east-1` [HIPAA], `ap-south-1` [DPDP]).
+   - All token transactions, audit trails, and customer visit records are dynamically routed and physically stored exclusively in the target region's database.
+2. **Zero-Trust Fail-Closed Routing**:
+   - Any query attempting to access or write records for an unmapped or invalid organization is immediately rejected with `ERR_UNMAPPED_DATA_REGION` (HTTP 403 Forbidden). No data can ever fall back to an un-sharded or default central database.
+3. **Field-Level AES-256-GCM Envelope Encryption**:
+   - Customer Personally Identifiable Information (PII) including Name, Phone Number, and Notes is encrypted at rest using AES-256-GCM with tenant-isolated KMS keys and random 96-bit nonces.
+   - Any ciphertext tampering triggers authentication failure and fails safe with `[ENCRYPTED_DATA_CORRUPTED]`.
+4. **Deterministic HMAC-SHA256 Blind Indexing**:
+   - To enable fast searching without decrypting the entire database, phone numbers are normalized to standardized E.164 format and hashed using HMAC-SHA256 with tenant-specific salt.
+   - The resulting 64-character hex hash is indexed (`IX_TokenTransaction_PhoneBlindIndex`), enabling $O(1)$ fast lookups without full table scans.
+5. **GDPR Article 17: Right-To-Be-Forgotten (Cryptographic Erasure)**:
+   - When a data subject requests erasure, the Data Protection Officer executes the erasure workflow via `/admin/data-residency` or `POST /api/v1/dqms/gdpr/right-to-be-forgotten`.
+   - The engine irreversibly zeros `EncryptedCustomerName`, `EncryptedCustomerPhone`, `EncryptedNotes`, and `PhoneBlindIndex`, replacing them with `[ANONYMIZED]`.
+   - Operational queue duration metrics (wait times, service times, desk IDs) are preserved for hospital capacity planning while ensuring zero customer re-identification.
+6. **GDPR Article 20: Right to Data Portability**:
+   - Provides on-demand export of all customer queue transactions in a standardized, machine-readable JSON package via `GET /api/v1/dqms/gdpr/export`.
+7. **Autonomous 12-Hour Retention Purge Daemon**:
+   - An integrated background worker (`DataRetentionPurgeWorker`) periodically scans organizations and purges completed tokens exceeding the configured retention window (default: 90 days; configurable from 30 to 365 days).
+8. **Sovereign Audit Trail**:
+   - Every erasure, export, retention purge, and residency reconfiguration is immutably logged in `GdprAuditLog` with operator ID, target customer ID, and timestamp.
+
+---
+
 ## 4. Administrative Facility Workspaces
 
 Accessible via `/admin/*`, these workspaces give facility managers full configuration authority:
@@ -417,6 +482,15 @@ Accessible via `/admin/*`, these workspaces give facility managers full configur
 
 ### 4.5 Navigation Menu Permissions (`/admin/navigation-menu`)
 - Dynamically configures sidebar menus, route paths, icons, and required RBAC permission claims backed by `navigationmenu` and `PR_IU_NavigationMenu`.
+
+### 4.6 Multi-Region Data Residency & GDPR Console (`/admin/data-residency`)
+- Inspects and configures sovereign data regions (`eu-central-1`, `me-central-1`, `me-south-1`, `us-east-1`, `ap-south-1`) and compliance frameworks (GDPR, NESA, PDPL, HIPAA, DPDP).
+- Configures organization KMS Key ARNs and sliding retention policies (30 to 365 days).
+- Triggers GDPR Article 17 PII cryptographic erasure with safety confirmation modal.
+- Generates and downloads GDPR Article 20 customer visit export packages.
+- Triggers manual data retention lifecycle purge sweeps on demand.
+- Displays the complete sovereign compliance audit trail with operator IDs and record counts.
+- Stored procedures: `PR_IU_OrganizationDataResidency`, `PR_S_OrganizationDataResidency`, `PR_IU_GdprRightToBeForgotten`, `PR_IU_PurgeExpiredDataRetention`, `PR_S_GdprAuditLogs`.
 
 ---
 
@@ -441,6 +515,12 @@ Accessible via `/admin/*`, these workspaces give facility managers full configur
 | `POST /api/v1/webhooks` | Register Outgoing Webhook Endpoint | `PR_IU_WebhookSubscription` | Bearer JWT (Admin) |
 | `POST /api/v1/webhooks/test-ping` | Dispatch HMAC-SHA256 Test Ping | Direct HttpClient with HMAC | Bearer JWT (Admin) |
 | `GET /api/v1/edge/sync-status` | Query Edge Resilience Node Health | Direct SQLite / MySQL Check | Bearer JWT (Admin) |
+| `GET /api/v1/dqms/residency/config` | Query Regional Residency Config | `PR_S_OrganizationDataResidency` | Bearer JWT / API Key |
+| `POST /api/v1/dqms/residency/config` | Upsert Regional Sovereignty Config | `PR_IU_OrganizationDataResidency` | Bearer JWT (Admin) |
+| `POST /api/v1/dqms/residency/purge` | Execute Retention Lifecycle Purge | `PR_IU_PurgeExpiredDataRetention` | Bearer JWT (Admin) |
+| `GET /api/v1/dqms/residency/audit` | Query GDPR & Retention Audit Logs | `PR_S_GdprAuditLogs` | Bearer JWT (Admin) |
+| `POST /api/v1/dqms/gdpr/right-to-be-forgotten` | Article 17 Cryptographic Shredding | `PR_IU_GdprRightToBeForgotten` | Bearer JWT (Admin / DPO) |
+| `GET /api/v1/dqms/gdpr/export` | Article 20 Machine-Readable Export | `PR_S_PublicTokenStatus` | Bearer JWT (Admin / DPO) |
 
 ---
 
@@ -455,6 +535,19 @@ Accessible via `/admin/*`, these workspaces give facility managers full configur
 ### 6.2 Local Disk Storage Engine
 - All uploaded assets (user profile avatars, company logos, KYC verification scans, digital signage promotional slides) are stored in `App_Data/Uploads` with randomized unique GUID names, MIME-type validation, and comprehensive audit logs in `FileAuditLog`.
 
+### 6.3 Data Sovereignty & Cryptographic Standards
+- **Field-Level Encryption at Rest**: Encrypted customer PII (`EncryptedCustomerName`, `EncryptedCustomerPhone`, `EncryptedNotes`) using AES-256-GCM authenticated cipher with 96-bit nonces, 128-bit authentication tags, and tenant-isolated KMS key hierarchies.
+- **Fail-Closed Tamper Detection**: Any unauthorized alteration of ciphertext or authentication tags triggers GCM authentication failure and immediately defaults to `[ENCRYPTED_DATA_CORRUPTED]`.
+- **Deterministic HMAC-SHA256 Blind Indexing**: Phone numbers normalized to international E.164 standard and hashed with tenant-specific salt, enabling $O(1)$ fast lookups without table scans or server-side decryption.
+- **Zero-Trust Fail-Closed Routing**: Enforced in `DapperDBFactory`; requests for unmapped organizations are rejected with `ERR_UNMAPPED_DATA_REGION` (403 Forbidden).
+
+### 6.4 Statutory Compliance Coverage
+- **EU General Data Protection Regulation (GDPR)**: Full Article 17 Right-To-Be-Forgotten cryptographic shredding and Article 20 Data Portability structured export.
+- **UAE National Electronic Security Authority (NESA)**: In-country residency enforcement within UAE Dubai (`me-central-1`).
+- **Saudi Arabia Personal Data Protection Law (PDPL)**: In-kingdom residency enforcement within Riyadh (`me-south-1`).
+- **US Health Insurance Portability and Accountability Act (HIPAA)**: Cryptographic protection for electronic protected health information (ePHI).
+- **India Digital Personal Data Protection Act (DPDP)**: Resident data processing within Mumbai (`ap-south-1`).
+
 ---
 
 ## 7. Production Troubleshooting & Diagnostic Guide
@@ -468,6 +561,9 @@ Accessible via `/admin/*`, these workspaces give facility managers full configur
 | **Kiosk Error: "Printer Offline"** | Thermal printer out of paper or USB disconnected. | 1. Refill 80mm thermal paper roll.<br/>2. Check USB/Ethernet connection to kiosk PC.<br/>3. Test print via Windows Printer Properties. |
 | **Edge Banner Displays "Offline Degraded"** | Local edge station lost network connectivity to Central HQ. | Normal resilient behavior. Tellers can continue calling and serving tickets without interruption. Check Ethernet cable or router gateway. System will auto-drain upon reconnection. |
 | **Webhook Test Ping Returns HTTP 403 / 401** | Subscriber endpoint failed HMAC signature check or requires auth. | Check that the subscriber server is computing HMAC-SHA256 using the exact same secret key string configured in the DQMS Webhook management screen. |
+| **API Error: "ERR_UNMAPPED_DATA_REGION" (HTTP 403)** | Organization does not have an approved sovereign data region mapped. | Navigate to `/admin/data-residency` or call `POST /api/v1/dqms/residency/config` to assign the organization to an approved regional database (e.g., `eu-central-1`, `me-central-1`). |
+| **Field Shows "[ENCRYPTED_DATA_CORRUPTED]"** | Ciphertext or GCM authentication tag failed cryptographic integrity check. | Indicates unauthorized alteration or key mismatch. Check that `Security:MasterEncryptionKey` matches the key used during record creation. |
+| **Customer Search by Phone Yields No Results** | Phone format entered without international dialing prefix. | Enter phone in E.164 format (e.g., `+971501234567`). The system normalizes common local variants automatically, but an international country code is required for cross-border blind indexing. |
 
 ---
 

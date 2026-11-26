@@ -6,6 +6,10 @@ namespace AntiGravity.Enterprise.Shared.Core.Data;
 public interface IDapperDBFactory
 {
     IDbConnection GetConnection(string? connectionName = null);
+    IDbConnection GetConnectionForRegion(string dataRegion);
+    IDbConnection GetConnectionForOrganization(int organizationId);
+    void RegisterOrganizationRegion(int organizationId, string dataRegion);
+    string? ResolveRegionForOrganization(int organizationId);
     void BeginTransaction(string? databaseName = null);
     void CommitTransaction();
     void RollbackTransaction();

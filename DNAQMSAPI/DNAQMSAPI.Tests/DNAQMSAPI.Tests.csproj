@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DNAQMSAPI.Application\DNAQMSAPI.Application.csproj" />
+    <ProjectReference Include="..\DNAQMSAPI.Infrastructure\DNAQMSAPI.Infrastructure.csproj" />
+    <ProjectReference Include="..\DNAQMSAPI.Domain\DNAQMSAPI.Domain.csproj" />
+    <ProjectReference Include="..\..\AntiGravity.Enterprise.Shared.Core\AntiGravity.Enterprise.Shared.Core.csproj" />
+  </ItemGroup>
+
+</Project>

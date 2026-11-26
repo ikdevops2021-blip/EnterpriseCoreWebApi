@@ -302,10 +302,16 @@ Tokens transition through explicit lifecycle states configured in `ConfigParamet
 
 ## 19. Multi-Region Compliance, Data Residency & Security
 
-### 19.1 Global Data Sovereignty & Encryption
-* **Multi-Region Data Residency:** Multi-tenant deployment options supporting in-country data storage (e.g. AWS/Azure UAE North, EU Frankfurt, US East, Saudi Arabia Riyadh) to satisfy local data sovereignty regulations (GDPR, NESA, PDPL, SAMA).
-* **Field-Level Encryption at Rest (AES-256):** Encrypted customer PII (Phone, Name, National ID) using tenant-isolated KMS encryption keys.
-* **GDPR Right-To-Be-Forgotten:** Automated customer PII anonymization and configurable data retention purge schedules.
+### 19.1 Global Data Sovereignty & Encryption [🟢 IMPLEMENTED]
+* **Multi-Region Data Residency:** Multi-tenant deployment options supporting in-country data storage (`eu-central-1` EU Frankfurt [GDPR], `me-central-1` UAE Dubai [NESA], `me-south-1` Saudi Riyadh [PDPL], `us-east-1` US East [HIPAA], `ap-south-1` India Mumbai [DPDP]) with dynamic sharded routing in `DapperDBFactory`.
+* **Zero-Trust Fail-Closed Sovereignty:** Enforces strict geographic isolation where queries targeting unmapped tenant organizations fail closed with `ERR_UNMAPPED_DATA_REGION` (403 Forbidden).
+* **Field-Level Encryption at Rest (AES-256-GCM):** Encrypted customer PII (`EncryptedCustomerName`, `EncryptedCustomerPhone`, `EncryptedNotes`) using tenant-isolated envelope encryption with authenticated data (AAD) integrity checks.
+* **HMAC-SHA256 Blind Indexing:** Deterministic privacy-preserving blind hashes over normalized E.164 phone numbers with covered index `IX_TokenTransaction_PhoneBlindIndex` enabling $O(1)$ fast lookups without decrypting tables.
+* **GDPR Article 17 Right-To-Be-Forgotten:** Cryptographic PII shredding via `PR_IU_GdprRightToBeForgotten` permanently zeroing customer phone, name, and notes while preserving queue wait duration metrics for operational throughput statistics.
+* **GDPR Article 20 Data Portability:** Machine-readable JSON export of all customer visits and queue service interactions (`/api/v1/dqms/gdpr/export`).
+* **Automated Data Retention Purge Daemon:** Background worker `DataRetentionPurgeWorker` periodically executing `PR_IU_PurgeExpiredDataRetention` every 12 hours based on organization retention window configurations.
+* **Sovereign Audit Trail:** Complete audit logging in `GdprAuditLog` and `PR_S_GdprAuditLogs` for all GDPR erasures, exports, and retention purge events.
+* **Flutter Admin Console (`DataResidencyView` at `/admin/data-residency`):** Interactive UI with sovereignty region badges, KMS key ARN configuration, retention policy slider, Article 17 modal confirmation dialog, and dynamic navigation menu synchronization.
 
 ---
 

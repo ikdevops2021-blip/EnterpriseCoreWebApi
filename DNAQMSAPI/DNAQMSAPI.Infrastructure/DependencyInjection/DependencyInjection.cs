@@ -79,6 +79,10 @@ public static class DependencyInjection
         services.AddScoped<ISignageService, SignageService>();
         services.AddScoped<IEmergencyBroadcastService, EmergencyBroadcastService>();
 
+        // --- DQMS Multi-Region Data Residency & GDPR Privacy Engine ---
+        services.AddScoped<DNAQMSAPI.Application.Services.IDataPrivacyService, DNAQMSAPI.Infrastructure.Security.AesGcmDataPrivacyService>();
+        services.AddHostedService<DNAQMSAPI.Infrastructure.BackgroundServices.DataRetentionPurgeWorker>();
+
         return services;
     }
 }

@@ -182,4 +182,5 @@ const List<NavigationMenuModel> _fallbackMenus = [
   NavigationMenuModel(id: 18, title: 'Webhook Integrations',         iconName: 'webhook_rounded',              routePath: '/admin/webhooks',           sortOrder: 15, isActive: true),
   NavigationMenuModel(id: 19, title: 'Edge Appliances & Sync',       iconName: 'hub_rounded',                  routePath: '/admin/edge-nodes',         sortOrder: 16, isActive: true),
   NavigationMenuModel(id: 20, title: 'Signage & Broadcast',          iconName: 'campaign_rounded',             routePath: '/admin/signage-campaigns',  sortOrder: 17, isActive: true, requiredPermission: 'ManageSignage'),
+  NavigationMenuModel(id: 21, title: 'Data Residency & GDPR',        iconName: 'security_rounded',             routePath: '/admin/data-residency',     sortOrder: 18, isActive: true, requiredPermission: 'Privacy.Manage'),
 ];

@@ -45,6 +45,7 @@ public class DatabaseConfig
 public class DapperDBFactory : IDapperDBFactory, IDisposable
 {
     private readonly DatabaseSettings _databaseSettings;
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, string> _organizationRegionMap = new();
     private IDbConnection? _connection;
     private IDbTransaction? _transaction;
     private bool _disposed = false;
@@ -157,6 +158,77 @@ public class DapperDBFactory : IDapperDBFactory, IDisposable
 
         var client = new MongoClient(settings);
         return client.GetDatabase(config.DatabaseName);
+    }
+
+    public void RegisterOrganizationRegion(int organizationId, string dataRegion)
+    {
+        if (organizationId <= 0) throw new ArgumentException("Organization ID must be positive", nameof(organizationId));
+        if (string.IsNullOrWhiteSpace(dataRegion)) throw new ArgumentException("DataRegion cannot be empty", nameof(dataRegion));
+        _organizationRegionMap[organizationId] = dataRegion.Trim();
+    }
+
+    public string? ResolveRegionForOrganization(int organizationId)
+    {
+        if (organizationId <= 0) return null;
+        if (_organizationRegionMap.TryGetValue(organizationId, out var region))
+        {
+            return region;
+        }
+
+        try
+        {
+            using var conn = GetConnection();
+            conn.Open();
+            var resolvedRegion = conn.QueryFirstOrDefault<string>(
+                "SELECT DataRegion FROM dbo.OrganizationDataResidency WHERE OrganizationId = @OrgId",
+                new { OrgId = organizationId });
+            
+            if (!string.IsNullOrWhiteSpace(resolvedRegion))
+            {
+                _organizationRegionMap[organizationId] = resolvedRegion.Trim();
+                return resolvedRegion.Trim();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to query OrganizationDataResidency for {organizationId}: {ex.Message}");
+        }
+
+        return null;
+    }
+
+    public IDbConnection GetConnectionForRegion(string dataRegion)
+    {
+        if (string.IsNullOrWhiteSpace(dataRegion))
+        {
+            throw new ArgumentException("DataRegion cannot be null or empty", nameof(dataRegion));
+        }
+
+        var matched = _databaseSettings.Databases.FirstOrDefault(db => 
+            db.Name.Equals(dataRegion, StringComparison.OrdinalIgnoreCase));
+        
+        if (matched != null)
+        {
+            return GetConnection(matched.Name);
+        }
+
+        return GetConnection();
+    }
+
+    public IDbConnection GetConnectionForOrganization(int organizationId)
+    {
+        if (organizationId <= 0)
+        {
+            throw new ArgumentException("Organization ID must be positive for sovereign routing", nameof(organizationId));
+        }
+
+        var region = ResolveRegionForOrganization(organizationId);
+        if (string.IsNullOrWhiteSpace(region))
+        {
+            throw new InvalidOperationException($"ERR_UNMAPPED_DATA_REGION: Organization {organizationId} does not have an approved sovereign DataRegion configured. Access denied.");
+        }
+
+        return GetConnectionForRegion(region);
     }
 
     public void BeginTransaction(string? databaseName = null)
