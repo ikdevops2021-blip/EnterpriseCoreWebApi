@@ -31,7 +31,7 @@ class AreaZoneModel {
       areaCode: json['areaCode'] ?? json['AreaCode'] ?? 'AZ-01',
       areaName: json['areaName'] ?? json['AreaName'] ?? 'Service Zone',
       description: json['description'] ?? json['Description'] ?? '',
-      targetSlaMins: json['targetSLA'] ?? json['targetSlaMins'] ?? 15,
+      targetSlaMins: json['targetSLA'] ?? json['TargetSLA'] ?? json['targetSlaMins'] ?? 15,
       isActive: json['isActive'] ?? json['IsActive'] ?? true,
     );
   }

@@ -189,6 +189,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   hintText: 'e.g. admin@dqms.org',
                   controller: _usernameCtrl,
                   prefixIcon: const Icon(Icons.person_outline_rounded, size: 18),
+                  onSubmitted: (_) => _handleLogin(),
                 ),
                 const SizedBox(height: 16),
 
@@ -198,6 +199,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   controller: _passwordCtrl,
                   obscureText: true,
                   prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18),
+                  onSubmitted: (_) => _handleLogin(),
                 ),
                 const SizedBox(height: 20),
 

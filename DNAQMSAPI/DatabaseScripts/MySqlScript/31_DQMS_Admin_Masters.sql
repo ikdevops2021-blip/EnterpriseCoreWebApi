@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `Area` (
     `LocationId` INT NOT NULL,
     `AreaName` VARCHAR(100) NOT NULL,
     `Description` VARCHAR(250) NULL,
+    `TargetSLA` INT NOT NULL DEFAULT 15,
     `IsActive` TINYINT(1) NOT NULL DEFAULT 1,
     `CreatedBy` INT NOT NULL,
     `CreatedDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -22,7 +23,7 @@ CREATE TABLE IF NOT EXISTS `Area` (
     `DeletedBy` INT NULL,
     `DeletedDate` DATETIME NULL,
     INDEX `IX_Area_Org_Loc` (`OrganizationId`, `LocationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 2. Counter / Station Master Table
 CREATE TABLE IF NOT EXISTS `Counter` (
@@ -206,16 +207,7 @@ BEGIN
     ORDER BY AreaName ASC;
 END //
 
-DROP PROCEDURE IF EXISTS PR_IU_Area (
-    IN p_Id             INT,
-    IN p_AreaCode       VARCHAR(50),
-    IN p_OrganizationId INT,
-    IN p_LocationId     INT,
-    IN p_AreaName       VARCHAR(100),
-    IN p_Description    VARCHAR(250),
-    IN p_IsActive       TINYINT(1),
-    IN p_UID            INT
-) //
+DROP PROCEDURE IF EXISTS PR_IU_Area //
 CREATE PROCEDURE PR_IU_Area (
     IN p_Id             INT,
     IN p_AreaCode       VARCHAR(50),
@@ -223,6 +215,7 @@ CREATE PROCEDURE PR_IU_Area (
     IN p_LocationId     INT,
     IN p_AreaName       VARCHAR(100),
     IN p_Description    VARCHAR(250),
+    IN p_TargetSLA      INT,
     IN p_IsActive       TINYINT(1),
     IN p_UID            INT
 )
@@ -242,10 +235,10 @@ proc_body: BEGIN
 
     IF COALESCE(p_Id, 0) <= 0 THEN
         INSERT INTO Area (
-            AreaCode, OrganizationId, LocationId, AreaName, Description, IsActive,
+            AreaCode, OrganizationId, LocationId, AreaName, Description, TargetSLA, IsActive,
             CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, IsDeleted
         ) VALUES (
-            TRIM(p_AreaCode), p_OrganizationId, p_LocationId, TRIM(p_AreaName), TRIM(p_Description), COALESCE(p_IsActive, 1),
+            TRIM(p_AreaCode), p_OrganizationId, p_LocationId, TRIM(p_AreaName), TRIM(p_Description), COALESCE(p_TargetSLA, 15), COALESCE(p_IsActive, 1),
             p_UID, CURRENT_TIMESTAMP, p_UID, CURRENT_TIMESTAMP, 0
         );
         SET p_Id = LAST_INSERT_ID();
@@ -255,6 +248,7 @@ proc_body: BEGIN
         SET AreaCode     = TRIM(p_AreaCode),
             AreaName     = TRIM(p_AreaName),
             Description  = TRIM(p_Description),
+            TargetSLA    = COALESCE(p_TargetSLA, TargetSLA),
             IsActive     = COALESCE(p_IsActive, IsActive),
             ModifiedBy   = p_UID,
             ModifiedDate = CURRENT_TIMESTAMP

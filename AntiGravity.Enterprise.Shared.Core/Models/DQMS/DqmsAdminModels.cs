@@ -10,6 +10,7 @@ namespace AntiGravity.Enterprise.Shared.Core.Models.DQMS
         public int LocationId { get; set; }
         public string AreaName { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public int TargetSLA { get; set; } = 15;
         public bool IsActive { get; set; } = true;
         public int CreatedBy { get; set; }
         public DateTime CreatedDate { get; set; }

@@ -18,6 +18,7 @@ class DqmsTextField extends StatefulWidget {
   final int maxLines;
   final TextInputType keyboardType;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final bool enabled;
@@ -38,6 +39,7 @@ class DqmsTextField extends StatefulWidget {
     this.maxLines = 1,
     this.keyboardType = TextInputType.text,
     this.onChanged,
+    this.onSubmitted,
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
@@ -142,6 +144,7 @@ class _DqmsTextFieldState extends State<DqmsTextField> {
                 maxLines: widget.maxLines,
                 keyboardType: widget.keyboardType,
                 onChanged: widget.onChanged,
+                onSubmitted: widget.onSubmitted,
                 enabled: widget.enabled,
                 textAlignVertical: TextAlignVertical.center,
                 style: (widget.style ?? AppTypography.bodyMedium).copyWith(

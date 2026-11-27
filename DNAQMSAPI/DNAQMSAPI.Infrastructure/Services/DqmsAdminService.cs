@@ -70,6 +70,7 @@ namespace DNAQMSAPI.Infrastructure.Services
                     p_LocationId = model.LocationId,
                     p_AreaName = model.AreaName,
                     p_Description = model.Description,
+                    p_TargetSLA = model.TargetSLA,
                     p_IsActive = model.IsActive ? 1 : 0,
                     p_UID = userId
                 };

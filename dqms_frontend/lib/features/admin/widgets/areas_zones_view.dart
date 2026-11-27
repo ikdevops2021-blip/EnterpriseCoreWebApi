@@ -714,6 +714,9 @@ class _ZoneInspectorWidgetState extends ConsumerState<_ZoneInspectorWidget> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.area.areaId != widget.area.areaId ||
         oldWidget.area.areaCode != widget.area.areaCode ||
+        oldWidget.area.areaName != widget.area.areaName ||
+        oldWidget.area.description != widget.area.description ||
+        oldWidget.area.targetSlaMins != widget.area.targetSlaMins ||
         oldWidget.area.isActive != widget.area.isActive) {
       _codeController.text = widget.area.areaCode;
       _nameController.text = widget.area.areaName;
