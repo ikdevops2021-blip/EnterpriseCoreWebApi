@@ -12,7 +12,7 @@ if "%ERRORLEVEL%"=="0" (
 )
 
 :: 2. Check if dotnet process running the API project is present and terminate it
-for /f "tokens=2 delims=," %%a in ('wmic process where "name='dotnet.exe' and commandline like '%%DNAQMSAPI.Api.csproj%%'" get processid /format:csv 2^>nul ^| findstr /r "[0-9]"') do (
+for /f "tokens=2 delims=," %%a in ('wmic process where "name='dotnet.exe' and commandline like '%%DNAQMSAPI.Api%%'" get processid /format:csv 2^>nul ^| findstr /r "[0-9]"') do (
     echo [INFO] Terminating dotnet API background process PID: %%a...
     taskkill /PID %%a /F >nul 2>&1
 )
