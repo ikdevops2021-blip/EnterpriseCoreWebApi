@@ -7,6 +7,7 @@ import 'package:dqms_frontend/core/widgets/dqms_button.dart';
 import 'package:dqms_frontend/core/widgets/dqms_text_field.dart';
 import 'package:dqms_frontend/core/widgets/dqms_status_badge.dart';
 import 'package:dqms_frontend/core/widgets/dqms_states.dart';
+import 'package:dqms_frontend/core/widgets/sparkline_mini_graph.dart';
 import 'package:dqms_frontend/features/admin/providers/admin_mock_providers.dart';
 import 'package:dqms_frontend/features/admin/widgets/master_detail_layout.dart';
 
@@ -477,7 +478,7 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
                                               ),
                                             ),
                                             SizedBox(
-                                              width: 110,
+                                              width: 145,
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
@@ -486,6 +487,13 @@ class _AreasZonesViewState extends ConsumerState<AreasZonesView> {
                                                   Text(
                                                     '${area.targetSlaMins}m avg',
                                                     style: const TextStyle(color: AppColors.statusActive, fontSize: 12, fontWeight: FontWeight.w700, fontFamily: 'monospace'),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  SparklineMiniGraph(
+                                                    values: [10, 14, 12, 16, 13, 15, area.targetSlaMins.toDouble()],
+                                                    width: 38,
+                                                    height: 16,
+                                                    lineColor: area.isActive ? AppColors.mintEmerald : AppColors.amberWarning,
                                                   ),
                                                 ],
                                               ),
@@ -712,17 +720,32 @@ class _ZoneInspectorWidgetState extends ConsumerState<_ZoneInspectorWidget> {
   @override
   void didUpdateWidget(covariant _ZoneInspectorWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.area.areaId != widget.area.areaId ||
-        oldWidget.area.areaCode != widget.area.areaCode ||
-        oldWidget.area.areaName != widget.area.areaName ||
-        oldWidget.area.description != widget.area.description ||
-        oldWidget.area.targetSlaMins != widget.area.targetSlaMins ||
-        oldWidget.area.isActive != widget.area.isActive) {
+    if (oldWidget.area.areaId != widget.area.areaId) {
       _codeController.text = widget.area.areaCode;
       _nameController.text = widget.area.areaName;
       _descController.text = widget.area.description;
       _slaController.text = '${widget.area.targetSlaMins}';
       _isActive = widget.area.isActive;
+    } else {
+      _safeUpdateText(_codeController, widget.area.areaCode);
+      _safeUpdateText(_nameController, widget.area.areaName);
+      _safeUpdateText(_descController, widget.area.description);
+      _safeUpdateText(_slaController, '${widget.area.targetSlaMins}');
+      if (oldWidget.area.isActive != widget.area.isActive) {
+        _isActive = widget.area.isActive;
+      }
+    }
+  }
+
+  void _safeUpdateText(TextEditingController controller, String newText) {
+    if (controller.text != newText) {
+      final oldSelection = controller.selection;
+      controller.text = newText;
+      if (oldSelection.start <= newText.length && oldSelection.end <= newText.length) {
+        controller.selection = oldSelection;
+      } else {
+        controller.selection = TextSelection.collapsed(offset: newText.length);
+      }
     }
   }
 

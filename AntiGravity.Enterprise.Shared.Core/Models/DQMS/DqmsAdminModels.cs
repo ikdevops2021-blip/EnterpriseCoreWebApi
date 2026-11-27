@@ -11,6 +11,13 @@ namespace AntiGravity.Enterprise.Shared.Core.Models.DQMS
         public string AreaName { get; set; } = string.Empty;
         public string? Description { get; set; }
         public int TargetSLA { get; set; } = 15;
+
+        [System.Text.Json.Serialization.JsonPropertyName("targetSlaMins")]
+        public int TargetSlaMins
+        {
+            get => TargetSLA;
+            set => TargetSLA = value;
+        }
         public bool IsActive { get; set; } = true;
         public int CreatedBy { get; set; }
         public DateTime CreatedDate { get; set; }

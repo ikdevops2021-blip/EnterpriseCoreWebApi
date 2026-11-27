@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dqms_frontend/core/models/customer_models.dart';
 import 'package:dqms_frontend/core/services/dqms_audio_voice_service.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
+import 'package:dqms_frontend/core/theme/app_typography.dart';
 import 'package:dqms_frontend/core/theme/app_decorations.dart';
 import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/core/widgets/language_selector_dropdown.dart';
@@ -24,7 +25,8 @@ class WaitingRoomTvScreen extends ConsumerStatefulWidget {
   const WaitingRoomTvScreen({super.key});
 
   @override
-  ConsumerState<WaitingRoomTvScreen> createState() => _WaitingRoomTvScreenState();
+  ConsumerState<WaitingRoomTvScreen> createState() =>
+      _WaitingRoomTvScreenState();
 }
 
 class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
@@ -58,12 +60,16 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<PublicDisplayBoardDto>>(displayBoardProvider, (previous, next) {
+    ref.listen<AsyncValue<PublicDisplayBoardDto>>(displayBoardProvider, (
+      previous,
+      next,
+    ) {
       final board = next.value;
       final list = board?.activeCalls ?? [];
       if (list.isNotEmpty) {
         final top = list.first;
-        final key = '${top.tokenNumber}_${top.counterNumber}_${top.calledTime}_${top.flashAlert}';
+        final key =
+            '${top.tokenNumber}_${top.counterNumber}_${top.calledTime}_${top.flashAlert}';
         if (key != _lastAnnouncedKey) {
           _lastAnnouncedKey = key;
           _triggerAnnouncement(top);
@@ -82,8 +88,12 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
     final upcomingQueue = board.upcomingQueue;
     final emergencyAlert = emergencyAsync.value;
 
-    final DisplayBoardItemDto? heroItem = activeCalls.isNotEmpty ? activeCalls.first : null;
-    final heldTokens = upcomingQueue.where((t) => t.tokenStatus == 18005).toList();
+    final DisplayBoardItemDto? heroItem = activeCalls.isNotEmpty
+        ? activeCalls.first
+        : null;
+    final heldTokens = upcomingQueue
+        .where((t) => t.tokenStatus == 18005)
+        .toList();
 
     return Scaffold(
       backgroundColor: AppColors.bgCanvas,
@@ -121,7 +131,8 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                                 height: 200,
                                 child: SignageMediaZone(
                                   items: mediaItems,
-                                  isDucked: heroItem != null && heroItem.flashAlert,
+                                  isDucked:
+                                      heroItem != null && heroItem.flashAlert,
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -158,7 +169,9 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                                     flex: 48,
                                     child: SignageMediaZone(
                                       items: mediaItems,
-                                      isDucked: heroItem != null && heroItem.flashAlert,
+                                      isDucked:
+                                          heroItem != null &&
+                                          heroItem.flashAlert,
                                     ),
                                   ),
                                 ],
@@ -175,14 +188,18 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                                   // Active Counter Stations Matrix (Top 38%)
                                   Expanded(
                                     flex: 38,
-                                    child: _buildActiveCountersPanel(activeCalls),
+                                    child: _buildActiveCountersPanel(
+                                      activeCalls,
+                                    ),
                                   ),
                                   const SizedBox(height: 16),
 
                                   // Live Upcoming Queue & Status Matrix (Bottom 62%)
                                   Expanded(
                                     flex: 62,
-                                    child: _buildUpcomingQueuePanel(upcomingQueue),
+                                    child: _buildUpcomingQueuePanel(
+                                      upcomingQueue,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -203,14 +220,17 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
 
   Widget _buildTvHeader(DisplayBoardItemDto? heroItem) {
     final now = DateTime.now();
-    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
 
     return Container(
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
         color: AppColors.bgHeader,
-        border: const Border(bottom: BorderSide(color: AppColors.glassBorderLight, width: 1.0)),
+        border: const Border(
+          bottom: BorderSide(color: AppColors.glassBorderLight, width: 1.0),
+        ),
         boxShadow: AppShadows.subtle,
       ),
       child: SingleChildScrollView(
@@ -222,7 +242,9 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
               decoration: BoxDecoration(
                 color: AppColors.brandPrimary.withValues(alpha: 0.22),
                 borderRadius: BorderRadius.circular(AppRadius.sm),
-                border: Border.all(color: AppColors.cyanGlow.withValues(alpha: 0.6)),
+                border: Border.all(
+                  color: AppColors.cyanGlow.withValues(alpha: 0.6),
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.cyanGlow.withValues(alpha: 0.25),
@@ -243,7 +265,11 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
             const SizedBox(width: 18),
             const Text(
               'DQMS Medical Center HQ • Waiting Lounge TV Monitor',
-              style: TextStyle(color: AppColors.textMain, fontSize: 15, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                color: AppColors.textMain,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+              ),
             ),
             const SizedBox(width: 22),
 
@@ -252,19 +278,28 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
               onTap: () => _toggleAudio(heroItem),
               borderRadius: BorderRadius.circular(AppRadius.pill),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: _isAudioEnabled
                       ? AppColors.statusActive.withValues(alpha: 0.2)
                       : AppColors.statusWarning.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                   border: Border.all(
-                    color: _isAudioEnabled ? AppColors.statusActive : AppColors.statusWarning,
+                    color: _isAudioEnabled
+                        ? AppColors.statusActive
+                        : AppColors.statusWarning,
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: (_isAudioEnabled ? AppColors.statusActive : AppColors.statusWarning).withValues(alpha: 0.35),
+                      color:
+                          (_isAudioEnabled
+                                  ? AppColors.statusActive
+                                  : AppColors.statusWarning)
+                              .withValues(alpha: 0.35),
                       blurRadius: 10,
                     ),
                   ],
@@ -273,15 +308,21 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      _isAudioEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
-                      color: _isAudioEnabled ? AppColors.statusActive : AppColors.statusWarning,
+                      _isAudioEnabled
+                          ? Icons.volume_up_rounded
+                          : Icons.volume_off_rounded,
+                      color: _isAudioEnabled
+                          ? AppColors.statusActive
+                          : AppColors.statusWarning,
                       size: 16,
                     ),
                     const SizedBox(width: 7),
                     Text(
                       _isAudioEnabled ? 'AUDIO LIVE' : 'CLICK TO ENABLE AUDIO',
                       style: TextStyle(
-                        color: _isAudioEnabled ? AppColors.statusActive : AppColors.statusWarning,
+                        color: _isAudioEnabled
+                            ? AppColors.statusActive
+                            : AppColors.statusWarning,
                         fontSize: 11,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 0.8,
@@ -302,7 +343,11 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.access_time_filled_rounded, color: AppColors.cyanGlow, size: 16),
+                  const Icon(
+                    Icons.access_time_filled_rounded,
+                    color: AppColors.cyanGlow,
+                    size: 16,
+                  ),
                   const SizedBox(width: 7),
                   Text(
                     timeStr,
@@ -327,8 +372,11 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
   /// NOW CALLING Hero Panel (High-Visibility Left Card matching Image 2)
   Widget _buildNowCallingHero(DisplayBoardItemDto? item) {
     final token = item?.tokenNumber ?? 'STANDBY';
-    final counter = item != null ? 'COUNTER ${item.counterNumber ?? "C-01"}' : 'ALL COUNTERS READY';
-    final service = item?.processName ?? 'Comprehensive Patient Registration & Triage';
+    final counter = item != null
+        ? 'COUNTER ${item.counterNumber ?? "C-01"}'
+        : 'ALL COUNTERS READY';
+    final service =
+        item?.processName ?? 'Comprehensive Patient Registration & Triage';
     final isCalling = item != null;
 
     return Container(
@@ -336,12 +384,15 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
         color: const Color(0xFF070F1E),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: (isCalling ? const Color(0xFF00E5FF) : AppColors.brandPrimary).withValues(alpha: 0.45),
+          color: (isCalling ? const Color(0xFF00E5FF) : AppColors.brandPrimary)
+              .withValues(alpha: 0.45),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isCalling ? const Color(0xFF00E5FF) : AppColors.brandPrimary).withValues(alpha: 0.16),
+            color:
+                (isCalling ? const Color(0xFF00E5FF) : AppColors.brandPrimary)
+                    .withValues(alpha: 0.16),
             blurRadius: 24,
             spreadRadius: 1,
           ),
@@ -375,21 +426,24 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
             child: Center(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Giant Pure White Token Number
-                      Text(
-                        token,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 78,
-                          fontWeight: FontWeight.w900,
-                          fontFamily: 'monospace',
-                          letterSpacing: 3.0,
-                          height: 1.0,
+                      // Giant Pure White Token Number with Tabular Figures
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          token,
+                          style: AppTypography.tokenHero.copyWith(
+                            fontSize: 78,
+                            letterSpacing: 2.5,
+                            height: 1.0,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -398,13 +452,18 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 7),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 22,
+                            vertical: 7,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF00C8FF),
                             borderRadius: BorderRadius.circular(30),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF00C8FF).withValues(alpha: 0.4),
+                                color: const Color(
+                                  0xFF00C8FF,
+                                ).withValues(alpha: 0.4),
                                 blurRadius: 14,
                                 offset: const Offset(0, 2),
                               ),
@@ -414,7 +473,11 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.arrow_forward_rounded, color: Color(0xFF061520), size: 20),
+                              const Icon(
+                                Icons.arrow_forward_rounded,
+                                color: Color(0xFF061520),
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 counter,
@@ -458,8 +521,19 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
 
   /// Active Counter Stations Panel (Top Right Section matching Image 2)
   Widget _buildActiveCountersPanel(List<DisplayBoardItemDto> calls) {
-    // Standard configured counters to display in 4-card grid
-    final defaultCounterNames = ['C-01', 'C-02', 'C-03', 'C-04'];
+    // Dynamic counter names from active calls with fallback slots
+    final dynamicCounterSet = <String>{};
+    for (final c in calls) {
+      if (c.counterNumber != null && c.counterNumber!.trim().isNotEmpty) {
+        dynamicCounterSet.add(c.counterNumber!.trim());
+      }
+    }
+    for (final def in ['C-01', 'C-02', 'C-03', 'C-04']) {
+      if (dynamicCounterSet.length < 4) {
+        dynamicCounterSet.add(def);
+      }
+    }
+    final defaultCounterNames = dynamicCounterSet.toList();
 
     return GlassContainer(
       padding: const EdgeInsets.all(14),
@@ -504,7 +578,9 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.emeraldSuccess.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(AppRadius.pill),
-                  border: Border.all(color: AppColors.emeraldSuccess.withValues(alpha: 0.5)),
+                  border: Border.all(
+                    color: AppColors.emeraldSuccess.withValues(alpha: 0.5),
+                  ),
                 ),
                 child: Text(
                   '${calls.length} In-Service',
@@ -525,7 +601,9 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: List.generate(defaultCounterNames.length, (index) {
                 final counterName = defaultCounterNames[index];
-                final matchingCall = calls.where((c) => c.counterNumber == counterName).firstOrNull;
+                final matchingCall = calls
+                    .where((c) => c.counterNumber == counterName)
+                    .firstOrNull;
 
                 final isActive = matchingCall != null;
                 final tokenNumber = matchingCall?.tokenNumber;
@@ -556,13 +634,18 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                       boxShadow: isActive
                           ? [
                               BoxShadow(
-                                color: const Color(0xFF00E5FF).withValues(alpha: 0.25),
+                                color: const Color(
+                                  0xFF00E5FF,
+                                ).withValues(alpha: 0.25),
                                 blurRadius: 10,
                               ),
                             ]
                           : null,
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 8,
+                    ),
                     child: isActive
                         ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -581,11 +664,19 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                               ),
                               const SizedBox(height: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                                  color: const Color(
+                                    0xFF00E5FF,
+                                  ).withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFF00E5FF), width: 1.0),
+                                  border: Border.all(
+                                    color: const Color(0xFF00E5FF),
+                                    width: 1.0,
+                                  ),
                                 ),
                                 child: Text(
                                   isCalling ? 'CALLING' : 'SERVING',
@@ -622,7 +713,9 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
 
   /// Live Upcoming Queue & Status Matrix (Bottom Right Section matching Image 2)
   Widget _buildUpcomingQueuePanel(List<DisplayBoardQueueItemDto> queue) {
-    final waitingTokens = queue.where((t) => t.tokenStatus == 18001 || t.tokenStatus == 18002).toList();
+    final waitingTokens = queue
+        .where((t) => t.tokenStatus == 18001 || t.tokenStatus == 18002)
+        .toList();
     final heldTokens = queue.where((t) => t.tokenStatus == 18005).toList();
 
     return GlassContainer(
@@ -669,7 +762,9 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.brandPrimary.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(AppRadius.pill),
-                  border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4)),
+                  border: Border.all(
+                    color: AppColors.brandPrimary.withValues(alpha: 0.4),
+                  ),
                 ),
                 child: Text(
                   '${waitingTokens.length} Waiting • ${heldTokens.length} On Hold',
@@ -691,11 +786,18 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.queue_rounded, size: 28, color: AppColors.textSubtle.withValues(alpha: 0.4)),
+                        Icon(
+                          Icons.queue_rounded,
+                          size: 28,
+                          color: AppColors.textSubtle.withValues(alpha: 0.4),
+                        ),
                         const SizedBox(height: 6),
                         const Text(
                           'No patients waiting in queue',
-                          style: TextStyle(color: AppColors.textSubtle, fontSize: 11),
+                          style: TextStyle(
+                            color: AppColors.textSubtle,
+                            fontSize: 11,
+                          ),
                         ),
                       ],
                     ),
@@ -707,12 +809,13 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
 
                       return GridView.builder(
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 2.8,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 2.8,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                            ),
                         itemCount: displayItems.length,
                         itemBuilder: (ctx, i) {
                           final item = displayItems[i];
@@ -723,17 +826,26 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                           // Waiting position
                           int waitPos = 0;
                           if (!isHold) {
-                            waitPos = waitingTokens.indexWhere((t) => t.id == item.id) + 1;
+                            waitPos =
+                                waitingTokens.indexWhere(
+                                  (t) => t.id == item.id,
+                                ) +
+                                1;
                           }
 
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF091424),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                 color: isHold
-                                    ? const Color(0xFFE5A300).withValues(alpha: 0.7)
+                                    ? const Color(
+                                        0xFFE5A300,
+                                      ).withValues(alpha: 0.7)
                                     : const Color(0xFF1E2D44),
                                 width: isHold ? 1.4 : 1.0,
                               ),
@@ -748,7 +860,9 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                                     Text(
                                       item.tokenNumber,
                                       style: TextStyle(
-                                        color: isHold ? const Color(0xFFFBBF24) : Colors.white,
+                                        color: isHold
+                                            ? const Color(0xFFFBBF24)
+                                            : Colors.white,
                                         fontSize: 18,
                                         fontWeight: FontWeight.w900,
                                         fontFamily: 'monospace',
@@ -757,14 +871,26 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                                     const Spacer(),
                                     if (isHold)
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFE5A300).withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: const Color(0xFFE5A300), width: 1.0),
+                                          color: const Color(
+                                            0xFFE5A300,
+                                          ).withValues(alpha: 0.2),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0xFFE5A300),
+                                            width: 1.0,
+                                          ),
                                         ),
                                         child: Text(
-                                          item.counterNumber != null ? 'ON HOLD (${item.counterNumber})' : 'ON HOLD',
+                                          item.counterNumber != null
+                                              ? 'ON HOLD (${item.counterNumber})'
+                                              : 'ON HOLD',
                                           style: const TextStyle(
                                             color: Color(0xFFFBBF24),
                                             fontSize: 9,
@@ -774,11 +900,21 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                                       )
                                     else if (isVip)
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFD97706).withValues(alpha: 0.22),
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: const Color(0xFFF59E0B), width: 1.0),
+                                          color: const Color(
+                                            0xFFD97706,
+                                          ).withValues(alpha: 0.22),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0xFFF59E0B),
+                                            width: 1.0,
+                                          ),
                                         ),
                                         child: const Text(
                                           'VIP',
@@ -791,11 +927,21 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                                       )
                                     else if (isSenior)
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFD97706).withValues(alpha: 0.22),
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: const Color(0xFFF59E0B), width: 1.0),
+                                          color: const Color(
+                                            0xFFD97706,
+                                          ).withValues(alpha: 0.22),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0xFFF59E0B),
+                                            width: 1.0,
+                                          ),
                                         ),
                                         child: const Text(
                                           'SENIOR',
@@ -808,11 +954,23 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                                       )
                                     else
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF00E5FF).withValues(alpha: 0.12),
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.4), width: 1.0),
+                                          color: const Color(
+                                            0xFF00E5FF,
+                                          ).withValues(alpha: 0.12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(
+                                              0xFF00E5FF,
+                                            ).withValues(alpha: 0.4),
+                                            width: 1.0,
+                                          ),
                                         ),
                                         child: const Text(
                                           'STANDARD',
@@ -870,10 +1028,12 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
 
   /// Bottom Announcement Ticker Bar with Dynamic On-Hold Notice matching Image 2
   Widget _buildBottomTickerBar(List<DisplayBoardQueueItemDto> heldTokens) {
-    String tickerText = 'Welcome to DQMS Medical Center. Please keep your ticket until your number is announced on screen.';
+    String tickerText =
+        'Welcome to DQMS Medical Center. Please keep your ticket until your number is announced on screen.';
     if (heldTokens.isNotEmpty) {
       final numbers = heldTokens.map((t) => t.tokenNumber).join(', ');
-      tickerText = 'Token(s) $numbers are paused on hold. If you have returned to the lounge, please contact your counter staff.  •  Welcome to DQMS Medical Center.';
+      tickerText =
+          'Token(s) $numbers are paused on hold. If you have returned to the lounge, please contact your counter staff.  •  Welcome to DQMS Medical Center.';
     }
 
     return Container(
@@ -882,7 +1042,10 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF070F1E),
         border: Border(
-          top: BorderSide(color: AppColors.glassBorderLight.withValues(alpha: 0.5), width: 1.0),
+          top: BorderSide(
+            color: AppColors.glassBorderLight.withValues(alpha: 0.5),
+            width: 1.0,
+          ),
         ),
       ),
       child: Row(

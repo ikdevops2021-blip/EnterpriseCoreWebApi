@@ -204,6 +204,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/staff/counter',
         builder: (context, state) => const CounterOperatorScreen(),
       ),
+      GoRoute(
+        path: '/operator',
+        builder: (context, state) => const CounterOperatorScreen(),
+      ),
     ],
     redirect: (context, state) {
       final isAuthenticated = authState.isAuthenticated;

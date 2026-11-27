@@ -151,7 +151,12 @@ class _SignageMediaZoneState extends State<SignageMediaZone> {
                     SizedBox(width: 4),
                     Text(
                       'AUDIO DUCKED',
-                      style: TextStyle(color: Colors.amber, fontSize: 9, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                        color: Colors.amber,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ],
                 ),

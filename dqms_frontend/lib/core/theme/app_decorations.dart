@@ -236,4 +236,31 @@ class AppDecorations {
       ],
     );
   }
+
+  /// Precision Command Center surface decoration (Hairline 1px border, subtle zinc depth)
+  static BoxDecoration precisionCard({
+    Color? fillColor,
+    Color? borderColor,
+    double borderRadius = AppRadius.md,
+    bool isHovered = false,
+  }) {
+    return BoxDecoration(
+      color: fillColor ?? (isHovered ? AppColors.bgSurfaceHover : AppColors.bgSurface),
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: Border.all(
+        color: borderColor ?? (isHovered ? AppColors.brandPrimary.withValues(alpha: 0.5) : AppColors.borderSubtle),
+        width: 1.0,
+      ),
+      boxShadow: isHovered
+          ? [
+              BoxShadow(
+                color: (borderColor ?? AppColors.brandPrimary).withValues(alpha: 0.12),
+                blurRadius: 12,
+                spreadRadius: 1,
+                offset: const Offset(0, 4),
+              ),
+            ]
+          : AppShadows.subtle,
+    );
+  }
 }

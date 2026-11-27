@@ -90,27 +90,54 @@ class AppTypography {
   );
 
   // ---------------------------------------------------------------------------
-  // MONOSPACE / QUEUE TOKEN NUMBER TYPOGRAPHY
+  // MONOSPACE / QUEUE TOKEN NUMBER TYPOGRAPHY (Tabular Figures)
   // ---------------------------------------------------------------------------
-  static TextStyle tokenDisplay = GoogleFonts.firaCode(
+  static TextStyle tokenDisplay = GoogleFonts.jetBrainsMono(
     fontSize: 64,
     fontWeight: FontWeight.w900,
     letterSpacing: -2.0,
     color: AppColors.brandPrimary,
+    fontFeatures: const [FontFeature.tabularFigures()],
   );
 
-  static TextStyle tokenHero = GoogleFonts.inter(
+  static TextStyle tokenHero = GoogleFonts.jetBrainsMono(
     fontSize: 48,
     fontWeight: FontWeight.w900,
     letterSpacing: -1.0,
     color: Colors.white,
+    fontFeatures: const [FontFeature.tabularFigures()],
   );
 
-  static TextStyle tokenBadge = GoogleFonts.firaCode(
+  static TextStyle tokenBadge = GoogleFonts.jetBrainsMono(
     fontSize: 14,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.5,
     color: AppColors.textMain,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
+
+  static TextStyle counterDisplay = GoogleFonts.jetBrainsMono(
+    fontSize: 24,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.5,
+    color: AppColors.electricCyan,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
+
+  static TextStyle timerDisplay = GoogleFonts.jetBrainsMono(
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.2,
+    color: AppColors.textMain,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
+
+  static TextStyle metricDisplay = GoogleFonts.jetBrainsMono(
+    fontSize: 20,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.5,
+    color: AppColors.textMain,
+    fontFeatures: const [FontFeature.tabularFigures()],
   );
 
   // ---------------------------------------------------------------------------

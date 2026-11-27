@@ -31,3 +31,9 @@ appsettings.Local.json
 DNAQMSAPI/DNAQMSAPI.Api/uploads/*
 !DNAQMSAPI/DNAQMSAPI.Api/uploads/**/.gitkeep
 
+## QA & Test Artifacts
+qa_screenshots/
+*.png
+qa_complete_e2e_results.json
+.gstack/tmp/
+

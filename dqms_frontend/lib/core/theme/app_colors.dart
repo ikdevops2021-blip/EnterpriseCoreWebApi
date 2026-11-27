@@ -9,29 +9,32 @@ class AppColors {
   AppColors._();
 
   // ---------------------------------------------------------------------------
-  // DARK CANVAS & SURFACE TOKENS (Stitch Clinical Design System)
+  // DARK CANVAS & SURFACE TOKENS (Obsidian & Charcoal Precision Command Center)
   // ---------------------------------------------------------------------------
-  static const Color bgCanvas = Color(0xFF101418);
-  static const Color bgSurface = Color(0xFF181C20);
-  static const Color bgSurfaceHover = Color(0xFF262A2F);
-  static const Color bgHeader = Color(0xFF101418);
-  static const Color bgCard = Color(0xFF181C20);
-  static const Color bgSubtle = Color(0xFF262A2F);
+  static const Color bgCanvas = Color(0xFF080C10);
+  static const Color bgSurface = Color(0xFF0F141C);
+  static const Color bgSurfaceHover = Color(0xFF18202C);
+  static const Color bgHeader = Color(0xFF080C10);
+  static const Color bgCard = Color(0xFF0F141C);
+  static const Color bgSubtle = Color(0xFF18202C);
 
   // ---------------------------------------------------------------------------
   // BORDER TOKENS
   // ---------------------------------------------------------------------------
-  static const Color borderSubtle = Color(0xFF3F4850);
-  static const Color borderHighlight = Color(0xFF93CCFF);
-  static const Color borderFocus = Color(0xFF3198DC);
+  static const Color borderSubtle = Color(0xFF1E293B);
+  static const Color borderHighlight = Color(0xFF00E5FF);
+  static const Color borderFocus = Color(0xFF00E5FF);
 
   // ---------------------------------------------------------------------------
   // BRAND & ACCENT TOKENS
   // ---------------------------------------------------------------------------
-  static const Color brandPrimary = Color(0xFF3198DC);
-  static const Color brandPrimaryHover = Color(0xFF93CCFF);
-  static const Color brandAccent = Color(0xFF93CCFF);
-  static const Color brandSecondary = Color(0xFFC0C1FF);
+  static const Color brandPrimary = Color(0xFF00E5FF);
+  static const Color brandPrimaryHover = Color(0xFF38BDF8);
+  static const Color brandAccent = Color(0xFF00E5FF);
+  static const Color brandSecondary = Color(0xFF8B5CF6);
+  static const Color mintEmerald = Color(0xFF00E5A3);
+  static const Color electricCyan = Color(0xFF00E5FF);
+  static const Color royalViolet = Color(0xFF8B5CF6);
 
   // ---------------------------------------------------------------------------
   // NEON ACCENT TOKENS (Dark Mode Gradient Borders & Glowing Nodes)

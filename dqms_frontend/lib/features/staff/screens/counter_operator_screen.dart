@@ -8,6 +8,8 @@ import '../../../core/enums/dqms_enums.dart';
 import '../../../core/models/staff_models.dart';
 import '../../../core/services/dqms_audio_voice_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
+import '../../../core/widgets/circular_sla_progress_ring.dart';
 import '../providers/staff_providers.dart';
 import '../providers/staff_session_provider.dart';
 import '../repositories/staff_repository.dart';
@@ -167,23 +169,30 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
           )
           .firstOrNull;
 
+      final hasTextFocus =
+          FocusManager.instance.primaryFocus?.context?.widget is EditableText;
+
       if (event.logicalKey == LogicalKeyboardKey.space ||
           event.logicalKey == LogicalKeyboardKey.f1) {
         _handleCallNext();
-      } else if (event.logicalKey == LogicalKeyboardKey.f2 &&
+      } else if ((event.logicalKey == LogicalKeyboardKey.f2 ||
+              (!hasTextFocus && event.logicalKey == LogicalKeyboardKey.keyR)) &&
           activeToken != null) {
         _handleRecall(activeToken);
-      } else if (event.logicalKey == LogicalKeyboardKey.f3 &&
+      } else if ((event.logicalKey == LogicalKeyboardKey.f3 ||
+              (!hasTextFocus && event.logicalKey == LogicalKeyboardKey.keyS)) &&
           activeToken != null) {
         queueNotifier.updateTokenStatus(
           activeToken.id,
           e_TokenStatus.active,
           tokenNumber: activeToken.tokenNumber,
         );
-      } else if (event.logicalKey == LogicalKeyboardKey.f4 &&
+      } else if ((event.logicalKey == LogicalKeyboardKey.f4 ||
+              (!hasTextFocus && event.logicalKey == LogicalKeyboardKey.keyH)) &&
           activeToken != null) {
         _showHoldDialog(activeToken);
-      } else if (event.logicalKey == LogicalKeyboardKey.f5 &&
+      } else if ((event.logicalKey == LogicalKeyboardKey.f5 ||
+              (!hasTextFocus && event.logicalKey == LogicalKeyboardKey.keyC)) &&
           activeToken != null) {
         queueNotifier
             .updateTokenStatus(
@@ -194,7 +203,8 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
             .then((_) {
               _handleCallNext();
             });
-      } else if (event.logicalKey == LogicalKeyboardKey.f6 &&
+      } else if ((event.logicalKey == LogicalKeyboardKey.f6 ||
+              (!hasTextFocus && event.logicalKey == LogicalKeyboardKey.keyT)) &&
           activeToken != null) {
         _openForwardingDialog(activeToken);
       } else if (event.logicalKey == LogicalKeyboardKey.f7 &&
@@ -1217,30 +1227,39 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
               ),
               const SizedBox(height: 16),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    token.tokenNumber,
-                    style: const TextStyle(
-                      color: OperatorTheme.textMain,
-                      fontSize: 72,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -2,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      token.tokenNumber,
+                      style: AppTypography.tokenHero.copyWith(
+                        color: OperatorTheme.textMain,
+                        fontSize: 68,
+                        letterSpacing: -1.5,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 24),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        token.customerName ?? 'Walk-in Customer',
-                        style: const TextStyle(
-                          color: OperatorTheme.textMain,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
+                  const SizedBox(width: 20),
+                  CircularSlaProgressRing(
+                    progress: token.tokenStatus == e_TokenStatus.active.value ? 0.45 : 0.82,
+                    size: 58,
+                    centerLabel: '${token.priorityTier}',
+                    subLabel: 'SLA',
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          token.customerName ?? 'Walk-in Customer',
+                          style: const TextStyle(
+                            color: OperatorTheme.textMain,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 4),
                       Text(
                         token.customerPhone ?? 'No Phone Provided',
@@ -1262,8 +1281,9 @@ class _CounterOperatorScreenState extends ConsumerState<CounterOperatorScreen> {
                       ],
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
             ],
           ),
         )
