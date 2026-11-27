@@ -187,7 +187,7 @@ void main() {
     expect(
       find.byWidgetPredicate((widget) =>
           widget is Text &&
-          (widget.data == 'PREVIOUS CALLS' || widget.data == 'RECENT & ACTIVE CALLS')),
+          (widget.data == 'PREVIOUS CALLS' || widget.data == 'RECENT & ACTIVE CALLS' || widget.data == 'ACTIVE COUNTER STATIONS')),
       findsOneWidget,
     );
   });

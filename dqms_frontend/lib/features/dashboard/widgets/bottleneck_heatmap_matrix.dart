@@ -37,43 +37,58 @@ class BottleneckHeatmapMatrix extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Header Row
-          Row(
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              const Icon(Icons.grid_on_rounded, color: AppColors.statusWarning, size: 20),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  'BOTTLENECK CONGESTION HEATMAP',
-                  style: TextStyle(
-                    color: AppColors.textMain,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-              ),
-              // Peak Congestion Badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.statusDeactive.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: AppColors.statusDeactive.withValues(alpha: 0.3)),
-                ),
+              const FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.local_fire_department_rounded, size: 14, color: AppColors.statusDeactive),
-                    const SizedBox(width: 4),
+                    Icon(Icons.grid_on_rounded, color: AppColors.statusWarning, size: 20),
+                    SizedBox(width: 8),
                     Text(
-                      'Peak: ${heatmap.peakCongestionLabel} (${heatmap.peakCongestionScore}%)',
-                      style: const TextStyle(
-                        color: AppColors.statusDeactive,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                      'BOTTLENECK CONGESTION HEATMAP',
+                      style: TextStyle(
+                        color: AppColors.textMain,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.8,
                       ),
                     ),
                   ],
+                ),
+              ),
+              // Peak Congestion Badge
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.statusDeactive.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: AppColors.statusDeactive.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.local_fire_department_rounded, size: 14, color: AppColors.statusDeactive),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Peak: ${heatmap.peakCongestionLabel} (${heatmap.peakCongestionScore}%)',
+                        style: const TextStyle(
+                          color: AppColors.statusDeactive,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -192,15 +207,14 @@ class BottleneckHeatmapMatrix extends ConsumerWidget {
           const SizedBox(height: 12),
 
           // Legend
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 12,
+            runSpacing: 6,
             children: [
               _buildLegendItem(AppColors.statusActive, 'Normal (<5m)'),
-              const SizedBox(width: 12),
               _buildLegendItem(AppColors.statusWarning, 'Moderate (5-10m)'),
-              const SizedBox(width: 12),
               _buildLegendItem(Colors.orange, 'High (10-20m)'),
-              const SizedBox(width: 12),
               _buildLegendItem(AppColors.statusDeactive, 'Critical (>20m)'),
             ],
           ),

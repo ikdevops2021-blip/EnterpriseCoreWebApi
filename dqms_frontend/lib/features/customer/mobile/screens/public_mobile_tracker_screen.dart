@@ -107,7 +107,6 @@ class _PublicMobileTrackerScreenState extends ConsumerState<PublicMobileTrackerS
   Widget build(BuildContext context) {
     final status = _status;
     final isCalling = status?.tokenStatus == 18003;
-    final isCompleted = status?.tokenStatus == 18007;
 
     return Scaffold(
       backgroundColor: const Color(0xFF090D16),

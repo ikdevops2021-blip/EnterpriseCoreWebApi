@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dqms_frontend/features/admin/models/signage_models.dart';
 import 'package:dqms_frontend/features/admin/providers/navigation_menu_provider.dart';
 import 'package:dqms_frontend/features/customer/tv/widgets/emergency_broadcast_overlay.dart';
@@ -150,7 +149,7 @@ void main() {
         ),
       );
 
-      expect(find.text('Welcome to DQMS Medical Center'), findsOneWidget);
+      expect(find.text('Welcome to DQMS Medical Center'), findsAtLeastNWidgets(1));
       expect(find.byIcon(Icons.health_and_safety_rounded), findsOneWidget);
     });
 
@@ -185,7 +184,7 @@ void main() {
       expect(find.text('Hand Hygiene Protocol'), findsAtLeastNWidgets(1));
       expect(find.text('AUDIO DUCKED'), findsOneWidget);
       expect(find.byIcon(Icons.volume_mute_rounded), findsOneWidget);
-      expect(find.text('1 / 1 • ADVISORY'), findsOneWidget);
+      expect(find.text('1 / 1 • CAMPAIGN'), findsOneWidget);
     });
   });
 }

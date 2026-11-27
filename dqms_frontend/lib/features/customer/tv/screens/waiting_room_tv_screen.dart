@@ -4,8 +4,6 @@ import 'package:dqms_frontend/core/models/customer_models.dart';
 import 'package:dqms_frontend/core/services/dqms_audio_voice_service.dart';
 import 'package:dqms_frontend/core/theme/app_colors.dart';
 import 'package:dqms_frontend/core/theme/app_decorations.dart';
-import 'package:dqms_frontend/core/theme/app_typography.dart';
-import 'package:dqms_frontend/core/theme/app_breakpoints.dart';
 import 'package:dqms_frontend/core/widgets/glass_widgets.dart';
 import 'package:dqms_frontend/core/widgets/language_selector_dropdown.dart';
 import 'package:dqms_frontend/features/customer/providers/customer_providers.dart';
@@ -76,7 +74,7 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
     final boardAsync = ref.watch(displayBoardProvider);
     final playlistAsync = ref.watch(activePlaylistProvider(1));
     final emergencyAsync = ref.watch(activeEmergencyProvider(1));
-    final isMobile = AppBreakpoints.isMobile(context);
+    final isCompact = MediaQuery.of(context).size.width < 1024;
 
     final board = boardAsync.value ?? PublicDisplayBoardDto.empty();
     final mediaItems = playlistAsync.value ?? [];
@@ -110,11 +108,14 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(18),
-                  child: isMobile
+                  child: isCompact
                       ? SingleChildScrollView(
                           child: Column(
                             children: [
-                              _buildNowCallingHero(heroItem),
+                              SizedBox(
+                                height: 280,
+                                child: _buildNowCallingHero(heroItem),
+                              ),
                               const SizedBox(height: 16),
                               SizedBox(
                                 height: 200,
@@ -394,36 +395,39 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
                       const SizedBox(height: 14),
 
                       // Directional Cyan Pill
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF00C8FF),
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF00C8FF).withValues(alpha: 0.4),
-                              blurRadius: 14,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.arrow_forward_rounded, color: Color(0xFF061520), size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              counter,
-                              style: const TextStyle(
-                                color: Color(0xFF061520),
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                fontFamily: 'monospace',
-                                letterSpacing: 1.2,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00C8FF),
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF00C8FF).withValues(alpha: 0.4),
+                                blurRadius: 14,
+                                offset: const Offset(0, 2),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.arrow_forward_rounded, color: Color(0xFF061520), size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                counter,
+                                style: const TextStyle(
+                                  color: Color(0xFF061520),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  fontFamily: 'monospace',
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -463,26 +467,38 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
             children: [
-              const GlassSquircleIcon(
-                icon: Icons.meeting_room_rounded,
-                backgroundColor: AppColors.darkBlueIconBg,
-                iconColor: AppColors.emeraldSuccess,
-                size: 28,
-                iconSize: 15,
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'ACTIVE COUNTER STATIONS',
-                style: TextStyle(
-                  color: AppColors.textMain,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.0,
+              const FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GlassSquircleIcon(
+                      icon: Icons.meeting_room_rounded,
+                      backgroundColor: AppColors.darkBlueIconBg,
+                      iconColor: AppColors.emeraldSuccess,
+                      size: 28,
+                      iconSize: 15,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'ACTIVE COUNTER STATIONS',
+                      style: TextStyle(
+                        color: AppColors.textMain,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -615,26 +631,38 @@ class _WaitingRoomTvScreenState extends ConsumerState<WaitingRoomTvScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
             children: [
-              const GlassSquircleIcon(
-                icon: Icons.format_list_numbered_rounded,
-                backgroundColor: AppColors.darkBlueIconBg,
-                iconColor: AppColors.brandPrimary,
-                size: 28,
-                iconSize: 15,
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'UPCOMING QUEUE & STATUS',
-                style: TextStyle(
-                  color: AppColors.textMain,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.0,
+              const FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GlassSquircleIcon(
+                      icon: Icons.format_list_numbered_rounded,
+                      backgroundColor: AppColors.darkBlueIconBg,
+                      iconColor: AppColors.brandPrimary,
+                      size: 28,
+                      iconSize: 15,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'UPCOMING QUEUE & STATUS',
+                      style: TextStyle(
+                        color: AppColors.textMain,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const Spacer(),
               // Queue Count Pill
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

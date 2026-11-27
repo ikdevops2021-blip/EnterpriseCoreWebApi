@@ -405,23 +405,26 @@ class _SignageMediaZoneState extends State<SignageMediaZone> {
         ),
       ),
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.health_and_safety_rounded, size: 42, color: AppColors.cyanGlow.withValues(alpha: 0.85)),
-            const SizedBox(height: 10),
-            const Text(
-              'Welcome to DQMS Medical Center',
-              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Please relax in the waiting lounge. Your token number will be called and announced on screen.',
-              style: TextStyle(color: AppColors.textSubtle, fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
-          ],
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.health_and_safety_rounded, size: 42, color: AppColors.cyanGlow.withValues(alpha: 0.85)),
+              const SizedBox(height: 10),
+              const Text(
+                'Welcome to DQMS Medical Center',
+                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Please relax in the waiting lounge. Your token number will be called and announced on screen.',
+                style: TextStyle(color: AppColors.textSubtle, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -640,15 +643,6 @@ class _SignageMediaZoneState extends State<SignageMediaZone> {
     );
   }
 
-  Widget _colorDot(Color color) {
-    return Container(
-      margin: const EdgeInsets.only(right: 2.5),
-      width: 5,
-      height: 5,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-    );
-  }
-
   /// Slide 2: Preventative Health & Wellness Advisory
   Widget _buildHealthAdvisorySlide({required Key key}) {
     return Container(
@@ -665,23 +659,26 @@ class _SignageMediaZoneState extends State<SignageMediaZone> {
         ),
       ),
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.vaccines_rounded, size: 40, color: AppColors.emeraldSuccess),
-            const SizedBox(height: 10),
-            const Text(
-              'Seasonal Flu & Booster Vaccines Available',
-              style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Walk-in immunizations available at Immunization Room 104 without an appointment.',
-              style: TextStyle(color: AppColors.textSubtle, fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
-          ],
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.vaccines_rounded, size: 40, color: AppColors.emeraldSuccess),
+              const SizedBox(height: 10),
+              const Text(
+                'Seasonal Flu & Booster Vaccines Available',
+                style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Walk-in immunizations available at Immunization Room 104 without an appointment.',
+                style: TextStyle(color: AppColors.textSubtle, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

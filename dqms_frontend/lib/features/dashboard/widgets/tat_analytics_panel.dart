@@ -93,13 +93,12 @@ class TatAnalyticsPanel extends StatelessWidget {
               border: Border.all(color: AppColors.borderSubtle),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStatPill('P95 TAT', '${summary.p95TatMinutes.toStringAsFixed(1)}m', Icons.query_builder_rounded),
+                Expanded(child: _buildStatPill('P95 TAT', '${summary.p95TatMinutes.toStringAsFixed(1)}m', Icons.query_builder_rounded)),
                 Container(width: 1, height: 26, color: AppColors.borderSubtle),
-                _buildStatPill('StdDev (σ)', '±${summary.stdDevMinutes.toStringAsFixed(1)}m', Icons.show_chart_rounded),
+                Expanded(child: _buildStatPill('StdDev (σ)', '±${summary.stdDevMinutes.toStringAsFixed(1)}m', Icons.show_chart_rounded)),
                 Container(width: 1, height: 26, color: AppColors.borderSubtle),
-                _buildStatPill('SLA Pass', '${summary.slaPassPercentage.toStringAsFixed(1)}%', Icons.check_circle_outline_rounded),
+                Expanded(child: _buildStatPill('SLA Pass', '${summary.slaPassPercentage.toStringAsFixed(1)}%', Icons.check_circle_outline_rounded)),
               ],
             ),
           ),
@@ -119,56 +118,76 @@ class TatAnalyticsPanel extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 4,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                        child: Text(
-                          item.processCode,
-                          style: const TextStyle(
-                            color: AppColors.brandPrimary,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                          ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: Text(
+                                item.processCode,
+                                style: const TextStyle(
+                                  color: AppColors.brandPrimary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              item.processName,
+                              style: const TextStyle(
+                                color: AppColors.textMain,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          item.processName,
-                          style: const TextStyle(
-                            color: AppColors.textMain,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        'Target ${item.targetTATMinutes}m | Actual ${item.actualTatMinutes.toStringAsFixed(1)}m',
-                        style: const TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: itemColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '${item.variancePercentage > 0 ? "+" : ""}${item.variancePercentage.toStringAsFixed(1)}%',
-                          style: TextStyle(
-                            color: itemColor,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                          ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Target ${item.targetTATMinutes}m | Actual ${item.actualTatMinutes.toStringAsFixed(1)}m',
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: itemColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${item.variancePercentage > 0 ? "+" : ""}${item.variancePercentage.toStringAsFixed(1)}%',
+                                style: TextStyle(
+                                  color: itemColor,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -216,26 +235,30 @@ class TatAnalyticsPanel extends StatelessWidget {
   }
 
   Widget _buildStatPill(String label, String value, IconData icon) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: AppColors.textMuted),
-        const SizedBox(width: 6),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(fontSize: 10, color: AppColors.textSubtle, fontWeight: FontWeight.w500),
-            ),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 12, color: AppColors.textMain, fontWeight: FontWeight.w700),
-            ),
-          ],
-        ),
-      ],
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.textMuted),
+          const SizedBox(width: 6),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(fontSize: 10, color: AppColors.textSubtle, fontWeight: FontWeight.w500),
+              ),
+              Text(
+                value,
+                style: const TextStyle(fontSize: 12, color: AppColors.textMain, fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

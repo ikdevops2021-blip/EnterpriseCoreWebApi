@@ -1,3 +1,5 @@
+// ignore_for_file: dangling_library_doc_comments
+
 /// ============================================================================
 /// TAT & BOTTLENECK HEATMAP ANALYTICS MODELS
 /// Data Transfer Objects for Turnaround Time variance & 2D congestion matrix

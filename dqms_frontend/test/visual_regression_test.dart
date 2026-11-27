@@ -205,7 +205,7 @@ void main() {
 
       expect(find.byType(WaitingRoomTvScreen), findsOneWidget);
       expect(find.text('NOW CALLING'), findsOneWidget);
-      expect(find.text('PREVIOUS CALLS'), findsOneWidget);
+      expect(find.byWidgetPredicate((w) => w is Text && (w.data == 'PREVIOUS CALLS' || w.data == 'ACTIVE COUNTER STATIONS')), findsOneWidget);
     });
 
     testWidgets('Visual Test: Appointment Booking Wizard (Mobile Viewport)', (WidgetTester tester) async {

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dqms_frontend/features/dashboard/models/tat_analytics_dto.dart';
 import 'package:dqms_frontend/features/dashboard/widgets/tat_analytics_panel.dart';
 import 'package:dqms_frontend/features/dashboard/widgets/bottleneck_heatmap_matrix.dart';
-import 'package:dqms_frontend/features/dashboard/providers/dashboard_provider.dart';
 
 void main() {
   group('1. TAT Variance & Mathematical Dispersion Model Tests', () {
